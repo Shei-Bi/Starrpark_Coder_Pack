@@ -351,6 +351,33 @@ Interceptor.attach(base.add(0x9510D8), {
         args[6] = NULL;
     }
 });
+let RootDirPath;
+Interceptor.attach(HomeScreen_enter, {
+    onEnter: function (args) {
+        RootDirPath = ReadStringFromStringObject(base.add(0x10CDCD0));
+
+        if (RootDirPath.endsWith("/")) {
+            RootDirPath = RootDirPath.substring(0, RootDirPath.length - 1);
+        }
+
+        let Mod = Module.load(`${RootDirPath}/mod/libg.so`);
+        Mod.enumerateExports().forEach(element => {
+            console.log(element.name);
+        });
+        const _ZN21LogicProjectileServer15returnBoomerangEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer15returnBoomerangEv"), 'void', ['pointer']);
+        // Interceptor.attach(base.add(0x8B7CCC), function () {
+        //     var p = this.context.x19;
+        //     if (p.add(16).readPointer().add(400).readU8()) {
+        //         if (!p.add(16).readPointer().add(256).readPointer().isNull()) {
+        //             LogicProjectileServer_returnBoomerang(p);
+        //         }
+        //     }
+        // });
+        Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
+        Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
+        Interceptor.flush();
+    }
+});
 const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 
 const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void', ['pointer']); // v53.176 | 
 //const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 

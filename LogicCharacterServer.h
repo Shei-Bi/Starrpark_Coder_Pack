@@ -3,7 +3,7 @@
 class LogicCharacterServer : public LogicGameObjectServer
 {
 public:
-   LogicCharacterServer(LogicData logicData) : LogicGameObjectServer(logicData)
+   LogicCharacterServer(LogicData *logicData) : LogicGameObjectServer(logicData)
    {
       ;
    }

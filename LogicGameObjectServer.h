@@ -9,8 +9,8 @@ private:
 public:
    int GlobalID;
    char gap1[4];
-   LogicData Data;
-   LogicGameObjectManagerServer GameObjectManager;
+   LogicData *Data;
+   LogicGameObjectManagerServer *GameObjectManager;
    char gap2[16];
    int X;
    int Y;
@@ -19,12 +19,12 @@ public:
    int TeamIndex;
    int WorldIndex;
 
-   LogicGameObjectServer(LogicData logicData)
+   LogicGameObjectServer(LogicData *logicData)
    {
       GlobalID = 0;
       Data = logicData;
 
-      GameObjectManager = *(static_cast<LogicGameObjectManagerServer *>(nullptr));
+      GameObjectManager = nullptr;
       Z = 0;
       Index = 0;
       TeamIndex = 0;
@@ -41,6 +41,24 @@ public:
    int GetY()
    {
       return Y;
+   }
+   LogicData *getData()
+   {
+      return Data;
+   }
+   LogicGameObjectManagerServer *getLogicGameObjectManagerServer()
+   {
+      return GameObjectManager;
+   }
+   LogicBattleModeServer *getLogicBattleModeServer()
+   {
+      return GameObjectManager->getLogicBattleModeServer();
+   }
+   void setPosition(int x, int y, int z)
+   {
+      X = x;
+      Y = y;
+      Z = z;
    }
    ~LogicGameObjectServer()
    {

@@ -1,3 +1,5 @@
+#ifndef LBMS_H
+#define LBMS_H
 class LogicBattleModeServer
 {
 private:
@@ -16,3 +18,4 @@ LogicBattleModeServer::LogicBattleModeServer(/* args */)
 LogicBattleModeServer::~LogicBattleModeServer()
 {
 }
+#endif

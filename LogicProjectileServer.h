@@ -3,6 +3,7 @@
 #include "LogicCharacterServer.h"
 #include "LogicGameObjectServer.h"
 #include "LogicBattleModeServer.h"
+#include "LogicProjectileData.h"
 class LogicProjectileServer : public LogicGameObjectServer
 {
 public:
@@ -13,10 +14,13 @@ public:
    int Damage;
    int NormalDMG;
    char gap2[4];
-   LogicCharacterServer Owner = *(static_cast<LogicCharacterServer *>(nullptr));
+   LogicCharacterServer *Owner;
 
-   static LogicProjectileServer ShootProjectile(int, int, LogicCharacterServer, LogicGameObjectServer, LogicData, int, int, int, int, int, bool, int, LogicBattleModeServer, int, int);
-   LogicProjectileServer(LogicData logicData) : LogicGameObjectServer(logicData)
+   static LogicProjectileServer *ShootProjectile(int, int, LogicCharacterServer *, LogicGameObjectServer *, LogicProjectileData *, int, int, int, int, int, bool, int, LogicBattleModeServer *, int, int)
+   {
+      ;
+   }
+   LogicProjectileServer(LogicProjectileData *logicProjectileData) : LogicGameObjectServer(logicProjectileData)
    {
       ;
    }
@@ -26,12 +30,21 @@ public:
       ;
    }
    void __attribute__((used)) returnBoomerang()
+   // void returnBoomerang();
    {
+      int boomerangX;
+      int boomerangY;
       if (Owner)
       {
-         int boomerangX = Owner.GetX();
+         boomerangX = Owner->GetX();
+         boomerangY = Owner->GetY();
       }
-      ShootProjectile(1, 2, *(static_cast<LogicCharacterServer *>(nullptr)), *(static_cast<LogicGameObjectServer *>(nullptr)), *(static_cast<LogicData *>(nullptr)), 4, 5, 6, 7, 8, true, 9, *(static_cast<LogicBattleModeServer *>(nullptr)), 10, 11);
+      else
+      {
+         boomerangX = StartX;
+         boomerangY = StartY;
+      }
+      LogicProjectileServer *boomerang = ShootProjectile(-1, -1, Owner, this, ((LogicProjectileData *)getData())->getChainedBullet(), boomerangX, boomerangY, Damage, NormalDMG, 0, false, 0, getLogicBattleModeServer(), 0, 0);
    }
 };
 #endif
