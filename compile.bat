@@ -1,0 +1,1 @@
+"C:\Program Files (x86)\Arm GNU Toolchain aarch64-none-linux-gnu\13.2 Rel1\bin\aarch64-none-linux-gnu-g++.exe" -shared -fPIC -o libg.so ./LogicCharacterServer.cpp

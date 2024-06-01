@@ -1,0 +1,359 @@
+const Armceptor = {
+    replace(ptr, arr) {
+        Memory.protect(ptr, arr.length, "rwx");
+        Memory.writeByteArray(ptr, arr);
+        Memory.protect(ptr, arr.length, "rx");
+    },
+
+    nop(ptr) {
+        Armceptor.replace(ptr, [0x1F, 0x20, 0x03, 0xD5]);
+    },
+
+    ret(ptr) {
+        Armceptor.replace(ptr, [0xC0, 0x03, 0x5F, 0xD6]);
+    }
+} //x64
+
+
+// Exports
+const base = Module.getBaseAddress('libg.so');
+const access = new NativeFunction(Module.getExportByName('libc.so', 'access'), 'int', ['pointer', 'int']);
+const malloc = new NativeFunction(Module.getExportByName('libc.so', 'malloc'), 'pointer', ['uint']);
+const free = new NativeFunction(Module.getExportByName('libc.so', 'free'), 'void', ['pointer']);
+const c_exit = new NativeFunction(Module.getExportByName('libc.so', 'exit'), 'void', ['int']);
+const c_mkdir = new NativeFunction(Module.getExportByName('libc.so', 'mkdir'), 'int', ['pointer', 'uint']);
+const c_rmdir = new NativeFunction(Module.getExportByName('libc.so', 'rmdir'), 'int', ['pointer']);
+const c_unlink = new NativeFunction(Module.getExportByName('libc.so', 'unlink'), 'int', ['pointer']);
+const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), 'float', ['float']);
+
+// Addresses
+const AllianceEventStreamEntry_decode = base.add(0x8EDCE0); // v53.176 | Message ID: 24131, decode -> StreamEntryFactory::createStreamEntryByType -> case 4 -> decode (4th in vtable)
+const AntiCheat_getAntihackFlags = base.add(0x9A2710); // v53.176 | Message ID: 18977 -> 6th argument in ctor calling function
+const ChatStreamEntry_decode = base.add(0x8EE604); // v53.176 | Message ID: 24131, decode -> StreamEntryFactory::createStreamEntryByType -> case 2 -> decode (4th in vtable)
+const ConnectionIndicatorShowAddr = base.add(0x4D7470); // v53.176 | String: "connection_indicator"
+const CountryPopupListItemVtableAddr = base.add(0xFB9D70); // v53.176 | In CountryItem ("country_item") | *this = CountryPopupListItemVtableAddr
+const CountryPopupVtableAddr = base.add(0xFCE578); // v53.176 | In PlayerCountryPopup ("country_popup") | *this = CountryPopupVtableAddr
+const DataLoaderTexture_load = base.add(0xAA4380); // v53.176 | String: "Can't create texture: %s"
+const Debugger_error = base.add(0xA423F8); // v53.176 | String: "[ERROR]"
+const Debugger_warning = base.add(0xA42328); // v53.176 | String: "[warning]"
+const DirectProjectileShowRadiusAddr = base.add(0x6AFBC0); // v53.176 | String: "EnragerStarPowerDamage"
+const EnvironmentRenderer_render_OutlineSetupAddr = base.add(0x4AFCAC); // v53.176 | Very complicated. String: "finish object impostors"
+const GameMain_loadAsset = base.add(0x4485F8); // v53.176 | String: "font/LilitaOne-Regular.ttf"
+const GameMain_showIAPInfo = base.add(0x4484BC); // v53.176 | String: "tos_popup"
+const GameMain_update = base.add(0x4460B8); // v53.176 | Parent function of ServerConnection::update
+const HomeScreen_Update_isProdJumpAddr1 = base.add(0x78203C); // v53.176 | Add hint
+const HomeScreen_Update_isProdJumpAddr2 = base.add(0x782070); // v53.176 | Add hint
+const LogicAreaEffectClient_decode = base.add(0x87E314); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x54, decode (5th in vtable)
+const LogicData_equalsJumpAddr = base.add(0x8A88E4); // v53.176 | String: "Created invalid object %d, %d" -> Parent function -> LogicData::equals() BL address
+const LogicDataTableResource = base.add(0x842278); // v53.176 | Any csv name (for example "csv_logic/skins.csv") string object -> 2nd argument
+const LogicItemClient_decode = base.add(0x8AFE8C); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x78, decode (5th in vtable)
+const LogicProjectileClient_decode = base.add(0x8B31B0); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x78 (first in switch), decode (5th in vtable)
+const MapEditorModifierPopupVtableAddr = base.add(0xFCCE20); // v53.176 | modifiers popup
+const MirrorPlayfieldAddr = base.add(0x10B0A38); // v53.176 | From BattleScreen::updateCameraParameters
+const RenderUpdate = base.add(0xCCDA38); // v53.176 | String: "EGL_BAD_ACCESS for frame id: %ld current frame id: %lu"
+const SceneRenderer_render_OutlineSetupAddr = base.add(0x4C0B10); // v53.176 | Very complicated. Check address in previous lib to update
+//const SCIDLogoutAllDevicesResultMessage_decode = base.add(0x); // v53.176 | Message ID: 23067 (0x5A1B), decode
+const SettingsScreen = base.add(0x79E298); // v53.176
+const SlowModeAddr = base.add(0x10AE120); // v53.176 | In GameMain::update
+const StreamItemList_processEntryToScreenStringAddr = base.add(0x53D874); // v53.176 | String: "TID_STREAM_EVENT_%i" -> MOV X1, X0 below
+const TeamManager_isPlayerReady = base.add(0x5434DC); // v53.176 | String: "TID_TEAM_FEATURE_BLOCKED_WHILE_READY"
+const TeamMemberItem_setMember = base.add(0x6506E8); // v53.176 | String: "hidden_hero"
+const TeamMemberStatusMessage_encode_statusIDAddr = base.add(0x8EB784); // v53.176 | Message type: 14361 | Offset: (this + 92) in encode
+
+const GameMain_instanceAddr = base.add(0x10AE140); // v53.176 | 1st arg of GameMain::showNativeDialog()
+//const GameSCIDManager_instanceAddr = base.add(0x); // v53.176 | String: "supercell_id_config.json" (a1 of function)
+const GameSettings_instanceAddr = base.add(0x10B16F8); // v53.176
+const GUI_instanceAddr = base.add(0x10B0AB8); // v53.176 | 1st arg of GUI::showPopup(), GUI::showFloaterTextAtDefaultPos()
+const MessageManager_instanceAddr = base.add(0x10B0F00); // v53.176 | 1st arg of MessageManager::sendMessage()
+const SoundManager_instanceAddr = base.add(0x10B1780); // v53.176 | 1st arg of any PlaySound function | String: "Buy_gems"
+const SoundSystem_instanceAddr = base.add(0x10B5650); // v53.176
+const Stage_instanceAddr = base.add(0x10B8540); // v53.176 | In popups
+const TeamStream_instanceAddr = base.add(0x10B0BA0); // v53.176 | String: "TID_FREE_TEXT_CHAT_MUTED_YOU" -> TeamStream::sendChatMessage xrefs
+
+// Strings
+const LaserScreenMaskStr = base.add(0x1A148B); // v53.176 | String: "laser_screen_mask"
+const Port9339Str = base.add(0x18A15A); // v53.176 | String: "9339"
+const ProductionHostStr = base.add(0x17AAA5); // v53.176 | String: "game.brawlstarsgame.com"
+
+//const LobbyInfoWithoutPlayersOnlineStr = { off: base.add(0x), dcd: base.add(0x) }; // v53.176 | String: "%d-%d%s%s\n%s\n%s"
+//const TidConnectingToServerStr = { off: base.add(0x), dcd: base.add(0x) }; // v53.176 | String: "TID_CONNECTING_TO_SERVER"
+
+// Native Functions
+const LogicSkillData_createReferences = new NativeFunction(base.add(0x872348), 'void', ['pointer']);
+const Application_openURL = new NativeFunction(base.add(0xCBF388), 'void', ['pointer']); // v53.176 | String: "=>Application::openURL(%s)"
+const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
+const BattleScreen_exit = new NativeFunction(base.add(0x6A7EA0), 'void', ['pointer']); // v53.176 | Under BattleScreen::enter in vtable
+const ClientInputManager_addInput = new NativeFunction(base.add(0x6616A4), 'void', ['pointer', 'pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
+const CopyString = new NativeFunction(base.add(0xCE2574), 'void', ['pointer']); // v53.176 | String: "copyString"
+const CustomButton_setButtonListener = new NativeFunction(base.add(0xA2F340), 'void', ['pointer', 'pointer']); // v53.176 | country popup
+const DisplayObject_getHeight = new NativeFunction(base.add(0x9F9480), 'float', ['pointer']); // v53.176 | modifiers popup item
+const DisplayObject_setScale = new NativeFunction(base.add(0x9F8E58), 'void', ['pointer', 'float']); // v53.176 | modifiers popup item
+const DisplayObject_setAlpha = new NativeFunction(base.add(0x9F95DC), 'void', ['pointer', 'float']); // v53.176 | I D K
+const DisplayObject_getX = new NativeFunction(base.add(0x9F8E74), 'float', ['pointer']); // v53.176 | modifiers popup item
+const DisplayObject_getY = new NativeFunction(base.add(0x9F8EC4), 'float', ['pointer']); // v53.176 | modifiers popup item
+const DisplayObject_setPixelSnappedXY = new NativeFunction(base.add(0x9F8E44), 'void', ['pointer', 'float', 'float']); // v53.176 | modifiers popup item
+const DisplayObject_setY = new NativeFunction(base.add(0x9F8E20), 'void', ['pointer', 'float']); // v53.176 | country popup
+const DropGUIContainer = new NativeFunction(base.add(0x5EB9AC), 'void', ['pointer']); // v53.176 | modifiers popup add item
+const DropGUIContainer_addGameButton = new NativeFunction(base.add(0x506334), 'pointer', ['pointer', 'pointer', 'int']); // v53.176 | String: "Unable to create GameButton '%s'" | Only 1 xref of string
+const EmoteIcon_playAnim = new NativeFunction(base.add(0x6D96BC), 'void', ['pointer', 'int', 'int', 'float']); // v53.176 | String: "emote_empty_ph", bottom function
+const EventDetailsPopup_init = new NativeFunction(base.add(0x5CC624), 'void', ['pointer', 'pointer', 'int']); // v53.176 | String: "quest_button"
+const GameButton = new NativeFunction(base.add(0x504F74), 'void', ['pointer']); // v53.176 | country popup
+const GameButton_setDisabledWithHUDPrint = new NativeFunction(base.add(0x505BB8), 'void', ['pointer', 'int', 'pointer', 'int']); // v53.176 | String: "TID_CHALLENGE_LIVES_PURCHASE_ERROR_4"
+const GameMain_getAccountId = new NativeFunction(base.add(0x449378), 'pointer', ['pointer']); // v53.176 | String: "MMWarned_%d-%d"
+const GameMain_reloadGame = new NativeFunction(base.add(0x4479F8), 'void', ['pointer']); // v53.176 | Under GameMain::init()
+const GameMain_showNativeDialog = new NativeFunction(base.add(0x4467F4), 'void', ['pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176
+//const GameSCIDManager_logOutFromAllDevices = new NativeFunction(base.add(0x), 'void', ['pointer']); // v53.176 | Message ID: 11736 (0x2DD8) -> ctor calling function
+const GameSettings_enableMusic = new NativeFunction(base.add(0x79B560), 'void', ['pointer', 'int', 'int']); // v53.176
+const GameSettings_enableSfx = new NativeFunction(base.add(0x79B62C), 'void', ['pointer', 'int']); // v53.176
+const GameSliderComponent = new NativeFunction(base.add(0x508D68), 'void', ['pointer', 'pointer', 'pointer', 'pointer', 'int']); // v53.176 | String: "SliderTick"
+const GameSliderComponent_setCurrentValueToTextField = new NativeFunction(base.add(0x509124), 'void', ['pointer']); // v53.176 | At the end of GameSliderComponent
+const GameSliderComponent_setValueBounds = new NativeFunction(base.add(0x50959C), 'void', ['pointer', 'int', 'int']); // v53.176 | String: "60+", function above
+const GenericPopup = new NativeFunction(base.add(0x5D49EC), 'void', ['pointer', 'pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176 | From CountryPopup
+const GenericPopup_buttonClicked = new NativeFunction(base.add(0x5D601C), 'void', ['pointer', 'pointer']); // v53.176 | country popup button clicked
+const GenericPopup_setTitleTid = new NativeFunction(base.add(0x5D4FEC), 'void', ['pointer', 'pointer']); // v53.176 | country popup
+const GenericPopup_setUpScreenHeader = new NativeFunction(base.add(0x5D6390), 'void', ['pointer']); // v53.176 | country popup
+const GUI_closeAllPopups = new NativeFunction(base.add(0x500990), 'void', ['pointer']); // v53.176 | Strings: "Select_brawler", "TID_HERO_DISABLED_CURRENTLY_PRINT"; Bottom function
+const GUI_showFloaterTextAtDefaultPos = new NativeFunction(base.add(0x4FF744), 'void', ['pointer', 'pointer', 'float', 'int']); // v53.176 | String: "TID_MAP_EDITOR_SAVE_ERROR"
+const GUI_showPopup = new NativeFunction(base.add(0x5000F4), 'void', ['pointer', 'pointer', 'int', 'int', 'int']); // v53.176
+const HashCodeGenerator_toCode = new NativeFunction(base.add(0x97036C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "tag_txt"
+const HomeScreen_doOfflineGatcha = new NativeFunction(base.add(0x6C4110), 'void', ['int', 'pointer', 'pointer']); // v53.176 | String: "emoji_sprout_gg"
+const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
+const LatencyTestResultMessage_setServerHost = new NativeFunction(base.add(0x97D77C), 'void', ['pointer', 'pointer']); // v53.176 | String: "LatencyTest-results DROPPED - nothing requested yet - to %s:%i@region-%i requests: %i responses: %i"
+const ListContainer = new NativeFunction(base.add(0x50A484), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176
+const ListContainer_addEntry = new NativeFunction(base.add(0x50B054), 'void', ['pointer', 'pointer']); // v53.176 | country popup refresh
+const ListContainer_clearEntries = new NativeFunction(base.add(0x50AC10), 'void', ['pointer']); // v53.176 | country popup refresh
+const ListContainer_refreshBounds = new NativeFunction(base.add(0x50AFAC), 'void', ['pointer', 'float']); // v53.176 | country popup refresh
+const ListContainer_refreshEntryPositions = new NativeFunction(base.add(0x50B414), 'void', ['pointer', 'int', 'float', 'float', 'float', 'int', 'int', 'float']); // v53.176 | country popup refresh
+const LocationInfo_getLocationThemeData = new NativeFunction(base.add(0x5DA82C), 'pointer', ['pointer']); // v53.176 | String: "map_preview_small_map" | 2nd function after if !a3 condition
+const LogicBattleModeClient_getOwnCharacter = new NativeFunction(base.add(0x944510), 'pointer', ['pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
+const LogicBattleModeClient_setClientPredictionMoveTo = new NativeFunction(base.add(0x944520), 'void', ['pointer', 'int', 'int', 'int']); // v53.176 | From CombatHUD::ultiButtonActivated
+const LogicConfData_getIntValue = new NativeFunction(base.add(0x9175BC), 'int', ['pointer', 'int', 'int']); // v53.176 | HomeScreen::enter
+const LogicCharacterData_isDisabled = new NativeFunction(base.add(0x839F6C), 'int', ['pointer']); // v53.176 | String: "Skipping issue of %s missing (in %s), since the referred target character '%s' is disabled"
+const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
+const LogicData_getValueAt = new NativeFunction(base.add(0x83FAA8), 'pointer', ['pointer', 'int']); // v53.176 | In LogicThemeData::createReferences
+const LogicDataTables_getAreaEffectByName = new NativeFunction(base.add(0x849898), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "SpawnAreaEffectObject"
+const LogicDataTables_getCharacterByName = new NativeFunction(base.add(0x84A06C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "ShotgunGirl"
+const LogicDataTables_getEffectByName = new NativeFunction(base.add(0x849800), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "spawnpoint"
+const LogicDataTables_getItemByName = new NativeFunction(base.add(0x84A350), 'pointer', ['pointer', 'int']); // v53.176 | String: "SpawnItem"
+const LogicDataTables_getLocationThemeByName = new NativeFunction(base.add(0x84A978), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "LocationTheme" (csv value getter)
+const LogicDataTables_getProjectileByName = new NativeFunction(base.add(0x849F9C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "SecondaryProjectile"
+const LogicDataTables_getSkinByName = new NativeFunction(base.add(0x84A270), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "DefaultSkin" (csv value getter)
+const LogicDataTables_getSkinConfByName = new NativeFunction(base.add(0x84A330), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "Conf" (csv value getter)
+const LogicDataTables_getSoundByName = new NativeFunction(base.add(0x84607C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "Buy_gems"
+const LogicDataTables_getTable = new NativeFunction(base.add(0x842A20), 'pointer', ['int']); // v53.176 | country popup
+const LogicLocationData_createReferences = new NativeFunction(base.add(0x85B960), 'void', ['pointer']); // v53.176 | String: "SupportingCampaignGround", parent function
+const LogicLocationData_isDisabled = new NativeFunction(base.add(0x85BB38), 'int', ['pointer']); // v53.176 | String: "Location '%s' (NOT disabled) uses disabled GMV data '%s'"
+const LogicLocationThemeData_getMapHeight = new NativeFunction(base.add(0x85E400), 'int', ['pointer']); // v53.176 | String: "MapHeight" (csv value getter)
+const LogicLocationThemeData_getMapWidth = new NativeFunction(base.add(0x85E3F0), 'int', ['pointer']); // v53.176 | String: "MapWidth" (csv value getter) 
+const LogicLocationThemeData_isEnabled = new NativeFunction(base.add(0x85DC64), 'int', ['pointer']); // v53.176 | String: "Player Map Environment '%s' is enabled, but its location theme data %s at index %d is disabled!"
+const LogicPlayer_decode = new NativeFunction(base.add(0x957A20), 'void', ['pointer', 'pointer']); // v53.176 | Message ID: 20559 (0x504F), first entry decode
+const LogicSkillData_canAutoShoot = new NativeFunction(base.add(0x873FA0), 'int', ['pointer']); // v53.176 | String: "CanAutoShoot" (csv value getter)
+const LogicSkillData_hasMovementBasedAutoshoot = new NativeFunction(base.add(0x873E00), 'int', ['pointer']); // v53.176 | String: "MovementBasedAutoshoot" (csv value getter)
+const LogicSkillData_getCastingRange = new NativeFunction(base.add(0x873BC4), 'int', ['pointer']); // v53.176 | String: "MovementBasedAutoshoot" (csv value getter)
+const LogicThemeData_isDisabled = new NativeFunction(base.add(0x87BD78), 'int', ['pointer']); // v53.176 | String: "Active theme is marked disabled! theme: "
+const LogicThemeData_getExportName = new NativeFunction(base.add(0x87BD98), 'pointer', ['pointer']); // v53.176 | String: "ExportName" (csv value getter)
+const LogicThemeData_getFileName = new NativeFunction(base.add(0x87BD88), 'pointer', ['pointer']); // v53.176 | String: "FileName" (csv value getter)
+const LogicThemeData_getThemeMusic = new NativeFunction(base.add(0x87BDE8), 'pointer', ['pointer']); // v53.176 | String: "Theme '%s' is missing music"
+const LoginOkMessage_decode = new NativeFunction(base.add(0x8DCD9C), 'void', ['pointer']); // v53.176 | Message type: 20104 (0x4E88)
+const MapEditorModifierPopup_addModifierItem = new NativeFunction(base.add(0x5ED0A8), 'void', ['pointer', 'int']); // v53.176 | String: "popup_editor_modifier"
+const MessageManager_getLatencyReport = new NativeFunction(base.add(0x67B230), 'void', ['pointer', 'pointer']); // v53.176 | String: "LatencyTestResults: ---"
+const MovieClip_getMovieClipByName = new NativeFunction(base.add(0x9FE348), 'pointer', ['pointer', 'pointer']); // v53.176 | modifiers popup item
+const MovieClip_getTextFieldByName = new NativeFunction(base.add(0x9FE640), 'pointer', ['pointer', 'pointer']); // v53.176 | country item
+const MovieClip_gotoAndStopFrameIndex = new NativeFunction(base.add(0x9FD6A0), 'void', ['pointer', 'int']); // v53.176 | country item
+const MovieClip_setInteractiveRecursive = new NativeFunction(base.add(0x9FDE50), 'void', ['pointer', 'int']); // v53.176 | modifiers popup item
+const MovieClip_setText = new NativeFunction(base.add(0x9FE82C), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | modifiers popup item
+const MovieClipHelper_setTextAndScaleIfNecessary = new NativeFunction(base.add(0x7E2924), 'void', ['pointer', 'pointer', 'int', 'int']); // v53.176 | country item || String: "Trying to set %s into NULL TextField!"
+const NativeDialogLibg = new NativeFunction(base.add(0xCD3850), 'void', ['pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "ShowDialog" -> parent function
+const NativeHTTPClientCallback_getFinished = new NativeFunction(base.add(0xCCF53C), 'void', ['int', 'int', 'pointer', 'int', 'int']); // v53.176 | String: "getFinished", cb, inner single function
+const Path_setRootPath = new NativeFunction(base.add(0xCDC35C), 'void', ['pointer']); // v53.176 | Strings: "save", "update", "cache"
+const PlayerInfo_refreshPlayerHeader = new NativeFunction(base.add(0x539288), 'void', ['pointer']); // v53.176 | String: "tag_txt"
+const PopupBase = new NativeFunction(base.add(0x5F8DC0), 'void', ['pointer', 'pointer', 'pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "screen_header"
+const PopupBase_getNaviHeight = new NativeFunction(base.add(0x5FA360), 'float', ['pointer']); // v53.176 | country popup refresh
+const PopupBase_update = new NativeFunction(base.add(0x5F9824), 'int', ['pointer', 'float']); // v53.176 | String: "<cbdbdbd>__</c>", top function
+const PreviewBrawlerOrSkinRewardPopup = new NativeFunction(base.add(0x5FA9BC), 'void', ['pointer', 'pointer', 'pointer', 'int', 'pointer']); // v53.176 | String: "shop_1_skins_popup_offer"
+const ScrollArea = new NativeFunction(base.add(0xA31144), 'void', ['pointer', 'pointer', 'int']); // v53.176 | modifiers popup
+const ScrollArea_addContent = new NativeFunction(base.add(0xA314D4), 'void', ['pointer', 'pointer']); // v53.176 | modifiers popup add item
+const ScrollArea_enablePinching = new NativeFunction(base.add(0xA317E0), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
+const ScrollArea_enableHorizontalDrag = new NativeFunction(base.add(0xA31828), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
+const ScrollArea_enableVerticalDrag = new NativeFunction(base.add(0xA31818), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
+const ScrollArea_setAlignment = new NativeFunction(base.add(0xA31BA8), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
+const SetInviteBlockedMessage = new NativeFunction(base.add(0x9293B8), 'void', ['pointer', 'int']); // v53.176 | Message type: 14777 (0x39B9)
+const SettingsScreen_buttonClicked = new NativeFunction(base.add(0x79FEA0), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_SETTINGS_WECHAT_NOT_INSTALLED"
+const SimpleWebView_create = new NativeFunction(base.add(0x72ED2C), 'pointer', []); // v53.176 | String: "popup_news" (only) -> parent function
+const SimpleWebView_loadURL = new NativeFunction(base.add(0x72F200), 'void', ['pointer', 'pointer']); // v53.176 | Related to SimpleWebView::create
+const SoundManager_playSound = new NativeFunction(base.add(0x7A3908), 'void', ['pointer', 'pointer', 'float', 'float', 'int', 'float', 'int']); // v53.176 | String: "Buy_gems"
+const SoundSystem_getMusicVolume = new NativeFunction(base.add(0x997F20), 'float', ['pointer']); // v53.176 | FMOD::ChannelControl::getVolume xref, 1st offset
+const SoundSystem_getSoundVolume = new NativeFunction(base.add(0x99862C), 'float', ['pointer']); // v53.176 | FMOD::ChannelControl::getVolume xref, 2nd offset
+const SoundSystem_setMusicVolume = new NativeFunction(base.add(0x997F14), 'void', ['pointer', 'float']); // v53.176
+const SoundSystem_setSoundVolume = new NativeFunction(base.add(0x998620), 'void', ['pointer', 'float']); // v53.176
+const Sprite_addChild = new NativeFunction(base.add(0xA0B3E4), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::addChild()
+const Sprite_removeChild = new NativeFunction(base.add(0xA0B680), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::removeChild()
+const Stage_addChild = new NativeFunction(base.add(0xA152E0), 'void', ['pointer', 'pointer']); // v53.176 | String: "open" (scid)
+const Stage_removeChild = new NativeFunction(base.add(0xA152E8), 'void', ['pointer', 'pointer']); // v53.176 | String: "close" (scid)
+const StartGetRequest = new NativeFunction(base.add(0xCF72A0), 'int', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "startGetRequest"
+const StringTable_getCurrentLanguageCode = new NativeFunction(base.add(0x7BD82C), 'pointer', []); // v53.176 | String: "TID_ADDITIONAL_GEM_TOOLTIP_FOR_JAPAN"
+const StringTable_getMovieClip = new NativeFunction(base.add(0x7BDCB4), 'pointer', ['pointer', 'pointer']); // v53.176 | country popup
+const StringTable_getString = new NativeFunction(base.add(0x7BD4CC), 'pointer', ['pointer']); // v53.176 | String: "getString NULL"
+const StringTable_setLanguageIndex = new NativeFunction(base.add(0x7BD684), 'void', ['int', 'int']); // v53.176
+const TeamInvitationPopup = new NativeFunction(base.add(0x64F2E0), 'void', ['pointer', 'pointer', 'int']); // v53.176 | Strings: "popup_gameroom_invite_teams", "popup_gameroom_invite_with_mode"
+const TeamJoinRequestPopup = new NativeFunction(base.add(0x64FE8C), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | String: "popup_gameroom_invite"
+const TeamMemberStatusMessage = new NativeFunction(base.add(0x8EB738), 'void', ['pointer', 'int']); // v53.176 | Message type: 14361 | Parent should have string: "Changed status: "..
+const TeamManager_onTeamMessage = new NativeFunction(base.add(0x541738), 'void', ['pointer', 'pointer']); // v53.176 | String: "Got team: %i,%i"
+const TeamManager_onTeamLeftMessage = new NativeFunction(base.add(0x540CA4), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_TEAM_MEMBER_LEFT_%i"
+const TeamStream_buttonClicked = new NativeFunction(base.add(0x5445C0), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_FREE_TEXT_CHAT_MUTED_YOU"
+const TextField_setText = new NativeFunction(base.add(0xA2C18C), 'void', ['pointer', 'pointer']); // v53.176 | String: "Trying to set %s into NULL TextField!"
+const TriggerLatencyTestMessage = new NativeFunction(base.add(0x97E27C), 'void', ['pointer']); // v53.176 | Message type: 39003
+
+const BattleScreen__ConvertToControlScheme = new NativeFunction(base.add(0x6A94DC), 'pointer', ['pointer', 'pointer', 'pointer']); // v53.176 | Message type: 39003
+const RenderSystem__ScreenToLogicClampToWorld = new NativeFunction(base.add(0x4A37F0), 'void', ['pointer', 'float', 'float', 'pointer', 'pointer']); // v53.176 | Message type: 39003
+const BattleScreen__UpdateSkill = new NativeFunction(base.add(0x6AF618), 'void', ['pointer', 'pointer', 'pointer', 'int', 'float']); // v53.176 | EnragerStarPowerDamage
+const PathSpriteCtor = new NativeFunction(base.add(0x7E53A4), 'void', ['pointer', 'pointer', 'int', 'pointer']); // v53.176 | Message type: 39003
+const PathSpriteUpdateShape = new NativeFunction(base.add(0x7E54EC), 'void', ['pointer', 'pointer', 'float']); // v53.176 | Message type: 39003
+const BattleScreen__CalculateProjectilePath = new NativeFunction(base.add(0x6B4AA4), 'void', ['pointer', 'pointer', 'pointer', 'int', 'pointer', 'float', 'float', 'float', 'float', 'float', 'float']); // v53.176 | Message type: 39003
+//                                                                                             this    character    skill   naniindex  vector3     X          Y        Z      EndX     EndY    EndZ
+const PathSprite__Render = new NativeFunction(base.add(0x7E5E6C), 'void', ['pointer', 'pointer', 'pointer', 'int']); // v53.176 | Message type: 39003
+const LogicMathGetRotatedX = new NativeFunction(base.add(0xA4E5E0), 'int', ['int', 'int', 'int']); // v53.176 | Message type: 39003
+const LogicMathGetRotatedY = new NativeFunction(base.add(0xA4E6D8), 'int', ['int', 'int', 'int']); // v53.176 | Message type: 39003
+const LogicSkillData_getChargeType = new NativeFunction(base.add(0x873D20), 'int', ['pointer']); // v53.176 | String: "ChargeType" (csv value getter)
+const LogicDataTables_getSkillByName = new NativeFunction(base.add(0x84A02C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "BossRaceBossChainLightning"
+const LogicSkillData_isIndirect = new NativeFunction(base.add(0x873B6C), 'int', ['pointer']); // v53.176 | String: "ChargeType" (csv value getter)
+const RenderSystem__getRenderCoordinate = new NativeFunction(base.add(0x4A36DC), 'void', ['pointer', 'pointer', 'pointer', 'float', 'float', 'float']); // v53.176 | Message type: 39003
+const LogicMathGetAngle = new NativeFunction(base.add(0xA4E460), 'int', ['int', 'int']); // v53.176
+const BattleScreen__getInstance = new NativeFunction(base.add(0x6B3DC8), 'pointer', []); // v53.176
+const LogicGameObjectManagerClient__findGameObject = new NativeFunction(base.add(0x8A9BA8), 'pointer', ['pointer', 'int']); // v53.176 | From CombatHUD::ultiButtonActivated
+const BattleScreen__updateAutoshoot = new NativeFunction(base.add(0x6AD708), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
+const BattleMode_instancePtr = new NativeFunction(base.add(0x7A5D1C), 'pointer', []);
+const ClientInputCtor = new NativeFunction(base.add(0x90A6F4), 'void', ['pointer', 'int']); // v53.176 | everywhere lol
+const GameObjectManager__playEffect = new NativeFunction(base.add(0x4953A0), 'void', ['pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | Message type: 39003
+const GameObjectManager__playEffectNoLoop = new NativeFunction(base.add(0x4954B4), 'void', ['pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | amber_def_ulti_oil
+const LogicTileMap__getTile = new NativeFunction(base.add(0x7FB790), 'pointer', ['pointer', 'int', 'int']); // v53.176 | LogicGameObjectManagerClient::decode
+const BattleScreen__hideMovementTarget = new NativeFunction(base.add(0x6AD6D8), 'void', ['pointer']); // v53.176 | I D K
+const Screen_getHeight = new NativeFunction(base.add(0xCDCF8C), 'float', []); // v53.176 | I D K
+const Screen_getWidth = new NativeFunction(base.add(0xCDCF80), 'float', []); // v53.176 | I D K
+const LogicSkillClient__decode = new NativeFunction(base.add(0x8B9A64), 'void', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | end of character::decode
+const BattleScreen__updateMovement = new NativeFunction(base.add(0x6AF0F8), 'void', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 |
+const LogicCharacterClientOwn__canCastSkill = new NativeFunction(base.add(0x886174), 'int', ['pointer', 'pointer', 'pointer']); // v53.176 |
+const LogicCharacterClient__getLolaEgo = new NativeFunction(base.add(0x8822DC), 'pointer', ['pointer', 'pointer']); // v53.176 | I  D  K
+const ResourceListener__addFile = new NativeFunction(base.add(0xAAE7BC), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | I  D  K
+const ClientInputManager__update = new NativeFunction(base.add(0x6619C0), 'void', ['pointer', 'float', 'float']); // v53.176 | I D K
+const BattleScreen__update = new NativeFunction(base.add(0x6A9E40), 'void', ['pointer', 'float']); // v53.176 |
+
+let RepliedToClient = 0;
+{
+    function buf2hex(buffer) { // buffer is an ArrayBuffer
+        return [...new Uint8Array(buffer)]
+            .map(x => x.toString(16).padStart(2, '0'))
+            .join('');
+    }
+    function hexStringToArrayBuffer(hexString) {
+        // 将字符串转换为 Uint8Array
+        var uintArray = new Uint8Array(hexString.match(/[\da-f]{2}/gi).map(function (h) {
+            return parseInt(h, 16)
+        }))
+
+        // 将 Uint8Array 转换为 ArrayBuffer
+        return uintArray.buffer
+    }
+    function onMessage(message) {
+        if (!RepliedToClient) {
+            // var arr = new Uint8Array(message['buff']);
+            // var s = typedArrayToUnicodeString(arr);
+            //toast('recv: ' + s);
+            RepliedToClient = 1;
+            //toast('recv: ' + buf2hex(message['buff']));
+            message['conn'].output.writeAll(hexStringToArrayBuffer("4E880001FE00000000000000000001000000000000000100000028636C444C7135684E5975344A67506143793237527652746879766C4E4632415647326C696F555952FFFFFFFFFFFFFFFF00000024000000DA000000010000000470726F64000000000000000000000000FFFFFFFFFFFFFFFFFFFFFFFF00000000FFFFFFFF000000025255FFFFFFFF00000000FFFFFFFF000000020000002668747470733A2F2F67616D652D6173736574732E627261776C737461727367616D652E636F6D00000050687474703A2F2F61363738646263316330313561383933633966642D34653863633362316164336133633934306335303438313563616566613936372E7238372E6366322E7261636B63646E2E636F6D000000020000002368747470733A2F2F6576656E742D6173736574732E627261776C73746172732E636F6D0000005E68747470733A2F2F32346239393965366461303736373465323262302D38323039393735373838613066323436396536386538343430356165346663662E73736C2E6366322E7261636B63646E2E636F6D2F6576656E742D617373657473000000000400000000010000000000000000000000000000004668747470733A2F2F706C61792E676F6F676C652E636F6D2F73746F72652F617070732F64657461696C733F69643D636F6D2E737570657263656C6C2E627261776C73746172730000000000")).then(function (a) {
+                message['conn'].output.writeAll(hexStringToArrayBuffer("5E2500446600008092F40100000087DBC40987DBC40900AC04908D061C362B001B000102030405060708090A0B0C0D0E0F101112131415161718191A0F1D011D031D0E1D121D201D291D2A1DB2011DBF011D8E031DAF031DAB0B1DAE071DA40A1D980B0000810C1D001D011D021D031D041D051D061D071D081D091D0A1D0B1D0C1D0D1D0E1D0F1D101D111D121D131D141D151D161D171D181D191D1A1D1B1D1C1D1D1D1E1D1F1D201D211D221D231D241D251D261D271D281D291D2A1D2B1D2C1D2D1D2E1D2F1D301D311D321D331D341D351D361D371D381D391D3A1D3B1D3C1D3D1D3E1D3F1D80011D81011D82011D83011D84011D85011D86011D87011D88011D89011D8A011D8B011D8C011D8D011D8E011D8F011D90011D91011D92011D93011D94011D95011D96011D97011D98011D99011D9A011D9B011D9C011D9D011D9E011D9F011DA0011DA1011DA2011DA3011DA4011DA5011DA6011DA7011DA8011DA9011DAA011DAB011DAC011DAD011DAE011DAF011DB0011DB1011DB2011DB3011DB4011DB5011DB6011DB7011DB8011DB9011DBA011DBB011DBC011DBD011DBE011DBF011D80021D81021D82021D83021D84021D85021D86021D87021D88021D89021D8A021D8B021D8C021D8D021D8E021D8F021D90021D91021D92021D93021D94021D95021D96021D97021D98021D99021D9A021D9B021D9C021D9D021D9E021D9F021DA0021DA1021DA2021DA3021DA4021DA5021DA6021DA7021DA8021DA9021DAA021DAB021DAC021DAD021DAE021DAF021DB0021DB1021DB2021DB3021DB4021DB5021DB6021DB7021DB8021DB9021DBA021DBB021DBC021DBD021DBE021DBF021D80031D81031D82031D83031D84031D85031D86031D87031D88031D89031D8A031D8B031D8C031D8D031D8E031D8F031D90031D91031D92031D93031D94031D95031D96031D97031D98031D99031D9A031D9B031D9C031D9D031D9E031D9F031DA0031DA1031DA2031DA3031DA4031DA5031DA6031DA7031DA8031DA9031DAA031DAB031DAC031DAD031DAE031DAF031DB0031DB1031DB2031DB3031DB4031DB5031DB6031DB7031DB8031DB9031DBA031DBB031DBC031DBD031DBE031DBF031D80041D81041D82041D83041D84041D85041D86041D87041D88041D89041D8A041D8B041D8C041D8D041D8E041D8F041D90041D91041D92041D93041D94041D95041D96041D97041D98041D99041D9A041D9B041D9C041D9D041D9E041D9F041DA0041DA1041DA2041DA3041DA4041DA5041DA6041DA7041DA8041DA9041DAA041DAB041DAC041DAD041DAE041DAF041DB0041DB1041DB2041DB3041DB4041DB5041DB6041DB7041DB8041DB9041DBA041DBB041DBC041DBD041DBE041DBF041D80051D81051D82051D83051D84051D85051D86051D87051D88051D89051D8A051D8B051D8C051D8D051D8E051D8F051D90051D91051D92051D93051D94051D95051D96051D97051D98051D99051D9A051D9B051D9C051D9D051D9E051D9F051DA0051DA1051DA2051DA3051DA4051DA5051DA6051DA7051DA8051DA9051DAA051DAB051DAC051DAD051DAE051DAF051DB0051DB1051DB2051DB3051DB4051DB5051DB6051DB7051DB8051DB9051DBA051DBB051DBC051DBD051DBE051DBF051D80061D81061D82061D83061D84061D85061D86061D87061D88061D89061D8A061D8B061D8C061D8D061D8E061D8F061D90061D91061D92061D93061D94061D95061D96061D97061D98061D99061D9A061D9B061D9C061D9D061D9E061D9F061DA0061DA1061DA2061DA3061DA4061DA5061DA6061DA7061DA8061DA9061DAA061DAB061DAC061DAD061DAE061DAF061DB0061DB1061DB2061DB3061DB4061DB5061DB6061DB7061DB8061DB9061DBA061DBB061DBC061DBD061DBE061DBF061D80071D81071D82071D83071D84071D85071D86071D87071D88071D89071D8A071D8B071D8C071D8D071D8E071D8F071D90071D91071D92071D93071D94071D95071D96071D97071D98071D99071D9A071D9B071D9C071D9D071D9E071D9F071DA0071DA1071DA2071DA3071DA4071DA5071DA6071DA7071DA8071DA9071DAA071DAB071DAC071DAD071DAE071DAF071DB0071DB1071DB2071DB3071DB4071DB5071DB6071DB7071DB8071DB9071DBA071DBB071DBC071DBD071DBE071DBF071D80081D81081D82081D83081D84081D85081D86081D87081D88081D89081D8A081D8B081D8C081D8D081D8E081D8F081D90081D91081D92081D93081D94081D95081D96081D97081D98081D99081D9A081D9B081D9C081D9D081D9E081D9F081DA0081DA1081DA2081DA3081DA4081DA5081DA6081DA7081DA8081DA9081DAA081DAB081DAC081DAD081DAE081DAF081DB0081DB1081DB2081DB3081DB4081DB5081DB6081DB7081DB8081DB9081DBA081DBB081DBC081DBD081DBE081DBF081D80091D81091D82091D83091D84091D85091D86091D87091D88091D89091D8A091D8B091D8C091D8D091D8E091D8F091D90091D91091D92091D93091D94091D95091D96091D97091D98091D99091D9A091D9B091D9C091D9D091D9E091D9F091DA0091DA1091DA2091DA3091DA4091DA5091DA6091DA7091DA8091DA9091DAA091DAB091DAC091DAD091DAE091DAF091DB0091DB1091DB2091DB3091DB4091DB5091DB6091DB7091DB8091DB9091DBA091DBB091DBC091DBD091DBE091DBF091D800A1D810A1D820A1D830A1D840A1D850A1D860A1D870A1D880A1D890A1D8A0A1D8B0A1D8C0A1D8D0A1D8E0A1D8F0A1D900A1D910A1D920A1D930A1D940A1D950A1D960A1D970A1D980A1D990A1D9A0A1D9B0A1D9C0A1D9D0A1D9E0A1D9F0A1DA00A1DA10A1DA20A1DA30A1DA40A1DA50A1DA60A1DA70A1DA80A1DA90A1DAA0A1DAB0A1DAC0A1DAD0A1DAE0A1DAF0A1DB00A1DB10A1DB20A1DB30A1DB40A1DB50A1DB60A1DB70A1DB80A1DB90A1DBA0A1DBB0A1DBC0A1DBD0A1DBE0A1DBF0A1D800B1D810B1D820B1D830B1D840B1D850B1D860B1D870B1D880B1D890B1D8A0B1D8B0B1D8C0B1D8D0B1D8E0B1D8F0B1D900B1D910B1D920B1D930B1D940B1D950B1D960B1D970B1D980B1D990B1D9A0B1D9B0B1D9C0B1D9D0B1D9E0B1D9F0B1DA00B1DA10B1DA20B1DA30B1DA40B1DA50B1DA60B1DA70B1DA80B1DA90B1DAA0B1DAB0B1DAC0B1DAD0B1DAE0B1DAF0B1DB00B1DB10B1DB20B1DB30B1DB40B1DB50B1DB60B1DB70B1DB80B1DB90B1DBA0B1DBB0B1DBC0B1DBD0B1DBE0B1DBF0B1D800C0000000000020000000000000000000102020200000088037F00011E01103600000002434E00000002534201BFFFFFFF0F1C00140093A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0193A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0293A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0393A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0493A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0593A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0693A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0793A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0893A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0993A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0A93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0B93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0C93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0D93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0E93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF0F93A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1093A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1193A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1293A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF1393A20C01830202FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF01FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF03FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF00010000000001A80F340000340100340200340300340400340500340600340700340800340900340A00340B00340C00340D00340E00340F00341000341100341200341300341400341500341600341700341800341900341A00341B00341C00341D00341E00341F00342000342100342200342300342400342500342600342700342800342900342A00342B00342C00342D00342E00342F00343000343100343200343300343400343500343600343700343800343900343A00343B00343C00343D00343E00343F0034800100348101003482010034830100348401003485010034860100348701003488010034890100348A0100348B0100348C0100348D0100348E0100348F010034900100349101003492010034930100349401003495010034960100349701003498010034990100349A0100349B0100349C0100349D0100349E0100349F010034A0010034A1010034A2010034A3010034A4010034A5010034A6010034A7010034A8010034A9010034AA010034AB010034AC010034AD010034AE010034AF010034B0010034B1010034B2010034B3010034B4010034B5010034B6010034B7010034B8010034B9010034BA010034BB010034BC010034BD010034BE010034BF010034800200348102003482020034830200348402003485020034860200348702003488020034890200348A0200348B0200348C0200348D0200348E0200348F020034900200349102003492020034930200349402003495020034960200349702003498020034990200349A0200349B0200349C0200349D0200349E0200349F020034A0020034A1020034A2020034A3020034A4020034A5020034A6020034A7020034A8020034A9020034AA020034AB020034AC020034AD020034AE020034AF020034B0020034B1020034B2020034B3020034B4020034B5020034B6020034B7020034B8020034B9020034BA020034BB020034BC020034BD020034BE020034BF020034800300348103003482030034830300348403003485030034860300348703003488030034890300348A0300348B0300348C0300348D0300348E0300348F030034900300349103003492030034930300349403003495030034960300349703003498030034990300349A0300349B0300349C0300349D0300349E0300349F030034A0030034A1030034A2030034A3030034A4030034A5030034A6030034A7030034A8030034A9030034AA030034AB030034AC030034AD030034AE030034AF030034B0030034B1030034B2030034B3030034B4030034B5030034B6030034B7030034B8030034B9030034BA030034BB030034BC030034BD030034BE030034BF030034800400348104003482040034830400348404003485040034860400348704003488040034890400348A0400348B0400348C0400348D0400348E0400348F040034900400349104003492040034930400349404003495040034960400349704003498040034990400349A0400349B0400349C0400349D0400349E0400349F040034A0040034A1040034A2040034A3040034A4040034A5040034A6040034A7040034A8040034A9040034AA040034AB040034AC040034AD040034AE040034AF040034B0040034B1040034B2040034B3040034B4040034B5040034B6040034B7040034B8040034B9040034BA040034BB040034BC040034BD040034BE040034BF040034800500348105003482050034830500348405003485050034860500348705003488050034890500348A0500348B0500348C0500348D0500348E0500348F050034900500349105003492050034930500349405003495050034960500349705003498050034990500349A0500349B0500349C0500349D0500349E0500349F050034A0050034A1050034A2050034A3050034A4050034A5050034A6050034A7050034A8050034A9050034AA050034AB050034AC050034AD050034AE050034AF050034B0050034B1050034B2050034B3050034B4050034B5050034B6050034B7050034B8050034B9050034BA050034BB050034BC050034BD050034BE050034BF050034800600348106003482060034830600348406003485060034860600348706003488060034890600348A0600348B0600348C0600348D0600348E0600348F060034900600349106003492060034930600349406003495060034960600349706003498060034990600349A0600349B0600349C0600349D0600349E0600349F060034A0060034A1060034A2060034A3060034A4060034A5060034A6060034A7060034A8060034A9060034AA060034AB060034AC060034AD060034AE060034AF060034B0060034B1060034B2060034B3060034B4060034B5060034B6060034B7060034B8060034B9060034BA060034BB060034BC060034BD060034BE060034BF060034800700348107003482070034830700348407003485070034860700348707003488070034890700348A0700348B0700348C0700348D0700348E0700348F070034900700349107003492070034930700349407003495070034960700349707003498070034990700349A0700349B0700349C0700349D0700349E0700349F070034A0070034A1070034A2070034A3070034A4070034A5070034A6070034A7070034A8070034A9070034AA070034AB070034AC070034AD070034AE070034AF070034B0070034B1070034B2070034B3070034B4070034B5070034B6070034B7070034B8070034B9070034BA070034BB070034BC070034BD070034BE070034BF070034800800348108003482080034830800348408003485080034860800348708003488080034890800348A0800348B0800348C0800348D0800348E0800348F080034900800349108003492080034930800349408003495080034960800349708003498080034990800349A0800349B0800349C0800349D0800349E0800349F080034A0080034A1080034A2080034A3080034A4080034A5080034A6080034A7080034A8080034A9080034AA080034AB080034AC080034AD080034AE080034AF080034B0080034B1080034B2080034B3080034B4080034B5080034B6080034B7080034B8080034B9080034BA080034BB080034BC080034BD080034BE080034BF080034800900348109003482090034830900348409003485090034860900348709003488090034890900348A0900348B0900348C0900348D0900348E0900348F090034900900349109003492090034930900349409003495090034960900349709003498090034990900349A0900349B0900349C0900349D0900349E0900349F090034A0090034A1090034A2090034A3090034A4090034A5090034A6090034A7090034A8090034A9090034AA090034AB090034AC090034AD090034AE090034AF090034B0090034B1090034B2090034B3090034B4090034B5090034B6090034B7090034B8090034B9090034BA090034BB090034BC090034BD090034BE090034BF090034800A0034810A0034820A0034830A0034840A0034850A0034860A0034870A0034880A0034890A00348A0A00348B0A00348C0A00348D0A00348E0A00348F0A0034900A0034910A0034920A0034930A0034940A0034950A0034960A0034970A0034980A0034990A00349A0A00349B0A00349C0A00349D0A00349E0A00349F0A0034A00A0034A10A0034A20A0034A30A0034A40A0034A50A0034A60A0034A70A0034A80A0034A90A0034AA0A0034AB0A0034AC0A0034AD0A0034AE0A0034AF0A0034B00A0034B10A0034B20A0034B30A0034B40A0034B50A0034B60A0034B70A0034B80A0034B90A0034BA0A0034BB0A0034BC0A0034BD0A0034BE0A0034BF0A0034800B0034810B0034820B0034830B0034840B0034850B0034860B0034870B0034880B0034890B00348A0B00348B0B00348C0B00348D0B00348E0B00348F0B0034900B0034910B0034920B0034930B0034940B0034950B0034960B0034970B0034980B0034990B00349A0B00349B0B00349C0B00349D0B00349E0B00349F0B0034A00B0034A10B0034A20B0034A30B0034A40B0034A50B0034A60B0034A70B0034A80B0034A90B0034AA0B0034AB0B0034AC0B0034AD0B0034AE0B0034AF0B0034B00B0034B10B0034B20B0034B30B0034B40B0034B50B0034B60B0034B70B0034B80B0034B90B0034BA0B0034BB0B0034BC0B0034BD0B0034BE0B0034BF0B0034800C0034810C0034820C0034830C0034840C0034850C0034860C0034870C0034880C0034890C00348A0C00348B0C00348C0C00348D0C00348E0C00348F0C0034900C0034910C0034920C0034930C0034940C0034950C0034960C0034970C0034980C0034990C00349A0C00349B0C00349C0C00349D0C00349E0C00349F0C0034A00C0034A10C0034A20C0034A30C0034A40C0034A50C0034A60C0034A70C0034A80C0034A90C0034AA0C0034AB0C0034AC0C0034AD0C0034AE0C0034AF0C0034B00C0034B10C0034B20C0034B30C0034B40C0034B50C0034B60C0034B70C0034B80C0034B90C0034BA0C0034BB0C0034BC0C0034BD0C0034BE0C0034BF0C0034800D0034810D0034820D0034830D0034840D0034850D0034860D0034870D0034880D0034890D00348A0D00348B0D00348C0D00348D0D00348E0D00348F0D0034900D0034910D0034920D0034930D0034940D0034950D0034960D0034970D0034980D0034990D00349A0D00349B0D00349C0D00349D0D00349E0D00349F0D0034A00D0034A10D0034A20D0034A30D0034A40D0034A50D0034A60D0034A70D0034A80D0034A90D0034AA0D0034AB0D0034AC0D0034AD0D0034AE0D0034AF0D0034B00D0034B10D0034B20D0034B30D0034B40D0034B50D0034B60D0034B70D0034B80D0034B90D0034BA0D0034BB0D0034BC0D0034BD0D0034BE0D0034BF0D0034800E0034810E0034820E0034830E0034840E0034850E0034860E0034870E0034880E0034890E00348A0E00348B0E00348C0E00348D0E00348E0E00348F0E0034900E0034910E0034920E0034930E0034940E0034950E0034960E0034970E0034980E0034990E00349A0E00349B0E00349C0E00349D0E00349E0E00349F0E0034A00E0034A10E0034A20E0034A30E0034A40E0034A50E0034A60E0034A70E0034A80E0034A90E0034AA0E0034AB0E0034AC0E0034AD0E0034AE0E0034AF0E0034B00E0034B10E0034B20E0034B30E0034B40E0034B50E0034B60E0034B70E0034B80E0034B90E0034BA0E0034BB0E0034BC0E0034BD0E0034BE0E0034BF0E0034800F0034810F0034820F0034830F0034840F0034850F0034860F0034870F0034880F0034890F00348A0F00348B0F00348C0F00348D0F00348E0F00348F0F0034900F0034910F0034920F0034930F0034940F0034950F0034960F0034970F0034980F0034990F00349A0F00349B0F00349C0F00349D0F00349E0F00349F0F0034A00F0034A10F0034A20F0034A30F0034A40F0034A50F0034A60F0034A70F000000000000A4A43D102700000095FCF601190102030405060708090A0B0C0D0E0F101114151617181E1F20047F010000B202000F98050002FFFFFFFF0000000000000000000000007F007F000000007F020000B202000F99030002FFFFFFFF0000000000000000000000007F007F000000007F030000B202000F210002FFFFFFFF0000000000000000000000007F007F000000007F070000B202000F1E0002FFFFFFFF0000000000000000000000007F007F0000000000000000000D98F28C2701018691A10F018791A10F018891A10F018991A10F018A91A10F018B91A10F018C91A10F018D91A10F00AB9C0114AD9C0101A29C01013F0000000002010202017F02010400000000000000000001007F00000000008C011001073E003E013E023E033E043E053E11023E003E011002073E003E013E023E033E043E063E11023E003E011003073E003E013E023E033E043E053E11023E003E011004073E003E013E023E033E043E053E11023E003E011005073E003E013E023E033E043E0A3E11023E003E011006063E003E013E023E033E043E11023E003E011007073E003E013E023E033E043E0E3E11023E003E011008073E003E013E023E033E043E0E3E11023E003E011009063E003E013E023E033E043E11023E003E01100A073E003E013E023E033E043E063E11023E003E01100B073E003E013E023E033E043E113E12023E003E01100C073E003E013E023E033E043E093E11023E003E01100D063E003E013E023E033E043E11023E003E01100E073E003E013E023E033E043E053E11023E003E01100F063E003E013E023E033E043E11023E003E011010073E003E013E023E033E043E103E11023E003E011011073E003E013E023E033E043E0E3E11023E003E011012063E003E013E023E033E043E11023E003E011013073E003E013E023E033E043E0E3E11023E003E011014063E003E013E023E033E043E11023E003E011015073E003E013E023E033E043E083E11023E003E011016073E003E013E023E033E043E073E11023E003E011017073E003E013E023E033E043E0B3E11023E003E011018063E003E013E023E033E043E11023E003E011019063E003E013E023E033E043E11023E003E01101A063E003E013E023E033E043E11023E003E01101B073E003E013E023E033E043E053E11023E003E01101C073E003E013E023E033E043E0C3E11023E003E01101D063E003E013E023E033E043E11023E003E01101E063E003E013E023E033E043E11023E003E01101F073E003E013E023E033E043E0E3E11023E003E011020063E003E013E023E033E043E11023E003E011022073E003E013E023E033E043E063E11023E003E011023063E003E013E023E033E043E11023E003E011024073E003E013E023E033E043E063E11023E003E011025073E003E013E023E033E043E063E11023E003E011026063E003E013E023E033E043E11023E003E011027063E003E013E023E033E043E11023E003E011028083E003E013E023E033E043E053E0D3E11023E003E011029073E003E013E023E033E043E063E11023E003E01102A063E003E013E023E033E043E11023E003E01102B073E003E013E023E033E043E063E11023E003E01102C063E003E013E023E033E043E11023E003E01102D063E003E013E023E033E043E11023E003E01102E073E003E013E023E033E043E053E11023E003E01102F063E003E013E023E033E043E11023E003E011030063E003E013E023E033E043E11023E003E011031063E003E013E023E033E043E11023E003E011032073E003E013E023E033E043E053E11023E003E011033073E003E013E023E033E043E063E11023E003E011034063E003E013E023E033E043E11023E003E011035073E003E013E023E033E043E053E11023E003E011036063E003E013E023E033E043E11023E003E011038083E003E013E023E033E043E053E0F3E11023E003E011039063E003E013E023E033E043E11023E003E01103A073E003E013E023E033E043E063E11023E003E01103B073E003E013E023E033E043E063E11023E003E01103C063E003E013E023E033E043E11023E003E01103D063E003E013E023E033E043E11023E003E01103E063E003E013E023E033E043E11023E003E01103F063E003E013E023E033E043E11023E003E01108001063E003E013E023E033E043E11023E003E01108101063E003E013E023E033E043E11023E003E01108201063E003E013E023E033E043E11023E003E01108301063E003E013E023E033E043E11023E003E01108401063E003E013E023E033E043E11023E003E01108501063E003E013E023E033E043E11023E003E01108601063E003E013E023E033E043E11023E003E01108701063E003E013E023E033E043E11023E003E01108801063E003E013E023E033E043E11023E003E01108901063E003E013E023E033E043E11023E003E011000063E003E013E023E033E043E11023E003E01108A01063E003E013E023E033E043E11023E003E01108B01063E003E013E023E033E043E11023E003E01108C01063E003E013E023E033E043E11023E003E01108D01063E003E013E023E033E043E11023E003E01000000000000000F0000000000000000000000000000000100010001000000045368656901FFFFFFFF118D0105087F94C60A17047F0117087F01170C7F0117107F0117147F0117187F01171C7F0117207F0117247F0117287F01172C7F0117307F0117347F0117387F01173C7F011780017F011784017F011788017F01179F017F0117A4017F0117A9017F0117AE017F0117B3017F0117B8017F0117BD017F011782027F0117B1027F0117B6027F0117BC027F011782037F011788037F01178E037F01179A037F0117A0037F0117A6037F0117AC037F011797047F0117A8047F0117AF047F011780057F011787057F01178E057F011795057F0117A6057F0117AD057F0117B4057F0117BB057F011782067F011789067F01179A067F0117A1067F0117AB067F0117B2067F011780077F011792077F01179A077F0117AB077F0117B3077F0117BB077F011783087F01178B087F011793087F01179B087F0117A3087F0117AD087F0117B5087F0117BD087F011785097F01178D097F011795097F01179D097F0117007F0117AB097F0117B9097F0117820A7F01178F0A7F018C0110017F0010027F0010037F0010047F0010057F0010067F0010077F0010087F0010097F00100A7F00100B7F00100C7F00100D7F00100E7F00100F7F0010107F0010117F0810127F0010137F0010147F0010157F0010167F0010177F0610187F0010197F00101A7F00101B7F00101C7F00101D7F00101E7F00101F7F0010207F0010227F0010237F0010247F0010257F0010267F0010277F88DAC40910287F0010297F00102A7F00102B7F00102C7F00102D7F00102E7F00102F7F0010307F0010317F0010327F0010337F0010347F0010357F0010367F1B10387F0010397F00103A7F00103B7F00103C7F00103D7F00103E7F00103F7F061080017F001081017F081082017F001083017F001084017F001085017F001086017F001087017F001088017F081089017F0010007F00108A017F00108B017F00108C017F00108D017F008C0110017F0010027F0010037F0010047F0010057F0010067F0010077F0010087F0010097F00100A7F00100B7F00100C7F00100D7F00100E7F00100F7F0010107F0010117F0810127F0010137F0010147F0010157F0010167F0010177F0610187F0010197F00101A7F00101B7F00101C7F00101D7F00101E7F00101F7F0010207F0010227F0010237F0010247F0010257F0010267F0010277F88DAC40910287F0010297F00102A7F00102B7F00102C7F00102D7F00102E7F00102F7F0010307F0010317F0010327F0010337F0010347F0010357F0010367F1B10387F0010397F00103A7F00103B7F00103C7F00103D7F00103E7F00103F7F061080017F001081017F081082017F001083017F001084017F001085017F001086017F001087017F001088017F081089017F0010007F00108A017F00108B017F00108C017F00108D017F008C0110017F0110027F0010037F0110047F0110057F0010067F0210077F0110087F0010097F01100A7F00100B7F03100C7F02100D7F00100E7F02100F7F0010107F0010117F0210127F0010137F0010147F0010157F0210167F0210177F0310187F0110197F00101A7F01101B7F01101C7F00101D7F02101E7F00101F7F0310207F0310227F0010237F0210247F0310257F0210267F0110277F0110287F0110297F02102A7F00102B7F03102C7F03102D7F01102E7F01102F7F0210307F0210317F0110327F0110337F0110347F0310357F0110367F0210387F0110397F02103A7F01103B7F00103C7F01103D7F00103E7F03103F7F031080017F001081017F011082017F021083017F001084017F031085017F011086017F011087017F031088017F021089017F0210007F03108A017F02108B017F00108C017F00108D017F008C0110017F0010027F0010037F0010047F0010057F0010067F0010077F0010087F0010097F00100A7F00100B7F00100C7F00100D7F00100E7F00100F7F0010107F0010117F0010127F0010137F0010147F0010157F0010167F0010177F0010187F0010197F00101A7F00101B7F00101C7F00101D7F00101E7F00101F7F0010207F0010227F0010237F0010247F0010257F0010267F0010277F0010287F0010297F00102A7F00102B7F00102C7F00102D7F00102E7F00102F7F0010307F0010317F0010327F0010337F0010347F0010357F0010367F0010387F0010397F00103A7F00103B7F00103C7F00103D7F00103E7F00103F7F001080017F001081017F001082017F001083017F001084017F001085017F001086017F001087017F001088017F001089017F0010007F00108A017F00108B017F00108C017F00108D017F008C0110017F0A10027F0A10037F0A10047F0A10057F0A10067F0A10077F0A10087F0A10097F0A100A7F0A100B7F0A100C7F0A100D7F0A100E7F0A100F7F0A10107F0A10117F0A10127F0A10137F0A10147F0A10157F0A10167F0A10177F0A10187F0A10197F0A101A7F0A101B7F0A101C7F0A101D7F0A101E7F0A101F7F0A10207F0A10227F0A10237F0A10247F0A10257F0A10267F0A10277F0A10287F0A10297F0A102A7F0A102B7F0A102C7F0A102D7F0A102E7F0A102F7F0A10307F0A10317F0A10327F0A10337F0A10347F0A10357F0A10367F0A10387F0A10397F0A103A7F0A103B7F0A103C7F0A103D7F0A103E7F0A103F7F0A1080017F0A1081017F0A1082017F0A1083017F0A1084017F0A1085017F0A1086017F0A1087017F0A1088017F0A1089017F0A10007F0A108A017F0A108B017F0A108C017F0A108D017F0A9805178C017F02178D017F02178E017F01178F017F021790017F021791017F021792017F021793017F021794017F021795017F021796017F021797017F011798017F011799017F02179A017F02179B017F02179C017F02179D017F02179E017F0217A3017F0217A8017F0217AD017F0217B2017F0217B7017F0117BC017F021781027F021786027F021787027F011788027F011789027F02178A027F01178B027F01178C027F01178D027F02178E027F01178F027F021790027F011791027F011792027F011793027F011794027F011795027F011796027F011797027F011798027F011799027F01179A027F02179B027F01179C027F01179D027F01179E027F01179F027F0117A0027F0117A1027F0117A2027F0117A3027F0117A4027F0117A5027F0117A6027F0117A7027F0117A8027F0217A9027F0117AA027F0117AB027F0117AC027F0117AD027F0117AE027F0117AF027F0117B0027F0117B5027F0117BA027F0217BB027F011780037F011781037F021786037F021787037F01178C037F02178D037F011792037F021793037F011798037F011799037F01179E037F01179F037F0217A4037F0217A5037F0117AA037F0217AB037F0117B0037F0117B1037F0217B2037F0217B3037F0217B4037F0117B5037F0217B6037F0217B7037F0117B8037F0217B9037F0217BA037F0217BB037F0217BC037F0217BD037F0217BE037F0217BF037F021780047F021781047F021782047F021783047F021784047F021785047F011786047F021787047F021788047F021789047F02178A047F01178B047F02178C047F02178D047F02178E047F01178F047F011790047F021791047F021792047F011793047F021794047F011795047F021796047F02179B047F02179C047F01179D047F02179E047F01179F047F0117A0047F0117A1047F0117A2047F0117A3047F0117A4047F0117A5047F0117A6047F0117A7047F0117AC047F0217AD047F0117AE047F0217B3047F0117B4047F0217B5047F0217B6047F0117B7047F0117B8047F0217B9047F0117BA047F0117BB047F0217BC047F0117BD047F0117BE047F0117BF047F011784057F021785057F011786057F02178B057F02178C057F01178D057F021792057F021793057F011794057F021799057F02179A057F01179B057F02179C057F01179D057F01179E057F01179F057F0217A0057F0117A1057F0117A2057F0117A3057F0117A4057F0217A5057F0117AA057F0217AB057F0117AC057F0217B1057F0217B2057F0117B3057F0217B8057F0217B9057F0117BA057F0217BF057F011780067F021781067F011786067F011787067F021788067F02178D067F01178E067F02178F067F021790067F011791067F011792067F011793067F011794067F011795067F021796067F021797067F011798067F021799067F01179E067F02179F067F0117A0067F0217A5067F0217A6067F0117A7067F0217AF067F0217B0067F0117B1067F0217B6067F0217B7067F0117B8067F0117BD067F0117BE067F0117BF067F011784077F021785077F011786077F021787077F011788077F011789077F01178A077F01178B077F02178C077F02178D077F01178E077F01178F077F011790077F021791077F011796077F011797077F021798077F021799077F01179E077F01179F077F0217A0077F0217A1077F0117A5077F0117A6077F0117A7077F0117A8077F0117A9077F0117AA077F0117AF077F0217B0077F0117B1077F0217B2077F0117B7077F0217B8077F0117B9077F0217BA077F0117BF077F021780087F011781087F021782087F011787087F021788087F011789087F02178A087F01178F087F021790087F011791087F021792087F011797087F021798087F011799087F02179A087F01179F087F0217A0087F0117A1087F0217A2087F0117A9087F0217AA087F0117AB087F0217AC087F0117B1087F0217B2087F0117B3087F0217B4087F0117B9087F0217BA087F0117BB087F0217BC087F011781097F021782097F011783097F021784097F011789097F02178A097F01178B097F02178C097F011791097F021792097F011793097F021794097F011799097F02179A097F01179B097F02179C097F0117A1097F0217A2097F0117A3097F0217A4097F0117A5097F0217A6097F0217A7097F0217A8097F0217A9097F0217AA097F0217AF097F0217B0097F0117B1097F0217B2097F0117B3097F0217B4097F0217B5097F0217B6097F0217B7097F0217B8097F0217BD097F0217BE097F0117BF097F0217800A7F0117810A7F0217860A7F0217870A7F0117880A7F0217890A7F01178A0A7F02178B0A7F02178C0A7F02178D0A7F02178E0A7F0217930A7F0217940A7F0117950A7F0217960A7F0117970A7F018C0110017F0010027F0010037F0010047F0010057F0010067F0010077F0010087F0010097F00100A7F00100B7F00100C7F00100D7F00100E7F00100F7F0010107F0010117F0010127F0010137F0010147F0010157F0010167F0010177F0010187F0010197F00101A7F00101B7F00101C7F00101D7F00101E7F00101F7F0010207F0010227F0010237F0010247F0010257F0010267F0010277F0010287F0010297F00102A7F00102B7F00102C7F00102D7F00102E7F00102F7F0010307F0010317F0010327F0010337F0010347F0010357F0010367F0010387F0010397F00103A7F00103B7F00103C7F00103D7F00103E7F00103F7F001080017F001081017F001082017F001083017F001084017F001085017F001086017F001087017F001088017F001089017F0010007F00108A017F00108B017F00108C017F00108D017F008C013E00018190A10F3E00018290A10F3E00018390A10F3E00018490A10F3E00018590A10F3E00018690A10F3E00018790A10F3E00018890A10F3E00018990A10F3E00018A90A10F3E00018B90A10F3E00018C90A10F3E00018D90A10F3E00018E90A10F3E00018F90A10F3E00019090A10F3E00019190A10F3E00019290A10F3E00019390A10F3E00019490A10F3E00019590A10F3E00019690A10F3E00019790A10F3E00019890A10F3E00019990A10F3E00019A90A10F3E00019B90A10F3E00019C90A10F3E00019D90A10F3E00019E90A10F3E00019F90A10F3E0001A090A10F3E0001A290A10F3E0001A390A10F3E0001A490A10F3E0001A590A10F3E0001A690A10F3E0001A790A10F3E0001A890A10F3E0001A990A10F3E0001AA90A10F3E0001AB90A10F3E0001AC90A10F3E0001AD90A10F3E0001AE90A10F3E0001AF90A10F3E0001B090A10F3E0001B190A10F3E0001B290A10F3E0001B390A10F3E0001B490A10F3E0001B590A10F3E0001B690A10F3E0001B890A10F3E0001B990A10F3E0001BA90A10F3E0001BB90A10F3E0001BC90A10F3E0001BD90A10F3E0001BE90A10F3E0001BF90A10F3E00018091A10F3E00018191A10F3E00018291A10F3E00018391A10F3E00018491A10F3E00018591A10F3E00018691A10F3E00018791A10F3E00018891A10F3E00018991A10F3E00018090A10F3E00018A91A10F3E00018B91A10F3E00018C91A10F3E00018D91A10F8C013E01018190A10F3E01018290A10F3E01018390A10F3E01018490A10F3E01018590A10F3E01018690A10F3E01018790A10F3E01018890A10F3E01018990A10F3E01018A90A10F3E01018B90A10F3E01018C90A10F3E01018D90A10F3E01018E90A10F3E01018F90A10F3E01019090A10F3E01019190A10F3E01019290A10F3E01019390A10F3E01019490A10F3E01019590A10F3E01019690A10F3E01019790A10F3E01019890A10F3E01019990A10F3E01019A90A10F3E01019B90A10F3E01019C90A10F3E01019D90A10F3E01019E90A10F3E01019F90A10F3E0101A090A10F3E0101A290A10F3E0101A390A10F3E0101A490A10F3E0101A590A10F3E0101A690A10F3E0101A790A10F3E0101A890A10F3E0101A990A10F3E0101AA90A10F3E0101AB90A10F3E0101AC90A10F3E0101AD90A10F3E0101AE90A10F3E0101AF90A10F3E0101B090A10F3E0101B190A10F3E0101B290A10F3E0101B390A10F3E0101B490A10F3E0101B590A10F3E0101B690A10F3E0101B890A10F3E0101B990A10F3E0101BA90A10F3E0101BB90A10F3E0101BC90A10F3E0101BD90A10F3E0101BE90A10F3E0101BF90A10F3E01018091A10F3E01018191A10F3E01018291A10F3E01018391A10F3E01018491A10F3E01018591A10F3E01018691A10F3E01018791A10F3E01018891A10F3E01018991A10F3E01018090A10F3E01018A91A10F3E01018B91A10F3E01018C91A10F3E01018D91A10F8C013E04018190A10F3E04018290A10F3E04018390A10F3E04018490A10F3E04018590A10F3E04018690A10F3E04018790A10F3E04018890A10F3E04018990A10F3E04018A90A10F3E04018B90A10F3E04018C90A10F3E04018D90A10F3E04018E90A10F3E04018F90A10F3E04019090A10F3E04019190A10F3E04019290A10F3E04019390A10F3E04019490A10F3E04019590A10F3E04019690A10F3E04019790A10F3E04019890A10F3E04019990A10F3E04019A90A10F3E04019B90A10F3E04019C90A10F3E04019D90A10F3E04019E90A10F3E04019F90A10F3E0401A090A10F3E0401A290A10F3E0401A390A10F3E0401A490A10F3E0401A590A10F3E0401A690A10F3E0401A790A10F3E0401A890A10F3E0401A990A10F3E0401AA90A10F3E0401AB90A10F3E0401AC90A10F3E0401AD90A10F3E0401AE90A10F3E0401AF90A10F3E0401B090A10F3E0401B190A10F3E0401B290A10F3E0401B390A10F3E0401B490A10F3E0401B590A10F3E0401B690A10F3E0401B890A10F3E0401B990A10F3E0401BA90A10F3E0401BB90A10F3E0401BC90A10F3E0401BD90A10F3E0401BE90A10F3E0401BF90A10F3E04018091A10F3E04018191A10F3E04018291A10F3E04018391A10F3E04018491A10F3E04018591A10F3E04018691A10F3E04018791A10F3E04018891A10F3E04018991A10F3E04018090A10F3E04018A91A10F3E04018B91A10F3E04018C91A10F3E04018D91A10F8C013E04018190A10F3E04018290A10F3E04018390A10F3E04018490A10F3E04018590A10F3E04018690A10F3E04018790A10F3E04018890A10F3E04018990A10F3E04018A90A10F3E04018B90A10F3E04018C90A10F3E04018D90A10F3E04018E90A10F3E04018F90A10F3E04019090A10F3E04019190A10F3E04019290A10F3E04019390A10F3E04019490A10F3E04019590A10F3E04019690A10F3E04019790A10F3E04019890A10F3E04019990A10F3E04019A90A10F3E04019B90A10F3E04019C90A10F3E04019D90A10F3E04019E90A10F3E04019F90A10F3E0401A090A10F3E0401A290A10F3E0401A390A10F3E0401A490A10F3E0401A590A10F3E0401A690A10F3E0401A790A10F3E0401A890A10F3E0401A990A10F3E0401AA90A10F3E0401AB90A10F3E0401AC90A10F3E0401AD90A10F3E0401AE90A10F3E0401AF90A10F3E0401B090A10F3E0401B190A10F3E0401B290A10F3E0401B390A10F3E0401B490A10F3E0401B590A10F3E0401B690A10F3E0401B890A10F3E0401B990A10F3E0401BA90A10F3E0401BB90A10F3E0401BC90A10F3E0401BD90A10F3E0401BE90A10F3E0401BF90A10F3E04018091A10F3E04018191A10F3E04018291A10F3E04018391A10F3E04018491A10F3E04018591A10F3E04018691A10F3E04018791A10F3E04018891A10F3E04018991A10F3E04018090A10F3E04018A91A10F3E04018B91A10F3E04018C91A10F3E04018D91A10F8C013E04018190A10F3E04018290A10F3E04018390A10F3E04018490A10F3E04018590A10F3E04018690A10F3E04018790A10F3E04018890A10F3E04018990A10F3E04018A90A10F3E04018B90A10F3E04018C90A10F3E04018D90A10F3E04018E90A10F3E04018F90A10F3E04019090A10F3E04019190A10F3E04019290A10F3E04019390A10F3E04019490A10F3E04019590A10F3E04019690A10F3E04019790A10F3E04019890A10F3E04019990A10F3E04019A90A10F3E04019B90A10F3E04019C90A10F3E04019D90A10F3E04019E90A10F3E04019F90A10F3E0401A090A10F3E0401A290A10F3E0401A390A10F3E0401A490A10F3E0401A590A10F3E0401A690A10F3E0401A790A10F3E0401A890A10F3E0401A990A10F3E0401AA90A10F3E0401AB90A10F3E0401AC90A10F3E0401AD90A10F3E0401AE90A10F3E0401AF90A10F3E0401B090A10F3E0401B190A10F3E0401B290A10F3E0401B390A10F3E0401B490A10F3E0401B590A10F3E0401B690A10F3E0401B890A10F3E0401B990A10F3E0401BA90A10F3E0401BB90A10F3E0401BC90A10F3E0401BD90A10F3E0401BE90A10F3E0401BF90A10F3E04018091A10F3E04018191A10F3E04018291A10F3E04018391A10F3E04018491A10F3E04018591A10F3E04018691A10F3E04018791A10F3E04018891A10F3E04018991A10F3E04018090A10F3E04018A91A10F3E04018B91A10F3E04018C91A10F3E04018D91A10F8C013E04018190A10F3E04018290A10F3E04018390A10F3E04018490A10F3E04018590A10F3E04018690A10F3E04018790A10F3E04018890A10F3E04018990A10F3E04018A90A10F3E04018B90A10F3E04018C90A10F3E04018D90A10F3E04018E90A10F3E04018F90A10F3E04019090A10F3E04019190A10F3E04019290A10F3E04019390A10F3E04019490A10F3E04019590A10F3E04019690A10F3E04019790A10F3E04019890A10F3E04019990A10F3E04019A90A10F3E04019B90A10F3E04019C90A10F3E04019D90A10F3E04019E90A10F3E04019F90A10F3E0401A090A10F3E0401A290A10F3E0401A390A10F3E0401A490A10F3E0401A590A10F3E0401A690A10F3E0401A790A10F3E0401A890A10F3E0401A990A10F3E0401AA90A10F3E0401AB90A10F3E0401AC90A10F3E0401AD90A10F3E0401AE90A10F3E0401AF90A10F3E0401B090A10F3E0401B190A10F3E0401B290A10F3E0401B390A10F3E0401B490A10F3E0401B590A10F3E0401B690A10F3E0401B890A10F3E0401B990A10F3E0401BA90A10F3E0401BB90A10F3E0401BC90A10F3E0401BD90A10F3E0401BE90A10F3E0401BF90A10F3E04018091A10F3E04018191A10F3E04018291A10F3E04018391A10F3E04018491A10F3E04018591A10F3E04018691A10F3E04018791A10F3E04018891A10F3E04018991A10F3E04018090A10F3E04018A91A10F3E04018B91A10F3E04018C91A10F3E04018D91A10F8C013E04018190A10F3E04018290A10F3E04018390A10F3E04018490A10F3E04018590A10F3E04018690A10F3E04018790A10F3E04018890A10F3E04018990A10F3E04018A90A10F3E04018B90A10F3E04018C90A10F3E04018D90A10F3E04018E90A10F3E04018F90A10F3E04019090A10F3E04019190A10F3E04019290A10F3E04019390A10F3E04019490A10F3E04019590A10F3E04019690A10F3E04019790A10F3E04019890A10F3E04019990A10F3E04019A90A10F3E04019B90A10F3E04019C90A10F3E04019D90A10F3E04019E90A10F3E04019F90A10F3E0401A090A10F3E0401A290A10F3E0401A390A10F3E0401A490A10F3E0401A590A10F3E0401A690A10F3E0401A790A10F3E0401A890A10F3E0401A990A10F3E0401AA90A10F3E0401AB90A10F3E0401AC90A10F3E0401AD90A10F3E0401AE90A10F3E0401AF90A10F3E0401B090A10F3E0401B190A10F3E0401B290A10F3E0401B390A10F3E0401B490A10F3E0401B590A10F3E0401B690A10F3E0401B890A10F3E0401B990A10F3E0401BA90A10F3E0401BB90A10F3E0401BC90A10F3E0401BD90A10F3E0401BE90A10F3E0401BF90A10F3E04018091A10F3E04018191A10F3E04018291A10F3E04018391A10F3E04018491A10F3E04018591A10F3E04018691A10F3E04018791A10F3E04018891A10F3E04018991A10F3E04018090A10F3E04018A91A10F3E04018B91A10F3E04018C91A10F3E04018D91A10F008C013E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F023E047F0200000000000000000000000213A80F0FFFFFFFFF00000100"));
+                console.log("hi");
+            });
+        }
+        message['conn'].input.read(1024).then(function (buff) {
+            onMessage({ 'conn': message['conn'], 'buff': buff })
+        });
+    }
+    var ip_family = new Object();
+    ip_family.family = "ipv4";
+    ip_family.host = "127.0.0.1";
+    ip_family.port = 9339;
+    Socket.listen(ip_family).then(function (listener) {
+        console.log("Socket created");
+        // toast("ereerer");
+        listener.accept().then(function (conn) {
+            console.log("client connnected");
+            //hudp("6");
+            conn.setNoDelay(true);
+            conn.input.read(1024)
+                .then(function (buff) {
+                    onMessage({ 'conn': conn, 'buff': buff })
+                });
+        });
+    });
+}
+var MdD = Interceptor.replace(base.add(0x9875C8), new NativeCallback(function () { return 1; }, 'int', [])); Armceptor.nop(base.add(0x986338)); var MsPA = Interceptor.attach(base.add(0x988130), { onEnter(args) { this.messaging = args[0]; args[0].add(24).writeU32(5); args[1] = args[2]; }, onLeave(re) { this.messaging.add(24).writeU32(5); } }); Armceptor.replace(base.add(0x988900), [0x21, 0x00, 0x00, 0x54]); const ntohs = new NativeFunction(Module.findExportByName('libc.so', 'ntohs'), 'uint16', ['uint16']); const inet_addr = new NativeFunction(Module.findExportByName('libc.so', 'inet_addr'), 'int', ['pointer']); Interceptor.attach(Module.findExportByName('libc.so', 'connect'), { onEnter(args) { if (ntohs(args[1].add(2).readU16()) == 9339) { var fd = args[0].toInt32(); Memory.writeU16(args[1].add(2), ntohs(9339)); args[1].add(4).writeInt(inet_addr(Memory.allocUtf8String("127.0.0.1"))) } } }); Armceptor.ret(base.add(0xFAC790)); Armceptor.ret(base.add(0xFAC7A0));
+
+// Logic
+function WriteToMemory(address, valueType, value) {
+    switch (valueType) {
+        case "S8":
+        case "U8":
+            Memory.protect(address, 1, "rwx");
+            break;
+        case "S16":
+        case "U16":
+        case "Short":
+        case "UShort":
+            Memory.protect(address, 2, "rwx");
+            break;
+        case "S32":
+        case "U32":
+        case "Int":
+        case "UInt":
+        case "Pointer":
+        case "Float":
+            Memory.protect(address, 4, "rwx");
+            break;
+        case "ByteArray":
+            if (!(value instanceof ArrayBuffer)) {
+                value = new Uint8Array(value).buffer;
+            }
+            Memory.protect(address, value.byteLength, "rwx");
+            break;
+        case "Utf8String":
+            Memory.protect(address, value.length, "rwx");
+            break;
+    }
+
+    Memory[`write${valueType}`](address, value);
+}
+const LogicDataTablesGetDataById = new NativeFunction(base.add(0x842AEC), 'pointer', ['int']);
+
+Interceptor.attach(base.add(0x77BDA4), {
+    onEnter: function (args) {
+        args[3] = ptr(3);
+        args[1] = ptr(0);
+        args[2] = LogicDataTablesGetDataById(15000001);
+    }
+});
+function ReadStringFromStringObject(strObject) {
+    const stringByteLength = strObject.add(4).readU32();
+    if (stringByteLength > 7) {
+        return strObject.add(8).readPointer().readUtf8String(stringByteLength);
+    }
+    return strObject.add(8).readUtf8String(stringByteLength);
+}
+Interceptor.attach(base.add(0x9510D8), {
+    onEnter: function (args) {
+        console.log(`level:${args[1].toInt32()}\nsp:${ReadStringFromStringObject(LogicData_getName(args[2]))}\na:${ReadStringFromStringObject(LogicData_getName(args[3]))}\ng1:${ReadStringFromStringObject(LogicData_getName(args[4]))}\ng2:${ReadStringFromStringObject(LogicData_getName(args[5]))}`)
+        args[1] = ptr(21);
+        args[2] = NULL;
+        args[3] = NULL;
+        args[4] = NULL;
+        args[5] = NULL;
+        args[6] = NULL;
+    }
+});
+const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 
+const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void', ['pointer']); // v53.176 | 
+//const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 
+//const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 
+const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void', ['pointer']); // v53.176 | 
+const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 

@@ -1,0 +1,12 @@
+libg.so
+libg.so.id0
+libg.so.id1
+libg.so.id2
+libg.so.nam
+libg.so.til
+.vscode/settings.json
+build/CMakeCache.txt
+build/.cmake/api/v1/query/client-vscode/query.json
+build/CMakeFiles/cmake.check_cache
+build/CMakeFiles/CMakeConfigureLog.yaml
+build/CMakeFiles/3.29.3/CMakeSystem.cmake
