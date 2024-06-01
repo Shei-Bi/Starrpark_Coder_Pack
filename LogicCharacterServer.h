@@ -1,15 +1,13 @@
+#ifndef LCS_H
+#define LCS_H
 class LogicCharacterServer : public LogicGameObjectServer
 {
 public:
-   LogicCharacterServer(/* args */)
+   LogicCharacterServer(LogicData logicData) : LogicGameObjectServer(logicData)
    {
-      LogicGameObjectServer();
+      ;
    }
-   LogicCharacterServer(LogicGameObjectServer e)
-   {
-      LogicGameObjectServer();
-   }
-   char gap[1504];
+   char gap[1504 - 72];
    int ConsumableShield;
    int ConsumableShieldMax;
    void addConsumableShield(int amount)
@@ -22,3 +20,4 @@ public:
       addConsumableShield(114514);
    }
 };
+#endif
