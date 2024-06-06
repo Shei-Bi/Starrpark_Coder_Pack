@@ -345,7 +345,7 @@ Interceptor.attach(base.add(0x9510D8), {
         console.log(`level:${args[1].toInt32()}\nsp:${ReadStringFromStringObject(LogicData_getName(args[2]))}\na:${ReadStringFromStringObject(LogicData_getName(args[3]))}\ng1:${ReadStringFromStringObject(LogicData_getName(args[4]))}\ng2:${ReadStringFromStringObject(LogicData_getName(args[5]))}`)
         args[1] = ptr(21);
         args[2] = NULL;
-        args[3] = NULL;
+        //args[3] = NULL;
         args[4] = NULL;
         args[5] = NULL;
         args[6] = NULL;
@@ -365,16 +365,17 @@ Interceptor.attach(HomeScreen_enter, {
             console.log(element.name);
         });
         const _ZN21LogicProjectileServer15returnBoomerangEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer15returnBoomerangEv"), 'void', ['pointer']);
-        // Interceptor.attach(base.add(0x8B7CCC), function () {
-        //     var p = this.context.x19;
-        //     if (p.add(16).readPointer().add(400).readU8()) {
-        //         if (!p.add(16).readPointer().add(256).readPointer().isNull()) {
-        //             LogicProjectileServer_returnBoomerang(p);
-        //         }
-        //     }
-        // });
-        Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
-        Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
+        const _ZN21LogicProjectileServer13targetReachedEi = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer13targetReachedEi"), 'void', ['pointer', 'int']);
+        Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
+            LogicProjectileServer_targetReached(self, type);
+            _ZN21LogicProjectileServer13targetReachedEi(self, type);
+        }, 'void', ['pointer', 'int']));
+        Mod.enumerateSymbols().forEach(element => {
+            if (element.name == "_ZL4base") element.address.writePointer(base);
+        });
+        Interceptor.replace(base.add(0x87E1E8), Mod.getExportByName("_ZN14LogicAccessory6encodeEP9BitStreamb"));
+        //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
+        //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
     }
 });
@@ -384,3 +385,4 @@ const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void'
 //const LogicCharacterServer_tick = new NativeFunction(base.add(0x888704), 'void', ['pointer']); // v53.176 | 
 const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void', ['pointer']); // v53.176 | 
 const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 
+const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
