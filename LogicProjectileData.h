@@ -6,8 +6,6 @@ class LogicProjectileData : public LogicData
 private:
 	/* data */
 public:
-	char gap1[256 - 8];
-	LogicProjectileData* ChainedBullet;
 	LogicProjectileData* getChainedBullet()
 	{
 		return ((LogicProjectileData * (*)(LogicProjectileData*))base + 0x865B4C)(this);
@@ -15,6 +13,14 @@ public:
 	bool isBoomerang()
 	{
 		return ((bool (*)(LogicProjectileData*))base + 0x865DBC)(this);
+	}
+	bool isFriendlyHomingMissile()
+	{
+		return ((bool (*)(LogicProjectileData*))base + 0x86591C)(this);
+	}
+	bool isHomingMissile()
+	{
+		return ((bool (*)(LogicProjectileData*))base + 0x865DCC)(this);
 	}
 };
 #endif

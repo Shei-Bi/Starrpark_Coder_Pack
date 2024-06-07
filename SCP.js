@@ -364,16 +364,24 @@ Interceptor.attach(HomeScreen_enter, {
         Mod.enumerateExports().forEach(element => {
             console.log(element.name);
         });
-        const _ZN21LogicProjectileServer15returnBoomerangEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer15returnBoomerangEv"), 'void', ['pointer']);
         const _ZN21LogicProjectileServer13targetReachedEi = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer13targetReachedEi"), 'void', ['pointer', 'int']);
+        const _ZN21LogicProjectileServer4tickEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer4tickEv"), 'void', ['pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
+        }, 'void', ['pointer', 'int']));
+        Interceptor.replace(LogicProjectileServer_tick, new NativeCallback(function (self) {
+            _ZN21LogicProjectileServer4tickEv(self);
+            LogicProjectileServer_tick(self);
         }, 'void', ['pointer', 'int']));
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
         });
         Interceptor.replace(base.add(0x87E1E8), Mod.getExportByName("_ZN14LogicAccessory6encodeEP9BitStreamb"));
+        Interceptor.replace(base.add(0x87DE84), Mod.getExportByName("_ZN14LogicAccessory9interruptEbP20LogicCharacterServer"));
+        Interceptor.replace(base.add(0x87DE80), Mod.getExportByName("_ZN14LogicAccessory15updateAccessoryEP20LogicCharacterServer"));
+        Interceptor.replace(base.add(0x87DE7C), Mod.getExportByName("_ZN14LogicAccessory16triggerAccessoryEP20LogicCharacterServerii"));
+        Interceptor.replace(base.add(0x87DE88), Mod.getExportByName("_ZN14LogicAccessory22endAccessoryActivationEv"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();

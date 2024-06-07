@@ -11,7 +11,9 @@ public:
    char gap1[4];
    LogicData *Data;
    LogicGameObjectManagerServer *GameObjectManager;
-   char gap2[16];
+   int MoveStartTick;
+   int MoveEndTick;
+   char gap2[8];
    int X;
    int Y;
    int Z;

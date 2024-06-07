@@ -5,8 +5,6 @@ class LogicData
 private:
    /* data */
 public:
-   int a;
-   int b;
    LogicData(/* args */);
    ~LogicData();
 };
