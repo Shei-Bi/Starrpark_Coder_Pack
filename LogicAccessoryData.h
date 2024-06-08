@@ -29,5 +29,37 @@ public:
 	{
 		return ((int (*)(LogicAccessoryData*))base + 0x82A914)(this);
 	}
+	int getCustomValue1()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB24)(this);
+	}
+	int getCustomValue2()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB34)(this);
+	}
+	int getCustomValue3()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB44)(this);
+	}
+	int getCustomValue4()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB54)(this);
+	}
+	int getCustomValue5()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB64)(this);
+	}
+	int getCustomValue6()
+	{
+		return ((int (*)(LogicAccessoryData*))base + 0x82AB74)(this);
+	}
+	void* getCustomObject()
+	{
+		return ((void* (*)(LogicAccessoryData*))base + 0x82AB14)(this);
+	}
+	bool getShowCountdown()
+	{
+		return ((bool (*)(LogicAccessoryData*))base + 0x82A984)(this);
+	}
 };
 #endif

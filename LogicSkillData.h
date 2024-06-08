@@ -15,5 +15,17 @@ public:
 	{
 		return ((int (*)(LogicSkillData*))base + 0x873BB4)(this);
 	}
+	int getChargeSpeed()
+	{
+		return ((int (*)(LogicSkillData*))base + 0x873B5C)(this);
+	}
+	int getChargeType()
+	{
+		return ((int (*)(LogicSkillData*))base + 0x873D20)(this);
+	}
+	int getActiveTime()
+	{
+		return ((int (*)(LogicSkillData*))base + 0x873B8C)(this);
+	}
 };
 #endif

@@ -5,6 +5,9 @@
 #include "LogicCharacterServer.h"
 #include "LogicAccessoryData.h"
 #include "BitStream.h"
+#include "LogicDataTables.h"
+#include "LogicProjectileData.h"
+#include "LogicProjectileServer.h"
 
 class LogicAccessory
 {
@@ -37,7 +40,7 @@ public:
 };
 LogicAccessory::LogicAccessory(LogicAccessoryData* data, int count) {
 	AccessoryData = data;
-	IsActive = true;
+	IsActive = false;
 }
 void LogicAccessory::encode(BitStream* stream, bool isSelf) {
 	if (isSelf) {
@@ -71,9 +74,21 @@ void LogicAccessory::triggerAccessory(LogicCharacterServer* owner, int x, int y)
 	if (AccessoryData->getActivationDelay() <= 0) {
 		activateAccessory(owner);
 	}
+	Uses--;
 }
 void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
-	;
+	if (AccessoryData->getActiveTicks() < 1) {
+		/*
+		Refactor. Reason: same code
+		--Shei
+		*/
+		endAccessoryActivation();
+	}
+	else {
+		TicksActive = 0;
+		tickAccessory(owner);
+		TicksActive++;
+	}
 }
 void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
 	State = checkCurrentAccessoryAvailability(owner);
@@ -96,7 +111,40 @@ void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
 	}
 }
 void LogicAccessory::tickAccessory(LogicCharacterServer* owner) {
-	;
+	switch (Type) {
+	case 3://spin_shoot
+		owner->setForcedAngle(LogicMath::normalizeAngle360(owner->getMoveAngle() + 90));
+		if (TicksActive % AccessoryData->getCustomValue1() == 0) {
+			LogicProjectileData* projectileData = LogicDataTables::getProjectileByName(AccessoryData->getCustomObject(), nullptr);
+			if (projectileData) {
+				StartUsingTick = owner->getLogicBattleModeServer()->getTick();
+				int range = AccessoryData->getCustomValue4() + AccessoryData->getCustomValue5() * (TicksActive / AccessoryData->getCustomValue1());
+				int angle = TicksActive / AccessoryData->getCustomValue1() * AccessoryData->getCustomValue2();
+				int deltaX = LogicMath::getRotatedX(range, 0, angle) * 1;
+				int deltaY = LogicMath::getRotatedY(range, 0, angle) * 1;
+				LogicTileMap* tileMap = owner->getLogicBattleModeServer()->getTileMap();
+				LogicProjectileServer::shootProjectile(
+					300 * deltaX / range + owner->GetX(),//bullet spawn 300 offset from character
+					300 * deltaY / range + owner->GetY(),//其实就是在离角色一格远的地方发射子弹防止子弹把角色脸挡住
+					owner,
+					owner,
+					projectileData,
+					LogicMath::clamp(deltaX + owner->GetX(), 1, tileMap->LogicWidth - 2),
+					LogicMath::clamp(deltaY + owner->GetY(), 1, tileMap->LogicHeight - 2),
+					AccessoryData->getCustomValue3(),
+					AccessoryData->getCustomValue6(),
+					0,
+					false,
+					0,
+					owner->getLogicBattleModeServer(),
+					0,
+					4//1 普攻 2 大招 3星辉 4 妙具 
+				);
+			}
+		}
+		break;
+
+	}
 }
 void LogicAccessory::endAccessoryActivation()
 {

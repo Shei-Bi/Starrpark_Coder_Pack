@@ -20,8 +20,8 @@ public:
 	LogicCharacterServer* Owner;
 	LogicCharacterServer* HomingTarget;
 
-	static LogicProjectileServer* ShootProjectile(int a1, int a2, LogicCharacterServer* a3, LogicGameObjectServer* a4, LogicProjectileData* a5, int a6, int a7, int a8, int a9, int a10, bool a11, int a12, LogicBattleModeServer* a13, int a14, int a15) {
-		return ((LogicProjectileServer * (*)(int, int, LogicCharacterServer*, LogicGameObjectServer*, LogicProjectileData*, int, int, int, int, int, bool, int, LogicBattleModeServer*, int, int))base + 0x8B8E08)(a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11, a12, a13, a14, a15);
+	static LogicProjectileServer* shootProjectile(int startX, int startY, LogicCharacterServer* source, LogicGameObjectServer* shooter, LogicProjectileData* projectileData, int endX, int endY, int damage, int normalDMG, int a10, bool a11, int a12, LogicBattleModeServer* battleMode, int a14, int catagory) {
+		return ((LogicProjectileServer * (*)(int, int, LogicCharacterServer*, LogicGameObjectServer*, LogicProjectileData*, int, int, int, int, int, bool, int, LogicBattleModeServer*, int, int))base + 0x8B8E08)(startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory);
 	};
 	LogicProjectileServer(LogicProjectileData* logicProjectileData) : LogicGameObjectServer(logicProjectileData)
 	{
@@ -43,7 +43,7 @@ public:
 			boomerangX = StartX;
 			boomerangY = StartY;
 		}
-		LogicProjectileServer* boomerang = ShootProjectile(-1, -1, Owner, this, ((LogicProjectileData*)getData())->getChainedBullet(), boomerangX, boomerangY, Damage, NormalDMG, 0, false, 0, getLogicBattleModeServer(), 0, 0);
+		LogicProjectileServer* boomerang = shootProjectile(-1, -1, Owner, this, ((LogicProjectileData*)getData())->getChainedBullet(), boomerangX, boomerangY, Damage, NormalDMG, 0, false, 0, getLogicBattleModeServer(), 0, 0);
 		boomerang->HomingTarget = Owner;
 	}
 	void targetReached(int);

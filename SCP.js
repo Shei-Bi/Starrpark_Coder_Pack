@@ -366,6 +366,7 @@ Interceptor.attach(HomeScreen_enter, {
         });
         const _ZN21LogicProjectileServer13targetReachedEi = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer13targetReachedEi"), 'void', ['pointer', 'int']);
         const _ZN21LogicProjectileServer4tickEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer4tickEv"), 'void', ['pointer']);
+        const _ZN20LogicCharacterServer17calculateChargeUpEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer17calculateChargeUpEv"), 'void', ['pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -374,6 +375,10 @@ Interceptor.attach(HomeScreen_enter, {
             _ZN21LogicProjectileServer4tickEv(self);
             LogicProjectileServer_tick(self);
         }, 'void', ['pointer', 'int']));
+        Interceptor.replace(LogicCharacterServer_setUpgrades, new NativeCallback(function (self,a2) {
+            LogicCharacterServer_setUpgrades(self, a2);
+            _ZN20LogicCharacterServer17calculateChargeUpEv(self);
+        }, 'void', ['pointer', 'pointer']));
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
         });
@@ -394,3 +399,4 @@ const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void'
 const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void', ['pointer']); // v53.176 | 
 const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
+const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 | 
