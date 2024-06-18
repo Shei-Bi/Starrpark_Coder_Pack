@@ -64,7 +64,7 @@ public:
 		Z = z;
 	}
 	LogicPlayer* getPlayer() {
-		return ((LogicPlayer * (*)(LogicGameObjectServer*))base + 0x8AFB78)(this);
+		return ((LogicPlayer * (*)(LogicGameObjectServer*))(base + 0x8AFB78))(this);
 	}
 	~LogicGameObjectServer()
 	{

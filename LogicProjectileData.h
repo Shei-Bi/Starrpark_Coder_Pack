@@ -8,19 +8,19 @@ private:
 public:
 	LogicProjectileData* getChainedBullet()
 	{
-		return ((LogicProjectileData * (*)(LogicProjectileData*))base + 0x865B4C)(this);
+		return ((LogicProjectileData * (*)(LogicProjectileData*))(base + 0x865B4C))(this);
 	}
 	bool isBoomerang()
 	{
-		return ((bool (*)(LogicProjectileData*))base + 0x865DBC)(this);
+		return ((bool (*)(LogicProjectileData*))(base + 0x865DBC))(this);
 	}
 	bool isFriendlyHomingMissile()
 	{
-		return ((bool (*)(LogicProjectileData*))base + 0x86591C)(this);
+		return ((bool (*)(LogicProjectileData*))(base + 0x86591C))(this);
 	}
 	bool isHomingMissile()
 	{
-		return ((bool (*)(LogicProjectileData*))base + 0x865DCC)(this);
+		return ((bool (*)(LogicProjectileData*))(base + 0x865DCC))(this);
 	}
 };
 #endif

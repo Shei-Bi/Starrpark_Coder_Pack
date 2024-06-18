@@ -1,4 +1,4 @@
 #ifndef H_H
 #define H_H
-static void* base = 0x114514;
+static char* base = (char*)0x114514;
 #endif

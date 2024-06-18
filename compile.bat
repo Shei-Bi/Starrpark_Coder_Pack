@@ -1,1 +1,1 @@
-"C:\Program Files (x86)\Arm GNU Toolchain aarch64-none-linux-gnu\13.2 Rel1\bin\aarch64-none-linux-gnu-g++.exe" -fpermissive -shared -fPIC -O0 -Wl,--as-needed -fno-rtti -Wall -o libg.so ./LogicCharacterServer.cpp
+"C:\Users\Greg\source\repos\Shei-Bi\Starrpark_Coder_Pack\bin\aarch64-linux-android21-clang++" -shared LogicCharacterServer.cpp LogicMath.cpp -o libg.so

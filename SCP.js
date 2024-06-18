@@ -26,217 +26,8 @@ const c_rmdir = new NativeFunction(Module.getExportByName('libc.so', 'rmdir'), '
 const c_unlink = new NativeFunction(Module.getExportByName('libc.so', 'unlink'), 'int', ['pointer']);
 const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), 'float', ['float']);
 
-// Addresses
-const AllianceEventStreamEntry_decode = base.add(0x8EDCE0); // v53.176 | Message ID: 24131, decode -> StreamEntryFactory::createStreamEntryByType -> case 4 -> decode (4th in vtable)
-const AntiCheat_getAntihackFlags = base.add(0x9A2710); // v53.176 | Message ID: 18977 -> 6th argument in ctor calling function
-const ChatStreamEntry_decode = base.add(0x8EE604); // v53.176 | Message ID: 24131, decode -> StreamEntryFactory::createStreamEntryByType -> case 2 -> decode (4th in vtable)
-const ConnectionIndicatorShowAddr = base.add(0x4D7470); // v53.176 | String: "connection_indicator"
-const CountryPopupListItemVtableAddr = base.add(0xFB9D70); // v53.176 | In CountryItem ("country_item") | *this = CountryPopupListItemVtableAddr
-const CountryPopupVtableAddr = base.add(0xFCE578); // v53.176 | In PlayerCountryPopup ("country_popup") | *this = CountryPopupVtableAddr
-const DataLoaderTexture_load = base.add(0xAA4380); // v53.176 | String: "Can't create texture: %s"
-const Debugger_error = base.add(0xA423F8); // v53.176 | String: "[ERROR]"
-const Debugger_warning = base.add(0xA42328); // v53.176 | String: "[warning]"
-const DirectProjectileShowRadiusAddr = base.add(0x6AFBC0); // v53.176 | String: "EnragerStarPowerDamage"
-const EnvironmentRenderer_render_OutlineSetupAddr = base.add(0x4AFCAC); // v53.176 | Very complicated. String: "finish object impostors"
-const GameMain_loadAsset = base.add(0x4485F8); // v53.176 | String: "font/LilitaOne-Regular.ttf"
-const GameMain_showIAPInfo = base.add(0x4484BC); // v53.176 | String: "tos_popup"
-const GameMain_update = base.add(0x4460B8); // v53.176 | Parent function of ServerConnection::update
-const HomeScreen_Update_isProdJumpAddr1 = base.add(0x78203C); // v53.176 | Add hint
-const HomeScreen_Update_isProdJumpAddr2 = base.add(0x782070); // v53.176 | Add hint
-const LogicAreaEffectClient_decode = base.add(0x87E314); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x54, decode (5th in vtable)
-const LogicData_equalsJumpAddr = base.add(0x8A88E4); // v53.176 | String: "Created invalid object %d, %d" -> Parent function -> LogicData::equals() BL address
-const LogicDataTableResource = base.add(0x842278); // v53.176 | Any csv name (for example "csv_logic/skins.csv") string object -> 2nd argument
-const LogicItemClient_decode = base.add(0x8AFE8C); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x78, decode (5th in vtable)
-const LogicProjectileClient_decode = base.add(0x8B31B0); // v53.176 | String: "createGameObjectByData invalid type %d", alloc 0x78 (first in switch), decode (5th in vtable)
-const MapEditorModifierPopupVtableAddr = base.add(0xFCCE20); // v53.176 | modifiers popup
-const MirrorPlayfieldAddr = base.add(0x10B0A38); // v53.176 | From BattleScreen::updateCameraParameters
-const RenderUpdate = base.add(0xCCDA38); // v53.176 | String: "EGL_BAD_ACCESS for frame id: %ld current frame id: %lu"
-const SceneRenderer_render_OutlineSetupAddr = base.add(0x4C0B10); // v53.176 | Very complicated. Check address in previous lib to update
-//const SCIDLogoutAllDevicesResultMessage_decode = base.add(0x); // v53.176 | Message ID: 23067 (0x5A1B), decode
-const SettingsScreen = base.add(0x79E298); // v53.176
-const SlowModeAddr = base.add(0x10AE120); // v53.176 | In GameMain::update
-const StreamItemList_processEntryToScreenStringAddr = base.add(0x53D874); // v53.176 | String: "TID_STREAM_EVENT_%i" -> MOV X1, X0 below
-const TeamManager_isPlayerReady = base.add(0x5434DC); // v53.176 | String: "TID_TEAM_FEATURE_BLOCKED_WHILE_READY"
-const TeamMemberItem_setMember = base.add(0x6506E8); // v53.176 | String: "hidden_hero"
-const TeamMemberStatusMessage_encode_statusIDAddr = base.add(0x8EB784); // v53.176 | Message type: 14361 | Offset: (this + 92) in encode
-
-const GameMain_instanceAddr = base.add(0x10AE140); // v53.176 | 1st arg of GameMain::showNativeDialog()
-//const GameSCIDManager_instanceAddr = base.add(0x); // v53.176 | String: "supercell_id_config.json" (a1 of function)
-const GameSettings_instanceAddr = base.add(0x10B16F8); // v53.176
-const GUI_instanceAddr = base.add(0x10B0AB8); // v53.176 | 1st arg of GUI::showPopup(), GUI::showFloaterTextAtDefaultPos()
-const MessageManager_instanceAddr = base.add(0x10B0F00); // v53.176 | 1st arg of MessageManager::sendMessage()
-const SoundManager_instanceAddr = base.add(0x10B1780); // v53.176 | 1st arg of any PlaySound function | String: "Buy_gems"
-const SoundSystem_instanceAddr = base.add(0x10B5650); // v53.176
-const Stage_instanceAddr = base.add(0x10B8540); // v53.176 | In popups
-const TeamStream_instanceAddr = base.add(0x10B0BA0); // v53.176 | String: "TID_FREE_TEXT_CHAT_MUTED_YOU" -> TeamStream::sendChatMessage xrefs
-
-// Strings
-const LaserScreenMaskStr = base.add(0x1A148B); // v53.176 | String: "laser_screen_mask"
-const Port9339Str = base.add(0x18A15A); // v53.176 | String: "9339"
-const ProductionHostStr = base.add(0x17AAA5); // v53.176 | String: "game.brawlstarsgame.com"
-
-//const LobbyInfoWithoutPlayersOnlineStr = { off: base.add(0x), dcd: base.add(0x) }; // v53.176 | String: "%d-%d%s%s\n%s\n%s"
-//const TidConnectingToServerStr = { off: base.add(0x), dcd: base.add(0x) }; // v53.176 | String: "TID_CONNECTING_TO_SERVER"
-
-// Native Functions
-const LogicSkillData_createReferences = new NativeFunction(base.add(0x872348), 'void', ['pointer']);
-const Application_openURL = new NativeFunction(base.add(0xCBF388), 'void', ['pointer']); // v53.176 | String: "=>Application::openURL(%s)"
-const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
-const BattleScreen_exit = new NativeFunction(base.add(0x6A7EA0), 'void', ['pointer']); // v53.176 | Under BattleScreen::enter in vtable
-const ClientInputManager_addInput = new NativeFunction(base.add(0x6616A4), 'void', ['pointer', 'pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
-const CopyString = new NativeFunction(base.add(0xCE2574), 'void', ['pointer']); // v53.176 | String: "copyString"
-const CustomButton_setButtonListener = new NativeFunction(base.add(0xA2F340), 'void', ['pointer', 'pointer']); // v53.176 | country popup
-const DisplayObject_getHeight = new NativeFunction(base.add(0x9F9480), 'float', ['pointer']); // v53.176 | modifiers popup item
-const DisplayObject_setScale = new NativeFunction(base.add(0x9F8E58), 'void', ['pointer', 'float']); // v53.176 | modifiers popup item
-const DisplayObject_setAlpha = new NativeFunction(base.add(0x9F95DC), 'void', ['pointer', 'float']); // v53.176 | I D K
-const DisplayObject_getX = new NativeFunction(base.add(0x9F8E74), 'float', ['pointer']); // v53.176 | modifiers popup item
-const DisplayObject_getY = new NativeFunction(base.add(0x9F8EC4), 'float', ['pointer']); // v53.176 | modifiers popup item
-const DisplayObject_setPixelSnappedXY = new NativeFunction(base.add(0x9F8E44), 'void', ['pointer', 'float', 'float']); // v53.176 | modifiers popup item
-const DisplayObject_setY = new NativeFunction(base.add(0x9F8E20), 'void', ['pointer', 'float']); // v53.176 | country popup
-const DropGUIContainer = new NativeFunction(base.add(0x5EB9AC), 'void', ['pointer']); // v53.176 | modifiers popup add item
-const DropGUIContainer_addGameButton = new NativeFunction(base.add(0x506334), 'pointer', ['pointer', 'pointer', 'int']); // v53.176 | String: "Unable to create GameButton '%s'" | Only 1 xref of string
-const EmoteIcon_playAnim = new NativeFunction(base.add(0x6D96BC), 'void', ['pointer', 'int', 'int', 'float']); // v53.176 | String: "emote_empty_ph", bottom function
-const EventDetailsPopup_init = new NativeFunction(base.add(0x5CC624), 'void', ['pointer', 'pointer', 'int']); // v53.176 | String: "quest_button"
-const GameButton = new NativeFunction(base.add(0x504F74), 'void', ['pointer']); // v53.176 | country popup
-const GameButton_setDisabledWithHUDPrint = new NativeFunction(base.add(0x505BB8), 'void', ['pointer', 'int', 'pointer', 'int']); // v53.176 | String: "TID_CHALLENGE_LIVES_PURCHASE_ERROR_4"
-const GameMain_getAccountId = new NativeFunction(base.add(0x449378), 'pointer', ['pointer']); // v53.176 | String: "MMWarned_%d-%d"
-const GameMain_reloadGame = new NativeFunction(base.add(0x4479F8), 'void', ['pointer']); // v53.176 | Under GameMain::init()
-const GameMain_showNativeDialog = new NativeFunction(base.add(0x4467F4), 'void', ['pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176
-//const GameSCIDManager_logOutFromAllDevices = new NativeFunction(base.add(0x), 'void', ['pointer']); // v53.176 | Message ID: 11736 (0x2DD8) -> ctor calling function
-const GameSettings_enableMusic = new NativeFunction(base.add(0x79B560), 'void', ['pointer', 'int', 'int']); // v53.176
-const GameSettings_enableSfx = new NativeFunction(base.add(0x79B62C), 'void', ['pointer', 'int']); // v53.176
-const GameSliderComponent = new NativeFunction(base.add(0x508D68), 'void', ['pointer', 'pointer', 'pointer', 'pointer', 'int']); // v53.176 | String: "SliderTick"
-const GameSliderComponent_setCurrentValueToTextField = new NativeFunction(base.add(0x509124), 'void', ['pointer']); // v53.176 | At the end of GameSliderComponent
-const GameSliderComponent_setValueBounds = new NativeFunction(base.add(0x50959C), 'void', ['pointer', 'int', 'int']); // v53.176 | String: "60+", function above
-const GenericPopup = new NativeFunction(base.add(0x5D49EC), 'void', ['pointer', 'pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176 | From CountryPopup
-const GenericPopup_buttonClicked = new NativeFunction(base.add(0x5D601C), 'void', ['pointer', 'pointer']); // v53.176 | country popup button clicked
-const GenericPopup_setTitleTid = new NativeFunction(base.add(0x5D4FEC), 'void', ['pointer', 'pointer']); // v53.176 | country popup
-const GenericPopup_setUpScreenHeader = new NativeFunction(base.add(0x5D6390), 'void', ['pointer']); // v53.176 | country popup
-const GUI_closeAllPopups = new NativeFunction(base.add(0x500990), 'void', ['pointer']); // v53.176 | Strings: "Select_brawler", "TID_HERO_DISABLED_CURRENTLY_PRINT"; Bottom function
-const GUI_showFloaterTextAtDefaultPos = new NativeFunction(base.add(0x4FF744), 'void', ['pointer', 'pointer', 'float', 'int']); // v53.176 | String: "TID_MAP_EDITOR_SAVE_ERROR"
-const GUI_showPopup = new NativeFunction(base.add(0x5000F4), 'void', ['pointer', 'pointer', 'int', 'int', 'int']); // v53.176
-const HashCodeGenerator_toCode = new NativeFunction(base.add(0x97036C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "tag_txt"
-const HomeScreen_doOfflineGatcha = new NativeFunction(base.add(0x6C4110), 'void', ['int', 'pointer', 'pointer']); // v53.176 | String: "emoji_sprout_gg"
 const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
-const LatencyTestResultMessage_setServerHost = new NativeFunction(base.add(0x97D77C), 'void', ['pointer', 'pointer']); // v53.176 | String: "LatencyTest-results DROPPED - nothing requested yet - to %s:%i@region-%i requests: %i responses: %i"
-const ListContainer = new NativeFunction(base.add(0x50A484), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176
-const ListContainer_addEntry = new NativeFunction(base.add(0x50B054), 'void', ['pointer', 'pointer']); // v53.176 | country popup refresh
-const ListContainer_clearEntries = new NativeFunction(base.add(0x50AC10), 'void', ['pointer']); // v53.176 | country popup refresh
-const ListContainer_refreshBounds = new NativeFunction(base.add(0x50AFAC), 'void', ['pointer', 'float']); // v53.176 | country popup refresh
-const ListContainer_refreshEntryPositions = new NativeFunction(base.add(0x50B414), 'void', ['pointer', 'int', 'float', 'float', 'float', 'int', 'int', 'float']); // v53.176 | country popup refresh
-const LocationInfo_getLocationThemeData = new NativeFunction(base.add(0x5DA82C), 'pointer', ['pointer']); // v53.176 | String: "map_preview_small_map" | 2nd function after if !a3 condition
-const LogicBattleModeClient_getOwnCharacter = new NativeFunction(base.add(0x944510), 'pointer', ['pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
-const LogicBattleModeClient_setClientPredictionMoveTo = new NativeFunction(base.add(0x944520), 'void', ['pointer', 'int', 'int', 'int']); // v53.176 | From CombatHUD::ultiButtonActivated
-const LogicConfData_getIntValue = new NativeFunction(base.add(0x9175BC), 'int', ['pointer', 'int', 'int']); // v53.176 | HomeScreen::enter
-const LogicCharacterData_isDisabled = new NativeFunction(base.add(0x839F6C), 'int', ['pointer']); // v53.176 | String: "Skipping issue of %s missing (in %s), since the referred target character '%s' is disabled"
 const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
-const LogicData_getValueAt = new NativeFunction(base.add(0x83FAA8), 'pointer', ['pointer', 'int']); // v53.176 | In LogicThemeData::createReferences
-const LogicDataTables_getAreaEffectByName = new NativeFunction(base.add(0x849898), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "SpawnAreaEffectObject"
-const LogicDataTables_getCharacterByName = new NativeFunction(base.add(0x84A06C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "ShotgunGirl"
-const LogicDataTables_getEffectByName = new NativeFunction(base.add(0x849800), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "spawnpoint"
-const LogicDataTables_getItemByName = new NativeFunction(base.add(0x84A350), 'pointer', ['pointer', 'int']); // v53.176 | String: "SpawnItem"
-const LogicDataTables_getLocationThemeByName = new NativeFunction(base.add(0x84A978), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "LocationTheme" (csv value getter)
-const LogicDataTables_getProjectileByName = new NativeFunction(base.add(0x849F9C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "SecondaryProjectile"
-const LogicDataTables_getSkinByName = new NativeFunction(base.add(0x84A270), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "DefaultSkin" (csv value getter)
-const LogicDataTables_getSkinConfByName = new NativeFunction(base.add(0x84A330), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "Conf" (csv value getter)
-const LogicDataTables_getSoundByName = new NativeFunction(base.add(0x84607C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "Buy_gems"
-const LogicDataTables_getTable = new NativeFunction(base.add(0x842A20), 'pointer', ['int']); // v53.176 | country popup
-const LogicLocationData_createReferences = new NativeFunction(base.add(0x85B960), 'void', ['pointer']); // v53.176 | String: "SupportingCampaignGround", parent function
-const LogicLocationData_isDisabled = new NativeFunction(base.add(0x85BB38), 'int', ['pointer']); // v53.176 | String: "Location '%s' (NOT disabled) uses disabled GMV data '%s'"
-const LogicLocationThemeData_getMapHeight = new NativeFunction(base.add(0x85E400), 'int', ['pointer']); // v53.176 | String: "MapHeight" (csv value getter)
-const LogicLocationThemeData_getMapWidth = new NativeFunction(base.add(0x85E3F0), 'int', ['pointer']); // v53.176 | String: "MapWidth" (csv value getter) 
-const LogicLocationThemeData_isEnabled = new NativeFunction(base.add(0x85DC64), 'int', ['pointer']); // v53.176 | String: "Player Map Environment '%s' is enabled, but its location theme data %s at index %d is disabled!"
-const LogicPlayer_decode = new NativeFunction(base.add(0x957A20), 'void', ['pointer', 'pointer']); // v53.176 | Message ID: 20559 (0x504F), first entry decode
-const LogicSkillData_canAutoShoot = new NativeFunction(base.add(0x873FA0), 'int', ['pointer']); // v53.176 | String: "CanAutoShoot" (csv value getter)
-const LogicSkillData_hasMovementBasedAutoshoot = new NativeFunction(base.add(0x873E00), 'int', ['pointer']); // v53.176 | String: "MovementBasedAutoshoot" (csv value getter)
-const LogicSkillData_getCastingRange = new NativeFunction(base.add(0x873BC4), 'int', ['pointer']); // v53.176 | String: "MovementBasedAutoshoot" (csv value getter)
-const LogicThemeData_isDisabled = new NativeFunction(base.add(0x87BD78), 'int', ['pointer']); // v53.176 | String: "Active theme is marked disabled! theme: "
-const LogicThemeData_getExportName = new NativeFunction(base.add(0x87BD98), 'pointer', ['pointer']); // v53.176 | String: "ExportName" (csv value getter)
-const LogicThemeData_getFileName = new NativeFunction(base.add(0x87BD88), 'pointer', ['pointer']); // v53.176 | String: "FileName" (csv value getter)
-const LogicThemeData_getThemeMusic = new NativeFunction(base.add(0x87BDE8), 'pointer', ['pointer']); // v53.176 | String: "Theme '%s' is missing music"
-const LoginOkMessage_decode = new NativeFunction(base.add(0x8DCD9C), 'void', ['pointer']); // v53.176 | Message type: 20104 (0x4E88)
-const MapEditorModifierPopup_addModifierItem = new NativeFunction(base.add(0x5ED0A8), 'void', ['pointer', 'int']); // v53.176 | String: "popup_editor_modifier"
-const MessageManager_getLatencyReport = new NativeFunction(base.add(0x67B230), 'void', ['pointer', 'pointer']); // v53.176 | String: "LatencyTestResults: ---"
-const MovieClip_getMovieClipByName = new NativeFunction(base.add(0x9FE348), 'pointer', ['pointer', 'pointer']); // v53.176 | modifiers popup item
-const MovieClip_getTextFieldByName = new NativeFunction(base.add(0x9FE640), 'pointer', ['pointer', 'pointer']); // v53.176 | country item
-const MovieClip_gotoAndStopFrameIndex = new NativeFunction(base.add(0x9FD6A0), 'void', ['pointer', 'int']); // v53.176 | country item
-const MovieClip_setInteractiveRecursive = new NativeFunction(base.add(0x9FDE50), 'void', ['pointer', 'int']); // v53.176 | modifiers popup item
-const MovieClip_setText = new NativeFunction(base.add(0x9FE82C), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | modifiers popup item
-const MovieClipHelper_setTextAndScaleIfNecessary = new NativeFunction(base.add(0x7E2924), 'void', ['pointer', 'pointer', 'int', 'int']); // v53.176 | country item || String: "Trying to set %s into NULL TextField!"
-const NativeDialogLibg = new NativeFunction(base.add(0xCD3850), 'void', ['pointer', 'pointer', 'pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "ShowDialog" -> parent function
-const NativeHTTPClientCallback_getFinished = new NativeFunction(base.add(0xCCF53C), 'void', ['int', 'int', 'pointer', 'int', 'int']); // v53.176 | String: "getFinished", cb, inner single function
-const Path_setRootPath = new NativeFunction(base.add(0xCDC35C), 'void', ['pointer']); // v53.176 | Strings: "save", "update", "cache"
-const PlayerInfo_refreshPlayerHeader = new NativeFunction(base.add(0x539288), 'void', ['pointer']); // v53.176 | String: "tag_txt"
-const PopupBase = new NativeFunction(base.add(0x5F8DC0), 'void', ['pointer', 'pointer', 'pointer', 'int', 'int', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "screen_header"
-const PopupBase_getNaviHeight = new NativeFunction(base.add(0x5FA360), 'float', ['pointer']); // v53.176 | country popup refresh
-const PopupBase_update = new NativeFunction(base.add(0x5F9824), 'int', ['pointer', 'float']); // v53.176 | String: "<cbdbdbd>__</c>", top function
-const PreviewBrawlerOrSkinRewardPopup = new NativeFunction(base.add(0x5FA9BC), 'void', ['pointer', 'pointer', 'pointer', 'int', 'pointer']); // v53.176 | String: "shop_1_skins_popup_offer"
-const ScrollArea = new NativeFunction(base.add(0xA31144), 'void', ['pointer', 'pointer', 'int']); // v53.176 | modifiers popup
-const ScrollArea_addContent = new NativeFunction(base.add(0xA314D4), 'void', ['pointer', 'pointer']); // v53.176 | modifiers popup add item
-const ScrollArea_enablePinching = new NativeFunction(base.add(0xA317E0), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
-const ScrollArea_enableHorizontalDrag = new NativeFunction(base.add(0xA31828), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
-const ScrollArea_enableVerticalDrag = new NativeFunction(base.add(0xA31818), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
-const ScrollArea_setAlignment = new NativeFunction(base.add(0xA31BA8), 'void', ['pointer', 'int']); // v53.176 | modifiers popup
-const SetInviteBlockedMessage = new NativeFunction(base.add(0x9293B8), 'void', ['pointer', 'int']); // v53.176 | Message type: 14777 (0x39B9)
-const SettingsScreen_buttonClicked = new NativeFunction(base.add(0x79FEA0), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_SETTINGS_WECHAT_NOT_INSTALLED"
-const SimpleWebView_create = new NativeFunction(base.add(0x72ED2C), 'pointer', []); // v53.176 | String: "popup_news" (only) -> parent function
-const SimpleWebView_loadURL = new NativeFunction(base.add(0x72F200), 'void', ['pointer', 'pointer']); // v53.176 | Related to SimpleWebView::create
-const SoundManager_playSound = new NativeFunction(base.add(0x7A3908), 'void', ['pointer', 'pointer', 'float', 'float', 'int', 'float', 'int']); // v53.176 | String: "Buy_gems"
-const SoundSystem_getMusicVolume = new NativeFunction(base.add(0x997F20), 'float', ['pointer']); // v53.176 | FMOD::ChannelControl::getVolume xref, 1st offset
-const SoundSystem_getSoundVolume = new NativeFunction(base.add(0x99862C), 'float', ['pointer']); // v53.176 | FMOD::ChannelControl::getVolume xref, 2nd offset
-const SoundSystem_setMusicVolume = new NativeFunction(base.add(0x997F14), 'void', ['pointer', 'float']); // v53.176
-const SoundSystem_setSoundVolume = new NativeFunction(base.add(0x998620), 'void', ['pointer', 'float']); // v53.176
-const Sprite_addChild = new NativeFunction(base.add(0xA0B3E4), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::addChild()
-const Sprite_removeChild = new NativeFunction(base.add(0xA0B680), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::removeChild()
-const Stage_addChild = new NativeFunction(base.add(0xA152E0), 'void', ['pointer', 'pointer']); // v53.176 | String: "open" (scid)
-const Stage_removeChild = new NativeFunction(base.add(0xA152E8), 'void', ['pointer', 'pointer']); // v53.176 | String: "close" (scid)
-const StartGetRequest = new NativeFunction(base.add(0xCF72A0), 'int', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | String: "startGetRequest"
-const StringTable_getCurrentLanguageCode = new NativeFunction(base.add(0x7BD82C), 'pointer', []); // v53.176 | String: "TID_ADDITIONAL_GEM_TOOLTIP_FOR_JAPAN"
-const StringTable_getMovieClip = new NativeFunction(base.add(0x7BDCB4), 'pointer', ['pointer', 'pointer']); // v53.176 | country popup
-const StringTable_getString = new NativeFunction(base.add(0x7BD4CC), 'pointer', ['pointer']); // v53.176 | String: "getString NULL"
-const StringTable_setLanguageIndex = new NativeFunction(base.add(0x7BD684), 'void', ['int', 'int']); // v53.176
-const TeamInvitationPopup = new NativeFunction(base.add(0x64F2E0), 'void', ['pointer', 'pointer', 'int']); // v53.176 | Strings: "popup_gameroom_invite_teams", "popup_gameroom_invite_with_mode"
-const TeamJoinRequestPopup = new NativeFunction(base.add(0x64FE8C), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | String: "popup_gameroom_invite"
-const TeamMemberStatusMessage = new NativeFunction(base.add(0x8EB738), 'void', ['pointer', 'int']); // v53.176 | Message type: 14361 | Parent should have string: "Changed status: "..
-const TeamManager_onTeamMessage = new NativeFunction(base.add(0x541738), 'void', ['pointer', 'pointer']); // v53.176 | String: "Got team: %i,%i"
-const TeamManager_onTeamLeftMessage = new NativeFunction(base.add(0x540CA4), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_TEAM_MEMBER_LEFT_%i"
-const TeamStream_buttonClicked = new NativeFunction(base.add(0x5445C0), 'void', ['pointer', 'pointer']); // v53.176 | String: "TID_FREE_TEXT_CHAT_MUTED_YOU"
-const TextField_setText = new NativeFunction(base.add(0xA2C18C), 'void', ['pointer', 'pointer']); // v53.176 | String: "Trying to set %s into NULL TextField!"
-const TriggerLatencyTestMessage = new NativeFunction(base.add(0x97E27C), 'void', ['pointer']); // v53.176 | Message type: 39003
-
-const BattleScreen__ConvertToControlScheme = new NativeFunction(base.add(0x6A94DC), 'pointer', ['pointer', 'pointer', 'pointer']); // v53.176 | Message type: 39003
-const RenderSystem__ScreenToLogicClampToWorld = new NativeFunction(base.add(0x4A37F0), 'void', ['pointer', 'float', 'float', 'pointer', 'pointer']); // v53.176 | Message type: 39003
-const BattleScreen__UpdateSkill = new NativeFunction(base.add(0x6AF618), 'void', ['pointer', 'pointer', 'pointer', 'int', 'float']); // v53.176 | EnragerStarPowerDamage
-const PathSpriteCtor = new NativeFunction(base.add(0x7E53A4), 'void', ['pointer', 'pointer', 'int', 'pointer']); // v53.176 | Message type: 39003
-const PathSpriteUpdateShape = new NativeFunction(base.add(0x7E54EC), 'void', ['pointer', 'pointer', 'float']); // v53.176 | Message type: 39003
-const BattleScreen__CalculateProjectilePath = new NativeFunction(base.add(0x6B4AA4), 'void', ['pointer', 'pointer', 'pointer', 'int', 'pointer', 'float', 'float', 'float', 'float', 'float', 'float']); // v53.176 | Message type: 39003
-//                                                                                             this    character    skill   naniindex  vector3     X          Y        Z      EndX     EndY    EndZ
-const PathSprite__Render = new NativeFunction(base.add(0x7E5E6C), 'void', ['pointer', 'pointer', 'pointer', 'int']); // v53.176 | Message type: 39003
-const LogicMathGetRotatedX = new NativeFunction(base.add(0xA4E5E0), 'int', ['int', 'int', 'int']); // v53.176 | Message type: 39003
-const LogicMathGetRotatedY = new NativeFunction(base.add(0xA4E6D8), 'int', ['int', 'int', 'int']); // v53.176 | Message type: 39003
-const LogicSkillData_getChargeType = new NativeFunction(base.add(0x873D20), 'int', ['pointer']); // v53.176 | String: "ChargeType" (csv value getter)
-const LogicDataTables_getSkillByName = new NativeFunction(base.add(0x84A02C), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "BossRaceBossChainLightning"
-const LogicSkillData_isIndirect = new NativeFunction(base.add(0x873B6C), 'int', ['pointer']); // v53.176 | String: "ChargeType" (csv value getter)
-const RenderSystem__getRenderCoordinate = new NativeFunction(base.add(0x4A36DC), 'void', ['pointer', 'pointer', 'pointer', 'float', 'float', 'float']); // v53.176 | Message type: 39003
-const LogicMathGetAngle = new NativeFunction(base.add(0xA4E460), 'int', ['int', 'int']); // v53.176
-const BattleScreen__getInstance = new NativeFunction(base.add(0x6B3DC8), 'pointer', []); // v53.176
-const LogicGameObjectManagerClient__findGameObject = new NativeFunction(base.add(0x8A9BA8), 'pointer', ['pointer', 'int']); // v53.176 | From CombatHUD::ultiButtonActivated
-const BattleScreen__updateAutoshoot = new NativeFunction(base.add(0x6AD708), 'void', ['pointer', 'pointer', 'pointer']); // v53.176 | From CombatHUD::ultiButtonActivated
-const BattleMode_instancePtr = new NativeFunction(base.add(0x7A5D1C), 'pointer', []);
-const ClientInputCtor = new NativeFunction(base.add(0x90A6F4), 'void', ['pointer', 'int']); // v53.176 | everywhere lol
-const GameObjectManager__playEffect = new NativeFunction(base.add(0x4953A0), 'void', ['pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | Message type: 39003
-const GameObjectManager__playEffectNoLoop = new NativeFunction(base.add(0x4954B4), 'void', ['pointer', 'int', 'int', 'int', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | amber_def_ulti_oil
-const LogicTileMap__getTile = new NativeFunction(base.add(0x7FB790), 'pointer', ['pointer', 'int', 'int']); // v53.176 | LogicGameObjectManagerClient::decode
-const BattleScreen__hideMovementTarget = new NativeFunction(base.add(0x6AD6D8), 'void', ['pointer']); // v53.176 | I D K
-const Screen_getHeight = new NativeFunction(base.add(0xCDCF8C), 'float', []); // v53.176 | I D K
-const Screen_getWidth = new NativeFunction(base.add(0xCDCF80), 'float', []); // v53.176 | I D K
-const LogicSkillClient__decode = new NativeFunction(base.add(0x8B9A64), 'void', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 | end of character::decode
-const BattleScreen__updateMovement = new NativeFunction(base.add(0x6AF0F8), 'void', ['pointer', 'pointer', 'pointer', 'pointer']); // v53.176 |
-const LogicCharacterClientOwn__canCastSkill = new NativeFunction(base.add(0x886174), 'int', ['pointer', 'pointer', 'pointer']); // v53.176 |
-const LogicCharacterClient__getLolaEgo = new NativeFunction(base.add(0x8822DC), 'pointer', ['pointer', 'pointer']); // v53.176 | I  D  K
-const ResourceListener__addFile = new NativeFunction(base.add(0xAAE7BC), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | I  D  K
-const ClientInputManager__update = new NativeFunction(base.add(0x6619C0), 'void', ['pointer', 'float', 'float']); // v53.176 | I D K
-const BattleScreen__update = new NativeFunction(base.add(0x6A9E40), 'void', ['pointer', 'float']); // v53.176 |
 
 let RepliedToClient = 0;
 {
@@ -352,6 +143,7 @@ Interceptor.attach(base.add(0x9510D8), {
     }
 });
 let RootDirPath;
+let ModBase = 0;
 Interceptor.attach(HomeScreen_enter, {
     onEnter: function (args) {
         RootDirPath = ReadStringFromStringObject(base.add(0x10CDCD0));
@@ -361,6 +153,7 @@ Interceptor.attach(HomeScreen_enter, {
         }
 
         let Mod = Module.load(`${RootDirPath}/mod/libg.so`);
+        ModBase = Mod.base;
         Mod.enumerateExports().forEach(element => {
             console.log(element.name);
         });
@@ -399,4 +192,14 @@ const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void'
 const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void', ['pointer']); // v53.176 | 
 const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
-const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 | 
+const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 |
+//Process.setExceptionHandler(function (deatils) {
+//    console.log(deatils.address.sub(base));
+//    console.log(base);
+//    console.log(ModBase);
+//})
+Interceptor.attach(base.add(0x87D85C), {
+    onEnter: function (args) {
+        args[2] = ptr(114514);//Accessory Uses
+    }
+});

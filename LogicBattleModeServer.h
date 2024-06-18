@@ -12,13 +12,13 @@ public:
 	LogicBattleModeServer(/* args */);
 	~LogicBattleModeServer();
 	int getTicksGone() {
-		return ((int (*)(LogicBattleModeServer*))base + 0x9458E0)(this);
+		return ((int (*)(LogicBattleModeServer*))(base + 0x9458E0))(this);
 	}
 	int getTick() {
 		return getTicksGone();
 	}
 	LogicTileMap* getTileMap() {
-		return ((LogicTileMap * (*)(LogicBattleModeServer*))base + 0x94A448)(this);
+		return ((LogicTileMap * (*)(LogicBattleModeServer*))(base + 0x94A448))(this);
 	}
 };
 #endif

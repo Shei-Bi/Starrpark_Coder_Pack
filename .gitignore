@@ -13,3 +13,6 @@ build/CMakeFiles/3.29.3/CMakeSystem.cmake
 /.vs/Starrpark_Coder_Pack/FileContentIndex
 /.vs
 /libg.so.i64
+/bin
+/sysroot
+/lib

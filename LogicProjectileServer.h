@@ -21,7 +21,7 @@ public:
 	LogicCharacterServer* HomingTarget;
 
 	static LogicProjectileServer* shootProjectile(int startX, int startY, LogicCharacterServer* source, LogicGameObjectServer* shooter, LogicProjectileData* projectileData, int endX, int endY, int damage, int normalDMG, int a10, bool a11, int a12, LogicBattleModeServer* battleMode, int a14, int catagory) {
-		return ((LogicProjectileServer * (*)(int, int, LogicCharacterServer*, LogicGameObjectServer*, LogicProjectileData*, int, int, int, int, int, bool, int, LogicBattleModeServer*, int, int))base + 0x8B8E08)(startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory);
+		return ((LogicProjectileServer * (*)(int, int, LogicCharacterServer*, LogicGameObjectServer*, LogicProjectileData*, int, int, int, int, int, bool, int, LogicBattleModeServer*, int, int))(base + 0x8B8E08))(startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory);
 	};
 	LogicProjectileServer(LogicProjectileData* logicProjectileData) : LogicGameObjectServer(logicProjectileData)
 	{

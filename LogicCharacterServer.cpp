@@ -25,7 +25,7 @@ LogicSkillData* LogicCharacterServer::getCurrentCastingSkill() {
 	return nullptr;
 }
 void LogicCharacterServer::interruptAllSkills(bool ignoreAccessory) {
-	return ((void (*)(LogicCharacterServer*, bool))base + 0x88DFEC)(this, ignoreAccessory);
+	return ((void (*)(LogicCharacterServer*, bool))(base + 0x88DFEC))(this, ignoreAccessory);
 }
 void LogicCharacterServer::stopMovement() {
 	MoveStartTick = getLogicBattleModeServer()->getTicksGone() - 1;
@@ -83,4 +83,10 @@ void LogicCharacterServer::calculateChargeUp() {
 		ChargeUpType = 7;
 		ChargeUpMax = getPlayer()->Accessory->AccessoryData->getActiveTicks() * 50;
 	}
+}
+int LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
+	return ((int (*)(LogicCharacterServer*, int, int, bool, LogicData*))(base + 0x88E6F4))(this, healerIndex, amount, shouldShow, source);
+}
+void LogicCharacterServer::addExtraHealthRegen(int healPerSecond, int durationTicks,int healerIndex,LogicData* source) {
+	Buffs.add(new LogicBuffServer(9, durationTicks, healPerSecond, healerIndex));
 }

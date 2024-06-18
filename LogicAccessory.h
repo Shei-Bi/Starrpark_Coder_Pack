@@ -74,9 +74,25 @@ void LogicAccessory::triggerAccessory(LogicCharacterServer* owner, int x, int y)
 	if (AccessoryData->getActivationDelay() <= 0) {
 		activateAccessory(owner);
 	}
+	else {
+		ActivationDelay = AccessoryData->getActivationDelay();
+		//todo: StopPetForDelay
+	}
 	Uses--;
 }
 void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
+	switch (Type) {
+	case 8://heal
+		if (AccessoryData->getSubType() == 1) {
+			int amount = AccessoryData->getCustomValue1();
+			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//Ë¯ÃßÒÇ
+			owner->heal(owner->Index, amount, true, nullptr);
+		}
+		else if (AccessoryData->getSubType() == 2) {
+			owner->addExtraHealthRegen(AccessoryData->getActiveTicks(), AccessoryData->getCustomValue1(), owner->Index, AccessoryData);
+		}
+		break;
+	}
 	if (AccessoryData->getActiveTicks() < 1) {
 		/*
 		Refactor. Reason: same code
@@ -96,7 +112,7 @@ void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
 	if (IsActive) {
 		if (ActivationDelay < 1) {
 			if (TicksActive >= AccessoryData->getActiveTicks()) {
-				IsActive = 0;
+				IsActive = false;
 				CoolDown = AccessoryData->getCoolDown();
 			}
 			else {
@@ -142,15 +158,13 @@ void LogicAccessory::tickAccessory(LogicCharacterServer* owner) {
 				);
 			}
 		}
-		break;
-
 	}
 }
 void LogicAccessory::endAccessoryActivation()
 {
 	if (IsActive)
 	{
-		IsActive = 0;
+		IsActive = false;
 		CoolDown = AccessoryData->getCoolDown();
 	}
 }
