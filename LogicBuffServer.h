@@ -1,5 +1,6 @@
 #ifndef LOGICBUFFSERVER_H
 #define LOGICBUFFSERVER_H
+#include "LogicCharacterServer.h"
 #include "LogicData.h"
 class LogicBuffServer
 {
@@ -24,6 +25,9 @@ public:
 		MaxDuration = duration;
 		Modifier = modifier;
 		Int1 = int1;
+	}
+	bool tick(LogicCharacterServer* owner) {
+		return ((bool (*)(LogicBuffServer*, LogicCharacterServer*))(base + 0x87F660))(this, owner);
 	}
 };
 #endif

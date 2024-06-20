@@ -15,6 +15,10 @@ public:
 		return ((int (*)(LogicBattleModeServer*))(base + 0x9458E0))(this);
 	}
 	int getTick() {
+		/*
+			这两个函数没有任何的区别。但是源码中前者使用的频率仅为后者的七分之一。
+			--Shei
+		*/
 		return getTicksGone();
 	}
 	LogicTileMap* getTileMap() {

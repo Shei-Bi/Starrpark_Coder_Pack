@@ -4,9 +4,13 @@
 class BitStream
 {
 public:
+	void writePositiveInt(int value, int bits)
+	{
+		return ((void (*)(BitStream*, int, int))(base + 0x969074))(this, value, bits);
+	}
 	void writePositiveIntMax7(int value)
 	{
-		return ((void (*)(BitStream*, int))(base + 0x9692FC))(this, value);
+		return writePositiveInt(value, 3);
 	}
 	bool writeBoolean(bool value)
 	{
@@ -18,11 +22,15 @@ public:
 	}
 	void writePositiveIntMax16383(int value)
 	{
-		return ((void (*)(BitStream*, int))(base + 0x969354))(this, value);
+		return writePositiveInt(value, 14);
 	}
 	void writePositiveIntMax511(int value)
 	{
-		return ((void (*)(BitStream*, int))(base + 0x96932C))(this, value);
+		return writePositiveInt(value, 9);
+	}
+	void writePositiveIntMax1023(int value)
+	{
+		return writePositiveInt(value, 10);
 	}
 };
 #endif

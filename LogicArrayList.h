@@ -24,8 +24,8 @@ public:
 	// 获取指定位置的元素
 	T get(int index)
 	{
-		if (index < length && index > 0)
-			return array[index];
+		if (index < length && index >= 0) return array[index];
+		return nullptr;
 	}
 	T& operator[](int);
 	// index位置元素设置为t
@@ -39,7 +39,17 @@ public:
 		}
 	}*/
 
-	//T remove(int index);
+	T remove(int index) {
+		if (index < length && index >= 0) {
+			T removed = array[index];
+			for (int i = index;i < length;i++) {
+				array[i] = array[i + 1];
+			}
+			length--;
+			return removed;
+		}
+		return nullptr;
+	}
 };
 template<class T>
 void LogicArrayList<T>::ensureCapacity(int count) {

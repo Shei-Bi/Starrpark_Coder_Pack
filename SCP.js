@@ -137,8 +137,8 @@ Interceptor.attach(base.add(0x9510D8), {
         args[1] = ptr(21);
         args[2] = NULL;
         //args[3] = NULL;
-        args[4] = NULL;
-        args[5] = NULL;
+        //args[4] = NULL;
+        //args[5] = NULL;
         args[6] = NULL;
     }
 });
@@ -160,6 +160,8 @@ Interceptor.attach(HomeScreen_enter, {
         const _ZN21LogicProjectileServer13targetReachedEi = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer13targetReachedEi"), 'void', ['pointer', 'int']);
         const _ZN21LogicProjectileServer4tickEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer4tickEv"), 'void', ['pointer']);
         const _ZN20LogicCharacterServer17calculateChargeUpEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer17calculateChargeUpEv"), 'void', ['pointer']);
+        const _ZN20LogicCharacterServer11tickEffectsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11tickEffectsEv"), 'void', ['pointer']);
+        const _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades"), 'void', ['pointer', 'pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -168,18 +170,23 @@ Interceptor.attach(HomeScreen_enter, {
             _ZN21LogicProjectileServer4tickEv(self);
             LogicProjectileServer_tick(self);
         }, 'void', ['pointer', 'int']));
-        Interceptor.replace(LogicCharacterServer_setUpgrades, new NativeCallback(function (self,a2) {
+        Interceptor.replace(LogicCharacterServer_setUpgrades, new NativeCallback(function (self, a2) {
             LogicCharacterServer_setUpgrades(self, a2);
             _ZN20LogicCharacterServer17calculateChargeUpEv(self);
+            _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades(self, a2);
         }, 'void', ['pointer', 'pointer']));
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
+        });
+        Interceptor.attach(base.add(0x8887D4), function () {
+            _ZN20LogicCharacterServer11tickEffectsEv(this.context.x19);
         });
         Interceptor.replace(base.add(0x87E1E8), Mod.getExportByName("_ZN14LogicAccessory6encodeEP9BitStreamb"));
         Interceptor.replace(base.add(0x87DE84), Mod.getExportByName("_ZN14LogicAccessory9interruptEbP20LogicCharacterServer"));
         Interceptor.replace(base.add(0x87DE80), Mod.getExportByName("_ZN14LogicAccessory15updateAccessoryEP20LogicCharacterServer"));
         Interceptor.replace(base.add(0x87DE7C), Mod.getExportByName("_ZN14LogicAccessory16triggerAccessoryEP20LogicCharacterServerii"));
         Interceptor.replace(base.add(0x87DE88), Mod.getExportByName("_ZN14LogicAccessory22endAccessoryActivationEv"));
+        Interceptor.replace(base.add(0x8AFD5C), Mod.getExportByName("_ZN9LogicGear6encodeEP9BitStream"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
@@ -193,6 +200,8 @@ const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void'
 const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 |
+const BitStream_readPositiveIntMax134217727 = new NativeFunction(base.add(0x96C6C0), 'int', ['pointer']); // v53.176 |
+const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer','int']); // v53.176 |
 //Process.setExceptionHandler(function (deatils) {
 //    console.log(deatils.address.sub(base));
 //    console.log(base);
@@ -200,6 +209,9 @@ const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 
 //})
 Interceptor.attach(base.add(0x87D85C), {
     onEnter: function (args) {
-        args[2] = ptr(114514);//Accessory Uses
+        args[2] = ptr(7);//Accessory Uses
     }
 });
+Armceptor.replace(base.add(0x880FA8), [0xC6, 0xAD, 0x03, 0x94]);//Character decode: damage number 32767->134217727
+Armceptor.nop(base.add(0x8881CC));//Character encode: nop LogicMath::clamp
+Armceptor.replace(base.add(0x8881D8), [0x79, 0x84, 0x03, 0x94]);//Character encode: damage number 32767->134217727

@@ -78,18 +78,19 @@ void LogicAccessory::triggerAccessory(LogicCharacterServer* owner, int x, int y)
 		ActivationDelay = AccessoryData->getActivationDelay();
 		//todo: StopPetForDelay
 	}
+	owner->blockHealthRegen();
 	Uses--;
 }
 void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 	switch (Type) {
 	case 8://heal
 		if (AccessoryData->getSubType() == 1) {
-			int amount = AccessoryData->getCustomValue1();
+			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;//妙具改革后为百分比
 			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//睡眠仪
 			owner->heal(owner->Index, amount, true, nullptr);
 		}
 		else if (AccessoryData->getSubType() == 2) {
-			owner->addExtraHealthRegen(AccessoryData->getActiveTicks(), AccessoryData->getCustomValue1(), owner->Index, AccessoryData);
+			owner->addExtraHealthRegen(AccessoryData->getCustomValue1() * owner->HitpointsMax / 100, AccessoryData->getActiveTicks(), owner->Index, AccessoryData);
 		}
 		break;
 	}
@@ -125,6 +126,7 @@ void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
 			if (ActivationDelay < 1) activateAccessory(owner);
 		}
 	}
+	owner->getPlayer()->AccessoryUses = Uses;
 }
 void LogicAccessory::tickAccessory(LogicCharacterServer* owner) {
 	switch (Type) {

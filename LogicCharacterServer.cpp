@@ -5,6 +5,9 @@
 #include "LogicAccessory.h"
 #include "LogicProjectileServer.h"
 #include "LogicCharacterData.h"
+#include "LogicBuffServer.h"
+#include "LogicHeroUpgrades.h"
+
 void LogicCharacterServer::addConsumableShield(int amount)
 {
 	;
@@ -89,4 +92,20 @@ int LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, Log
 }
 void LogicCharacterServer::addExtraHealthRegen(int healPerSecond, int durationTicks,int healerIndex,LogicData* source) {
 	Buffs.add(new LogicBuffServer(9, durationTicks, healPerSecond, healerIndex));
+}
+void LogicCharacterServer::blockHealthRegen()
+{
+	HealthRegenBlockedTick = getLogicBattleModeServer()->getTicksGone();
+}
+void LogicCharacterServer::tickEffects() {
+	for (int i = 0;i < Buffs.length;i++) {
+		if (Buffs[i]->tick(this)) {
+			Buffs.remove(i);
+		}
+	}
+}
+void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
+	if (!upgrades) return;//人机没有升级
+	if (upgrades->GearData1) Gears.add(new LogicGear(upgrades->GearData1));
+	if (upgrades->GearData2) Gears.add(new LogicGear(upgrades->GearData2));
 }
