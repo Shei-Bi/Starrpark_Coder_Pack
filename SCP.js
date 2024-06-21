@@ -264,12 +264,22 @@ const Sprite_removeChild = new NativeFunction(base.add(0xA0B680), 'void', ['poin
 const Stage_addChild = new NativeFunction(base.add(0xA152E0), 'void', ['pointer', 'pointer']); // v53.176 | String: "open" (scid)
 const Stage_removeChild = new NativeFunction(base.add(0xA152E8), 'void', ['pointer', 'pointer']); // v53.176 | String: "close" (scid)
 const ResourceListener_addFile = new NativeFunction(base.add(0xAAE7BC), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | characters.sc
+const MovieClip_gotoAndStopFrameIndex = new NativeFunction(base.add(0x9FD6A0), 'void', ['pointer', 'int']); // v53.176 | country item
 const AF = Interceptor.attach(ResourceListener_addFile, {
     onEnter(args) {
         AF.detach();
         ResourceListener_addFile(args[0], Memory.allocUtf8String("sc/debug.sc"), -1, -1, -1, -1, 0);
     }
 });
+function emulateExportNames(mc) {
+    if (mc.add(112).readPointer().isNull()) {
+        console.log("No Export Name!");
+        return;
+    }
+    for (var i = 0; i < mc.add(144).readInt(); i++) {
+        console.log(mc.add(112).readPointer().add(8 * i).readPointer().readUtf8String());
+    }
+}
 Interceptor.replace(BattleScreen_enter, new NativeCallback(function (self) {
     BattleScreen_enter(self);
     const combatHUD = self.add(1568).readPointer();
@@ -286,11 +296,14 @@ Interceptor.replace(BattleScreen_enter, new NativeCallback(function (self) {
     const icon_gear_damage = StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject("icon_gear_damage"));
     chatButtonMovieClip.add(32).writeFloat(matrixX - 60.0);
     chatButtonMovieClip.add(36).writeFloat(115.0);
-    //Sprite_addChild(combatHUD, chatButtonMovieClip);
+    Sprite_addChild(combatHUD, chatButtonMovieClip);
+    chatButtonMovieClip.add(16).writeFloat(4.0);
+    chatButtonMovieClip.add(28).writeFloat(2.0);
     icon_gear_damage.add(32).writeFloat(matrixX - 60.0);
     icon_gear_damage.add(36).writeFloat(115.0);
-    icon_gear_damage.add(16).writeFloat(10.0);
-    icon_gear_damage.add(28).writeFloat(10.0);
+    icon_gear_damage.add(16).writeFloat(1.0);
+    icon_gear_damage.add(28).writeFloat(1.0);
     Sprite_addChild(combatHUD, icon_gear_damage);
-
+    MovieClip_gotoAndStopFrameIndex(icon_gear_damage, 2);//0 black 1 blue 2 purple 3 red 
+    //emulateExportNames(icon_gear_damage);
 }, 'void', ['pointer']));
