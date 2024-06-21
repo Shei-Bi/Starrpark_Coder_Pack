@@ -3,6 +3,7 @@
 
 #include "LogicGearData.h"
 #include "BitStream.h"
+#include "LogicCharacterServer.h"
 
 //guessed names.
 class LogicGear
@@ -15,18 +16,34 @@ public:
 	bool IsActive;//20
 	int ActiveTicks;
 
+	enum GearTypes//guessed names (from csv)
+	{
+		ForestSpeed = 0,
+		HealthRegen = 1,
+		LowHealthDamage = 2,
+		Vision = 3,
+		ConsumableShield = 4
+	};
 	LogicGear(LogicGearData* data)
 	{
 		Type = data->getLogicType();
 		GearData = data;
-		if (Type == 4) {
+		if (Type == ConsumableShield) {
 			ShieldMax = data->getModifierValue();
 		}
 	}
 	void encode(BitStream*);
+	void tick(LogicCharacterServer* owner) {
+		switch (Type)
+		{
+		case LowHealthDamage:
+			if (owner->Hitpoints * 100 / owner->HitpointsMax < 50) owner->giveDamageBuff(GearData->getModifierValue(), 2);
+			break;
+		}
+	}
 };
 void LogicGear::encode(BitStream* stream) {
 	stream->writeBoolean(IsActive);
-	if (Type == 4) stream->writePositiveIntMax1023(Shield);
+	if (Type == ConsumableShield) stream->writePositiveIntMax1023(Shield);
 }
 #endif

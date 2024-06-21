@@ -28,6 +28,8 @@ const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), '
 
 const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
 const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
+const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
+const Stage_instanceAddr = base.add(0x10B8540); // v53.176 | In popups
 
 let RepliedToClient = 0;
 {
@@ -80,7 +82,32 @@ let RepliedToClient = 0;
     });
 }
 var MdD = Interceptor.replace(base.add(0x9875C8), new NativeCallback(function () { return 1; }, 'int', [])); Armceptor.nop(base.add(0x986338)); var MsPA = Interceptor.attach(base.add(0x988130), { onEnter(args) { this.messaging = args[0]; args[0].add(24).writeU32(5); args[1] = args[2]; }, onLeave(re) { this.messaging.add(24).writeU32(5); } }); Armceptor.replace(base.add(0x988900), [0x21, 0x00, 0x00, 0x54]); const ntohs = new NativeFunction(Module.findExportByName('libc.so', 'ntohs'), 'uint16', ['uint16']); const inet_addr = new NativeFunction(Module.findExportByName('libc.so', 'inet_addr'), 'int', ['pointer']); Interceptor.attach(Module.findExportByName('libc.so', 'connect'), { onEnter(args) { if (ntohs(args[1].add(2).readU16()) == 9339) { var fd = args[0].toInt32(); Memory.writeU16(args[1].add(2), ntohs(9339)); args[1].add(4).writeInt(inet_addr(Memory.allocUtf8String("127.0.0.1"))) } } }); Armceptor.ret(base.add(0xFAC790)); Armceptor.ret(base.add(0xFAC7A0));
-
+function ByteLength(str) {
+    let l = str.length;
+    for (let i = str.length - 1; i >= 0; i--) {
+        const code = str.charCodeAt(i);
+        if (code > 0x7F && code <= 0x7FF) l++;
+        else if (code > 0x7FF && code <= 0xFFFF) l += 2;
+        if (code >= 0xDC00 && code <= 0xDFFF) i--;
+    }
+    return l;
+}
+function CreateNewStringObject(str, at = 0) {
+    const charLen = str.length;
+    const byteLen = ByteLength(str);
+    const stringObjectPtr = at ? at : malloc(16);
+    stringObjectPtr.writeU32(charLen);
+    stringObjectPtr.add(4).writeU32(byteLen);
+    if (byteLen > 7) {
+        const longStringAllocPtr = malloc(byteLen + 1);
+        longStringAllocPtr.writeUtf8String(str);
+        stringObjectPtr.add(8).writePointer(longStringAllocPtr);
+    }
+    else {
+        stringObjectPtr.add(8).writeUtf8String(str);
+    }
+    return stringObjectPtr;
+}
 // Logic
 function WriteToMemory(address, valueType, value) {
     switch (valueType) {
@@ -134,7 +161,7 @@ function ReadStringFromStringObject(strObject) {
 Interceptor.attach(base.add(0x9510D8), {
     onEnter: function (args) {
         console.log(`level:${args[1].toInt32()}\nsp:${ReadStringFromStringObject(LogicData_getName(args[2]))}\na:${ReadStringFromStringObject(LogicData_getName(args[3]))}\ng1:${ReadStringFromStringObject(LogicData_getName(args[4]))}\ng2:${ReadStringFromStringObject(LogicData_getName(args[5]))}`)
-        args[1] = ptr(21);
+        args[1] = ptr(11);
         args[2] = NULL;
         //args[3] = NULL;
         //args[4] = NULL;
@@ -162,6 +189,8 @@ Interceptor.attach(HomeScreen_enter, {
         const _ZN20LogicCharacterServer17calculateChargeUpEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer17calculateChargeUpEv"), 'void', ['pointer']);
         const _ZN20LogicCharacterServer11tickEffectsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11tickEffectsEv"), 'void', ['pointer']);
         const _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades"), 'void', ['pointer', 'pointer']);
+        const _ZN20LogicCharacterServer9tickGearsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer9tickGearsEv"), 'void', ['pointer']);
+        const _ZN20LogicCharacterServer22getDamageBuffTemporaryEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer22getDamageBuffTemporaryEv"), 'int', ['pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -180,6 +209,18 @@ Interceptor.attach(HomeScreen_enter, {
         });
         Interceptor.attach(base.add(0x8887D4), function () {
             _ZN20LogicCharacterServer11tickEffectsEv(this.context.x19);
+        });
+        Interceptor.attach(base.add(0x8887B4), function () {
+            //console.log(this.context.x19.add(1140).readInt());
+            _ZN20LogicCharacterServer9tickGearsEv(this.context.x19);//after tickTimers
+        });
+        Interceptor.attach(base.add(0x88717C), function () {
+            if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
+        });
+        Interceptor.attach(LogicCharacterServer_attack, {
+            onEnter: function (args) {
+                args[4] = ptr(args[4].toInt32() * (100 + _ZN20LogicCharacterServer22getDamageBuffTemporaryEv(args[0])) / 100);
+            }
         });
         Interceptor.replace(base.add(0x87E1E8), Mod.getExportByName("_ZN14LogicAccessory6encodeEP9BitStreamb"));
         Interceptor.replace(base.add(0x87DE84), Mod.getExportByName("_ZN14LogicAccessory9interruptEbP20LogicCharacterServer"));
@@ -201,7 +242,8 @@ const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 
 const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 |
 const BitStream_readPositiveIntMax134217727 = new NativeFunction(base.add(0x96C6C0), 'int', ['pointer']); // v53.176 |
-const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer','int']); // v53.176 |
+const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer', 'int']); // v53.176 |
+const LogicCharacterServer_attack = new NativeFunction(base.add(0x890D10), 'void', ['pointer', 'int']); // v53.176 |
 //Process.setExceptionHandler(function (deatils) {
 //    console.log(deatils.address.sub(base));
 //    console.log(base);
@@ -215,3 +257,40 @@ Interceptor.attach(base.add(0x87D85C), {
 Armceptor.replace(base.add(0x880FA8), [0xC6, 0xAD, 0x03, 0x94]);//Character decode: damage number 32767->134217727
 Armceptor.nop(base.add(0x8881CC));//Character encode: nop LogicMath::clamp
 Armceptor.replace(base.add(0x8881D8), [0x79, 0x84, 0x03, 0x94]);//Character encode: damage number 32767->134217727
+const StringTable_getMovieClip = new NativeFunction(base.add(0x7BDCB4), 'pointer', ['pointer', 'pointer']); // v53.176 | country popup
+const GameButton = new NativeFunction(base.add(0x504F74), 'void', ['pointer']); // v53.176 | country popup
+const Sprite_addChild = new NativeFunction(base.add(0xA0B3E4), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::addChild()
+const Sprite_removeChild = new NativeFunction(base.add(0xA0B680), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::removeChild()
+const Stage_addChild = new NativeFunction(base.add(0xA152E0), 'void', ['pointer', 'pointer']); // v53.176 | String: "open" (scid)
+const Stage_removeChild = new NativeFunction(base.add(0xA152E8), 'void', ['pointer', 'pointer']); // v53.176 | String: "close" (scid)
+const ResourceListener_addFile = new NativeFunction(base.add(0xAAE7BC), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | characters.sc
+const AF = Interceptor.attach(ResourceListener_addFile, {
+    onEnter(args) {
+        AF.detach();
+        ResourceListener_addFile(args[0], Memory.allocUtf8String("sc/debug.sc"), -1, -1, -1, -1, 0);
+    }
+});
+Interceptor.replace(BattleScreen_enter, new NativeCallback(function (self) {
+    BattleScreen_enter(self);
+    const combatHUD = self.add(1568).readPointer();
+    const Stage_instancePtr = Stage_instanceAddr.readPointer();
+    let fln1 = 0.1;
+    if (Stage_instancePtr.add(10368).readFloat() != 0.0) {
+        fln1 = Stage_instancePtr.add(10368).readFloat();
+    }
+    const matrixX = (Stage_instancePtr.add(10532).readInt() - ((Stage_instancePtr.add(88).readFloat() + Stage_instancePtr.add(84).readFloat()) / fln1));
+    const uiSO = CreateNewStringObject("sc/debug.sc");
+    const debug_menu_item_small = CreateNewStringObject("debug_menu_item_small");
+
+    const chatButtonMovieClip = StringTable_getMovieClip(uiSO, debug_menu_item_small);
+    const icon_gear_damage = StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject("icon_gear_damage"));
+    chatButtonMovieClip.add(32).writeFloat(matrixX - 60.0);
+    chatButtonMovieClip.add(36).writeFloat(115.0);
+    //Sprite_addChild(combatHUD, chatButtonMovieClip);
+    icon_gear_damage.add(32).writeFloat(matrixX - 60.0);
+    icon_gear_damage.add(36).writeFloat(115.0);
+    icon_gear_damage.add(16).writeFloat(10.0);
+    icon_gear_damage.add(28).writeFloat(10.0);
+    Sprite_addChild(combatHUD, icon_gear_damage);
+
+}, 'void', ['pointer']));

@@ -18,6 +18,17 @@ public:
 	int TeamIndex;
 	int WorldIndex;
 
+	enum BuffTypes//guessed names
+	{
+		Damage = 1,
+		DamageAndSize = 2,
+		SpeedSlower = 3,
+		SpeedFaster = 4,
+		Damage2 = 5,
+		HealthRegen = 9,
+		BelleWeapon = 14,
+		BelleUlti = 15
+	};
 	LogicBuffServer(int type, int duration, int modifier, int int1)
 	{
 		Type = type;
@@ -28,6 +39,9 @@ public:
 	}
 	bool tick(LogicCharacterServer* owner) {
 		return ((bool (*)(LogicBuffServer*, LogicCharacterServer*))(base + 0x87F660))(this, owner);
+	}
+	static bool canBuffStack(int type) {
+		return type == HealthRegen;
 	}
 };
 #endif

@@ -5,11 +5,11 @@
 #include "LogicSkillData.h"
 #include "LogicCharacterData.h"
 #include "LogicData.h"
-#include "LogicGear.h"
 #include "LogicHeroUpgrades.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
+class LogicGear;
 class LogicCharacterServer : public LogicGameObjectServer
 {
 public:
@@ -55,5 +55,8 @@ public:
 	void tickGears();//guessed name
 	void tickStarPowers();
 	void setUpgrades(LogicHeroUpgrades*);
+	void applyBuff(int, int, int, int);
+	void giveDamageBuff(int, int);
+	int getDamageBuffTemporary();
 };
 #endif

@@ -7,6 +7,7 @@
 #include "LogicCharacterData.h"
 #include "LogicBuffServer.h"
 #include "LogicHeroUpgrades.h"
+#include "LogicGear.h"
 
 void LogicCharacterServer::addConsumableShield(int amount)
 {
@@ -90,8 +91,8 @@ void LogicCharacterServer::calculateChargeUp() {
 int LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
 	return ((int (*)(LogicCharacterServer*, int, int, bool, LogicData*))(base + 0x88E6F4))(this, healerIndex, amount, shouldShow, source);
 }
-void LogicCharacterServer::addExtraHealthRegen(int healPerSecond, int durationTicks,int healerIndex,LogicData* source) {
-	Buffs.add(new LogicBuffServer(9, durationTicks, healPerSecond, healerIndex));
+void LogicCharacterServer::addExtraHealthRegen(int healPerSecond, int durationTicks, int healerIndex, LogicData* source) {
+	LogicCharacterServer::applyBuff(LogicBuffServer::HealthRegen, durationTicks, healPerSecond, healerIndex);
 }
 void LogicCharacterServer::blockHealthRegen()
 {
@@ -108,4 +109,35 @@ void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
 	if (!upgrades) return;//人机没有升级
 	if (upgrades->GearData1) Gears.add(new LogicGear(upgrades->GearData1));
 	if (upgrades->GearData2) Gears.add(new LogicGear(upgrades->GearData2));
+}
+void LogicCharacterServer::applyBuff(int type, int duration, int modifier, int int1) {
+	if (Buffs.length < 1 || LogicBuffServer::canBuffStack(type)) {
+		Buffs.add(new LogicBuffServer(type, duration, modifier, int1));
+		return;
+	}
+	for (int i = 0;i < Buffs.length;i++) {
+		LogicBuffServer* buff = Buffs[i];
+		if (buff->Type == type && (buff->Duration < duration || buff->Modifier < modifier)) {
+			buff->Modifier = modifier;
+			buff->Int1 = int1;
+			buff->Duration = duration;
+			return;
+		}
+	}
+	Buffs.add(new LogicBuffServer(type, duration, modifier, int1));
+}
+void LogicCharacterServer::giveDamageBuff(int modifier, int duration) {
+	LogicCharacterServer::applyBuff(LogicBuffServer::Damage, duration, modifier, 0);
+}
+void LogicCharacterServer::tickGears() {
+	for (int i = 0;i < Gears.length;i++) {
+		Gears[i]->tick(this);
+	}
+}
+int LogicCharacterServer::getDamageBuffTemporary() {
+	int damageBuff = 0;
+	for (int i = 0;i < Buffs.length;i++) {
+		if (Buffs[i]->Type == LogicBuffServer::Damage || Buffs[i]->Type == LogicBuffServer::Damage2 || Buffs[i]->Type == LogicBuffServer::DamageAndSize) damageBuff += Buffs[i]->Modifier;
+	}
+	return damageBuff;
 }
