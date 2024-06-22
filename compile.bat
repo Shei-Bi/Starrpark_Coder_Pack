@@ -1,1 +1,1 @@
-"C:\Users\Greg\source\repos\Shei-Bi\Starrpark_Coder_Pack\bin\aarch64-linux-android21-clang++" -shared LogicCharacterServer.cpp LogicMath.cpp -o libg.so
+"C:\Users\EDY\source\repos\Starrpark_Coder_Pack\windows-x86_64\bin\aarch64-linux-android21-clang++" -shared LogicCharacterServer.cpp LogicMath.cpp -o libg.so

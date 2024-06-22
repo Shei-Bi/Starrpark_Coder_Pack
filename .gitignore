@@ -17,3 +17,5 @@ build/CMakeFiles/3.29.3/CMakeSystem.cmake
 /sysroot
 /lib
 /dev64cut.js
+/windows-x86_64
+compile.bat

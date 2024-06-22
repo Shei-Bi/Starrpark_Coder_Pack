@@ -106,7 +106,7 @@ void LogicCharacterServer::tickEffects() {
 	}
 }
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
-	if (!upgrades) return;//ÈË»úÃ»ÓÐÉý¼¶
+	if (!upgrades) return;//ï¿½Ë»ï¿½Ã»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 	if (upgrades->GearData1) Gears.add(new LogicGear(upgrades->GearData1));
 	if (upgrades->GearData2) Gears.add(new LogicGear(upgrades->GearData2));
 }
@@ -140,4 +140,19 @@ int LogicCharacterServer::getDamageBuffTemporary() {
 		if (Buffs[i]->Type == LogicBuffServer::Damage || Buffs[i]->Type == LogicBuffServer::Damage2 || Buffs[i]->Type == LogicBuffServer::DamageAndSize) damageBuff += Buffs[i]->Modifier;
 	}
 	return damageBuff;
+}
+int LogicCharacterServer::getBuffBoost(int type) {
+	/*
+		New Function. Reason: Repeated Usage.
+		--Shei
+	*/
+	int buff = 0;
+	for (int i = 0;i < Buffs.length;i++) {
+		if (Buffs[i]->Type == type) buff += Buffs[i]->Modifier;
+	}
+	return buff;
+}
+void LogicCharacterServer::giveSpeedFasterBuff(int modifier, int duration, bool haveVisualEffects) {
+	//todo: visual effects
+	LogicCharacterServer::applyBuff(LogicBuffServer::SpeedFaster, duration, modifier, 0);
 }

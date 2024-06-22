@@ -39,6 +39,13 @@ public:
 		case LowHealthDamage:
 			if (owner->Hitpoints * 100 / owner->HitpointsMax < 50) owner->giveDamageBuff(GearData->getModifierValue(), 2);
 			break;
+		case ForestSpeed:
+			/*
+			Refactor. Reason: Supercell一直用 LogicTileMap::logicToPathFinderTile(logic) / 3 求LogicTile，但前者等价于 / 100 ，也许他这样有特殊的理由......
+			--Shei
+			*/
+			if (owner->getLogicBattleModeServer()->getTileMap()->getTile(owner->GetX() / 300, owner->GetY() / 300)->HidesHero) owner->giveSpeedFasterBuff(GearData->getModifierValue(), 2, false);
+			break;
 		}
 	}
 };

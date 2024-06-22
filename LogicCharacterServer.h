@@ -58,5 +58,7 @@ public:
 	void applyBuff(int, int, int, int);
 	void giveDamageBuff(int, int);
 	int getDamageBuffTemporary();
+	void giveSpeedFasterBuff(int, int, bool);
+	int getBuffBoost(int);
 };
 #endif

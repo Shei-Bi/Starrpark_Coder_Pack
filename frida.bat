@@ -1,1 +1,0 @@
-frida -U bsd.suitcase.dev1 -l SCP.js

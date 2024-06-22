@@ -29,6 +29,7 @@ const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), '
 const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
 const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
 const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
+const BattleScreen_update = new NativeFunction(base.add(0x6A9E40), 'void', ['pointer', 'float']); // v53.176 | String: "land_zone"
 const Stage_instanceAddr = base.add(0x10B8540); // v53.176 | In popups
 
 let RepliedToClient = 0;
@@ -171,6 +172,7 @@ Interceptor.attach(base.add(0x9510D8), {
 });
 let RootDirPath;
 let ModBase = 0;
+var Buffs = [];
 Interceptor.attach(HomeScreen_enter, {
     onEnter: function (args) {
         RootDirPath = ReadStringFromStringObject(base.add(0x10CDCD0));
@@ -211,7 +213,12 @@ Interceptor.attach(HomeScreen_enter, {
             _ZN20LogicCharacterServer11tickEffectsEv(this.context.x19);
         });
         Interceptor.attach(base.add(0x8887B4), function () {
-            //console.log(this.context.x19.add(1140).readInt());
+            if (this.context.x19.add(60).readInt() != 0) return;
+            Buffs = [];
+            for (var i = 0; i < this.context.x19.add(1140).readInt(); i++) {
+                var b = this.context.x19.add(1128).readPointer().add(8 * i).readPointer();
+                Buffs.push(b.readInt());
+            }
             _ZN20LogicCharacterServer9tickGearsEv(this.context.x19);//after tickTimers
         });
         Interceptor.attach(base.add(0x88717C), function () {
@@ -264,7 +271,11 @@ const Sprite_removeChild = new NativeFunction(base.add(0xA0B680), 'void', ['poin
 const Stage_addChild = new NativeFunction(base.add(0xA152E0), 'void', ['pointer', 'pointer']); // v53.176 | String: "open" (scid)
 const Stage_removeChild = new NativeFunction(base.add(0xA152E8), 'void', ['pointer', 'pointer']); // v53.176 | String: "close" (scid)
 const ResourceListener_addFile = new NativeFunction(base.add(0xAAE7BC), 'void', ['pointer', 'pointer', 'int', 'int', 'int', 'int', 'int']); // v53.176 | characters.sc
+const DisplayObject_setScale = new NativeFunction(base.add(0x9F8E58), 'void', ['pointer', 'float']); // v53.176 | modifiers popup item
+const DisplayObject_setAlpha = new NativeFunction(base.add(0x9F95DC), 'void', ['pointer', 'float']); // v53.176 | I D K
 const MovieClip_gotoAndStopFrameIndex = new NativeFunction(base.add(0x9FD6A0), 'void', ['pointer', 'int']); // v53.176 | country item
+const MovieClip_getTextFieldByName = new NativeFunction(base.add(0x9FE640), 'pointer', ['pointer', 'pointer']); // v53.176 | country item
+const TextField_setText = new NativeFunction(base.add(0xA2C18C), 'void', ['pointer', 'pointer']); // v53.176 | String: "Trying to set %s into NULL TextField!"
 const AF = Interceptor.attach(ResourceListener_addFile, {
     onEnter(args) {
         AF.detach();
@@ -280,30 +291,230 @@ function emulateExportNames(mc) {
         console.log(mc.add(112).readPointer().add(8 * i).readPointer().readUtf8String());
     }
 }
+const MovieClip_getMovieClipByName = new NativeFunction(base.add(0x9FE348), 'pointer', ['pointer', 'pointer']); // v53.176 | modifiers popup item
+class TextFieldManager {
+    static setTextField(textfield) {
+        this.textfield = textfield;
+        return this;
+    }
+    static setX(x) {
+        this.textfield.add(32).writeFloat(x);
+        return this;
+    }
+    static setY(y) {
+        this.textfield.add(36).writeFloat(y);
+        return this;
+    }
+    static setColor(color) {
+        this.textfield.add(88).writeU32(color);
+        return this;
+    }
+    static setColorTag(bool) {
+        this.textfield.add(101).writeU8(+bool);
+        return this;
+    }
+    static setFontOutline(bool) {
+        this.textfield.add(104).writeU8(+bool);
+        return this;
+    }
+    static setAlign(align) {
+        this.textfield.add(110).writeU8(align);
+        return this;
+    }
+    static setFontSize(fontSize) {
+        this.textfield.add(136).writeShort(fontSize);
+        return this;
+    }
+    static setText(text) {
+        const textSO = CreateNewStringObject(text);
+        TextField_setText(this.textfield, textSO);
+        ClearStringObjects(textSO);
+        return this;
+    }
+    static setTextScaleIfNecessary(text) {
+        const textSO = CreateNewStringObject(text);
+        MovieClipHelper_setTextAndScaleIfNecessary(this.textfield, textSO, 0, 0);
+        ClearStringObjects(textSO);
+        return this;
+    }
+}
+class VirtualCalls {
+    static CustomButton_setMovieClip(base, MovieClip, setTimeline) {
+        new NativeFunction(base.readPointer().add(336).readPointer(), 'void', ['pointer', 'pointer', 'int'])(base, MovieClip, setTimeline);
+    }
+    static DisplayObject_getHeight(base) {
+        return new NativeFunction(base.readPointer().add(104).readPointer(), 'float', ['pointer'])(base);
+    }
+    static DisplayObject_getWidth(base) {
+        return new NativeFunction(base.readPointer().add(96).readPointer(), 'float', ['pointer'])(base);
+    }
+    static DisplayObject_setXY(base, x, y) {
+        new NativeFunction(base.readPointer().add(40).readPointer(), 'void', ['pointer', 'float', 'float'])(base, x, y);
+    }
+    static GameSliderComponent_update(base, time) {
+        return new NativeFunction(base.readPointer().add(400).readPointer(), 'int', ['pointer', 'float'])(base, time);
+    }
+    static GUIContainer_getMovieClip(base) {
+        return base.add(104).readPointer();
+    }
+    static LogicDataTable_getItemAt(base, index) {
+        return new NativeFunction(base.readPointer().add(40).readPointer(), 'pointer', ['pointer', 'int'])(base, index);
+    }
+    static LogicDataTable_getItemCount(base) {
+        return new NativeFunction(base.readPointer().add(32).readPointer(), 'int', ['pointer'])(base);
+    }
+    static MessageManager_sendMessage(base, PiranhaMessage) {
+        new NativeFunction(base.readPointer().add(24).readPointer(), 'void', ['pointer', 'pointer'])(base, PiranhaMessage);
+    }
+}
+class CharacterSwitchingHUD {
+    constructor(combatHUD) {
+        this.ring = MovieClip_getMovieClipByName(StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject("player_info_badge_btm")), Memory.allocUtf8String("ulti_ring"));
+        this.ring.add(32).writeFloat(200.0);
+        this.ring.add(36).writeFloat(200.0);
+        Sprite_addChild(combatHUD, this.ring);
+    }
+}
+class BuffIcon {
+    constructor(combatHUD, type, yLayer) {
+        var BuffText = "Buff";
+        var BuffIcon = "icon_gear_damage";
+        var BuffColor = [0, 0, 0];
+        switch (type) {
+            case 1:
+                BuffText = "<c681B84>Damage</c>";
+                BuffColor = [255, 50, 255];
+                BuffIcon = "icon_gear_damage";
+                break;
+            case 4:
+                BuffText = "<cFF5F1F>Speed</c>";
+                BuffColor = [255, 95, 31];
+                BuffIcon = "icon_gear_speed";
+                break;
+        }
+        const Stage_instancePtr = Stage_instanceAddr.readPointer();
+        let fln1 = 0.1;
+        if (Stage_instancePtr.add(10368).readFloat() != 0.0) {
+            fln1 = Stage_instancePtr.add(10368).readFloat();
+        }
+        const matrixX = (Stage_instancePtr.add(10532).readInt() - ((Stage_instancePtr.add(88).readFloat() + Stage_instancePtr.add(84).readFloat()) / fln1));
+        const uiSO = CreateNewStringObject("sc/debug.sc");
+        const debug_menu_item_small = CreateNewStringObject("debug_menu_item_small");
+
+        this.BackGround = StringTable_getMovieClip(uiSO, debug_menu_item_small);
+        this.icon = StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject(BuffIcon));
+        this.Text = MovieClip_getTextFieldByName(StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject("popover_text_left")), Memory.allocUtf8String("text"));
+        this.TimeSinceEnabled = -1;
+        this.alpha = 1.0;
+        this.StartX = matrixX + VirtualCalls.DisplayObject_getWidth(this.BackGround) / 2 + 70.0;
+        this.shouldDestruct = false;
+        this.combatHUD = combatHUD;
+        this.BackGround.add(32).writeFloat(this.StartX);
+        this.BackGround.add(36).writeFloat(VirtualCalls.DisplayObject_getHeight(this.BackGround) / 2 + 100.0);
+        this.BackGround.add(16).writeFloat(3.0);
+        this.BackGround.add(28).writeFloat(1.5);
+        // this.BackGround.add(9).writeU8(100);
+        // this.BackGround.add(11).writeU8(100);
+        DisplayObject_setScale(this.icon, 0.6);
+        this.icon.add(32).writeFloat(this.BackGround.add(32).readFloat() - VirtualCalls.DisplayObject_getWidth(this.BackGround) / 2 + VirtualCalls.DisplayObject_getWidth(this.icon) / 2 + 10.0);
+        this.icon.add(36).writeFloat(this.BackGround.add(36).readFloat());
+        MovieClip_gotoAndStopFrameIndex(this.icon, 1);//0 black 1 blue 2 purple 3 red
+        // this.icon.add(9).writeU8(255 - BuffColor[0]);
+        // this.icon.add(10).writeU8(255 - BuffColor[1]);
+        // this.icon.add(11).writeU8(255 - BuffColor[2]);
+        this.Text.add(32).writeFloat(this.BackGround.add(32).readFloat());
+        this.Text.add(36).writeFloat(this.BackGround.add(36).readFloat());
+        TextFieldManager.setTextField(this.Text).setColorTag(true);
+        TextField_setText(this.Text, CreateNewStringObject(BuffText));
+        this.BackGround.add(9).writeU8(BuffColor[0]);
+        this.BackGround.add(10).writeU8(BuffColor[1]);
+        this.BackGround.add(11).writeU8(BuffColor[2]);
+        DisplayObject_setAlpha(this.BackGround, this.alpha * 0.75);
+        DisplayObject_setAlpha(this.icon, this.alpha);
+        DisplayObject_setAlpha(this.Text, this.alpha);
+        this.DesX = matrixX - VirtualCalls.DisplayObject_getWidth(this.BackGround) / 2;
+
+        this.BackGround.add(36).writeFloat(this.BackGround.add(36).readFloat() + yLayer * VirtualCalls.DisplayObject_getHeight(this.BackGround));
+        this.icon.add(36).writeFloat(this.icon.add(36).readFloat() + yLayer * VirtualCalls.DisplayObject_getHeight(this.BackGround));
+        this.Text.add(36).writeFloat(this.Text.add(36).readFloat() + yLayer * VirtualCalls.DisplayObject_getHeight(this.BackGround));
+
+        Sprite_addChild(combatHUD, this.BackGround);
+        Sprite_addChild(combatHUD, this.icon);
+        Sprite_addChild(combatHUD, this.Text);
+
+        this.swapDirection();
+        this.TimeSinceEnabled = -1;
+    }
+    update(deltaTime) {
+        if (this.TimeSinceEnabled != -1 && this.TimeSinceEnabled <= 0.5) {
+            var XBefore = this.TimeSinceEnabled * this.TimeSinceEnabled + this.TimeSinceEnabled * 3 / 2;
+            this.TimeSinceEnabled += deltaTime;
+            var XNow = this.TimeSinceEnabled * this.TimeSinceEnabled + this.TimeSinceEnabled * 3 / 2;
+            // var d = (XNow - XBefore) * (VirtualCalls.DisplayObject_getWidth(this.BackGround) + 50.0);
+            var d = (this.BackGround.add(32).readFloat() - this.DesX) * 0.1;
+            this.BackGround.add(32).writeFloat(this.BackGround.add(32).readFloat() - d);
+            this.icon.add(32).writeFloat(this.icon.add(32).readFloat() - d);
+            this.Text.add(32).writeFloat(this.Text.add(32).readFloat() - d);
+
+            if (this.shouldDestruct && BuffIcons.length > 0) this.hide();
+        }
+        else if (this.shouldDestruct) {
+            Sprite_removeChild(this.combatHUD, this.BackGround);
+            Sprite_removeChild(this.combatHUD, this.icon);
+            Sprite_removeChild(this.combatHUD, this.Text);
+            return true;
+        }
+        return false;
+    }
+    swapDirection() {
+        var tmp = this.DesX;
+        this.DesX = this.StartX;
+        this.StartX = tmp;
+        this.TimeSinceEnabled = 0.0;
+    }
+    hide() {
+        this.alpha = 0.0;
+        DisplayObject_setAlpha(this.BackGround, this.alpha * 0.5);
+        DisplayObject_setAlpha(this.icon, this.alpha);
+        DisplayObject_setAlpha(this.Text, this.alpha);
+    }
+}
+var BuffIcons = [];
+var PendingBuffs = [];
+var MovieClips = [];
 Interceptor.replace(BattleScreen_enter, new NativeCallback(function (self) {
     BattleScreen_enter(self);
+    Buffs = [];
+    PendingBuffs = [];
+    MovieClips = [];
     const combatHUD = self.add(1568).readPointer();
-    const Stage_instancePtr = Stage_instanceAddr.readPointer();
-    let fln1 = 0.1;
-    if (Stage_instancePtr.add(10368).readFloat() != 0.0) {
-        fln1 = Stage_instancePtr.add(10368).readFloat();
-    }
-    const matrixX = (Stage_instancePtr.add(10532).readInt() - ((Stage_instancePtr.add(88).readFloat() + Stage_instancePtr.add(84).readFloat()) / fln1));
-    const uiSO = CreateNewStringObject("sc/debug.sc");
-    const debug_menu_item_small = CreateNewStringObject("debug_menu_item_small");
-
-    const chatButtonMovieClip = StringTable_getMovieClip(uiSO, debug_menu_item_small);
-    const icon_gear_damage = StringTable_getMovieClip(CreateNewStringObject("sc/ui.sc"), CreateNewStringObject("icon_gear_damage"));
-    chatButtonMovieClip.add(32).writeFloat(matrixX - 60.0);
-    chatButtonMovieClip.add(36).writeFloat(115.0);
-    Sprite_addChild(combatHUD, chatButtonMovieClip);
-    chatButtonMovieClip.add(16).writeFloat(4.0);
-    chatButtonMovieClip.add(28).writeFloat(2.0);
-    icon_gear_damage.add(32).writeFloat(matrixX - 60.0);
-    icon_gear_damage.add(36).writeFloat(115.0);
-    icon_gear_damage.add(16).writeFloat(1.0);
-    icon_gear_damage.add(28).writeFloat(1.0);
-    Sprite_addChild(combatHUD, icon_gear_damage);
-    MovieClip_gotoAndStopFrameIndex(icon_gear_damage, 2);//0 black 1 blue 2 purple 3 red 
-    //emulateExportNames(icon_gear_damage);
+    // new CharacterSwitchingHUD(combatHUD);
+    BuffIcons = [];
 }, 'void', ['pointer']));
+Interceptor.replace(BattleScreen_update, new NativeCallback(function (self, deltaTime) {
+    const combatHUD = self.add(1568).readPointer();
+    BattleScreen_update(self, deltaTime);
+    // console.log(Buffs);
+    for (var t = 0; t < 11; t++) {
+        if (Buffs.indexOf(t) != -1 && PendingBuffs.indexOf(t) == -1) {
+            PendingBuffs.push(t);
+            var bi = new BuffIcon(combatHUD, t, BuffIcons.length);
+            BuffIcons.push(bi);
+            MovieClips.push(bi);
+            var i = PendingBuffs.indexOf(t);
+            BuffIcons[i].swapDirection();
+        }
+        if (Buffs.indexOf(t) == -1 && PendingBuffs.indexOf(t) != -1) {
+            var i = PendingBuffs.indexOf(t);
+            PendingBuffs.splice(i, 1);
+            BuffIcons[i].swapDirection();
+            BuffIcons[i].shouldDestruct = true;
+            BuffIcons.splice(i, 1);
+        }
+    }
+
+    for (var j = 0; j < MovieClips.length; j++) {
+        if (MovieClips[j].update(deltaTime)) MovieClips.splice(j, 1);
+    }
+
+}, 'void', ['pointer', 'float']));
