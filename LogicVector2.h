@@ -1,3 +1,5 @@
+#ifndef LOGICVECTOR2_H
+#define LOGICVECTOR2_H
 class LogicVector2
 {
 public:
@@ -8,8 +10,5 @@ public:
       X = 0;
       Y = 0;
    }
-   ~LogicVector2()
-   {
-      ;
-   }
 };
+#endif

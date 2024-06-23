@@ -2,6 +2,8 @@
 #define LBMS_H
 #include "Hook.h"
 #include "LogicTileMap.h"
+#include "LogicPathFinder.h"
+
 class LogicBattleModeServer
 {
 private:
@@ -16,13 +18,17 @@ public:
 	}
 	int getTick() {
 		/*
-			这两个函数没有任何的区别。但是源码中前者使用的频率仅为后者的七分之一。
+			锟斤拷锟斤拷锟斤拷锟斤拷锟斤拷没锟斤拷锟轿何碉拷锟斤拷锟金。碉拷锟斤拷源锟斤拷锟斤拷前锟斤拷使锟矫碉拷频锟绞斤拷为锟斤拷锟竭碉拷锟竭凤拷之一锟斤拷
 			--Shei
 		*/
 		return getTicksGone();
 	}
 	LogicTileMap* getTileMap() {
 		return ((LogicTileMap * (*)(LogicBattleModeServer*))(base + 0x94A448))(this);
+	}
+	LogicPathFinder* getPathFinder() {
+		return ((LogicPathFinder * (*)(LogicBattleModeServer*))(base + 0x94E278))(this);
+
 	}
 };
 #endif

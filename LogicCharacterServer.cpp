@@ -8,6 +8,10 @@
 #include "LogicBuffServer.h"
 #include "LogicHeroUpgrades.h"
 #include "LogicGear.h"
+#include "LogicPathFinder.h"
+#include "LogicAreaEffectData.h"
+#include "LogicGameObjectFactoryServer.h"
+#include "LogicAreaEffectServer.h"
 
 void LogicCharacterServer::addConsumableShield(int amount)
 {
@@ -155,4 +159,117 @@ int LogicCharacterServer::getBuffBoost(int type) {
 void LogicCharacterServer::giveSpeedFasterBuff(int modifier, int duration, bool haveVisualEffects) {
 	//todo: visual effects
 	LogicCharacterServer::applyBuff(LogicBuffServer::SpeedFaster, duration, modifier, 0);
+}
+void LogicCharacterServer::ensurePathOk(LogicPathFinder* pathFinder) {
+	((void (*)(LogicCharacterServer*, LogicPathFinder*))(base + 0x89A180))(this, pathFinder);
+}
+int LogicCharacterServer::getPathLength() {
+	int length = 0;
+	for (int i = 1;i < PathPointsX.length;i++) {
+		int dx = PathPointsX[i] - PathPointsX[i - 1];
+		int dy = PathPointsY[i] - PathPointsY[i - 1];
+		length += LogicMath::sqrt(dx * dx + dy * dy);
+	}
+	return length;
+}
+void LogicCharacterServer::chargeTo(int x, int y, int speed, LogicPathFinder* pathFinder, LogicArrayList<LogicVector2*>* presetWaypoints) {
+	((void (*)(LogicCharacterServer*, int, int, int, LogicPathFinder*, LogicArrayList<LogicVector2*>*))(base + 0x89A6BC))(this, x, y, speed, pathFinder, presetWaypoints);
+
+}
+void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageConst, int pushback, int speed, bool useSpecialPathfinding, int type, LogicAreaEffectData* spawnedAreaEffect, LogicItemData* spawnedItem, int itemParams1, int itemParams2, int range, bool isUlti, LogicArrayList<LogicVector2*>* presetWaypoints, LogicAreaEffectData* spawnedAreaEffect2) {
+	if (Index >= 0)
+		;//do anti teaming stuff
+	if (!isUlti && ChargeUpType == 1) ChargeUp = 0;//腹蛇出洞！
+	if (getCardValueForPassive(94, 1) >= 1) addShield(getCardValueForPassive(94, 0), getCardValueForPassive(94, 1));
+	UsingUlti = isUlti;
+	Stunned = false;
+	Knockbacked = false;
+	ChargeHits = 0;
+	if (type == 10) {
+		//Colette.
+		int deltaX = x - GetX();
+		int deltaY = y - GetY();
+		int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
+		if (distance > 0) {
+			deltaX = deltaX * 100 * range / distance;
+			deltaY = deltaY * 100 * range / distance;
+		}
+		clearPath();
+		PathPointsX.add(GetX());
+		PathPointsY.add(GetY());
+		PathPointsX.add(GetX() + deltaX);
+		PathPointsY.add(GetY() + deltaY);
+		PathPointsX.add(GetX());
+		PathPointsY.add(GetY());
+		ensurePathOk(getLogicBattleModeServer()->getPathFinder());
+		Pathlength = getPathLength();
+		if (Pathlength > 0) {
+			MoveStartTick = getLogicBattleModeServer()->getTicksGone();
+			MoveEndTick = MoveStartTick + LogicMath::max(1, 20 * Pathlength / speed);
+		}
+	}
+	else if (type != 7) {
+		if (useSpecialPathfinding) {
+			if (type == 2 || type == 6) {
+				int deltaX = x - GetX();
+				int deltaY = y - GetY();
+				int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
+				speed = LogicMath::max(1, distance * speed / 3000);
+			}
+			chargeTo(x, y, speed, getLogicBattleModeServer()->getPathFinder(), nullptr);
+		}
+	}
+	if (getCardValueForPassive(22, 1) > 0) addShield(getCardValueForPassive(22, 1), getCardValueForPassive(22, 0));
+	if (getCardValueForPassive(54, 1) > 0) giveReloadBuff(getCardValueForPassive(54, 1), 100);
+	Charging = true;
+	TravelSpeed = speed;
+	ChargeDamage = damage;
+	ChargeDamageConst = damageConst;
+	ChargePercentDamage = 0;
+	ChargePushback = pushback;
+	ChargeType = type;
+	ChargeChainDistance = range;
+	if (type == 6) {
+		;//piper.
+	}
+	else if (type == 2) {
+		LogicAreaEffectServer* areaEffect = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(spawnedAreaEffect);
+		areaEffect->setPosition(GetX(), GetY(), 0);
+		areaEffect->Index = Index;
+		areaEffect->TeamIndex = TeamIndex;
+		areaEffect->WorldIndex = WorldIndex;
+		areaEffect->setSource(this, 2, false);
+		areaEffect->Damage = damage;
+		areaEffect->DamageConst = damageConst;
+		//todo: prey on the weak && cripple
+
+		GameObjectManager->addLogicGameObject(areaEffect);
+		areaEffect->trigger();
+		ChargeEndAreaEffect = spawnedAreaEffect;
+	}
+}
+void LogicCharacterServer::addShield(int ticks, int percent) {
+	/*
+Supercell only used this function once.
+--Shei
+	*/
+	ShieldTicks = ticks;
+	ShieldPercent = percent;
+}
+void LogicCharacterServer::clearPath() {
+	/*
+Should keep calling LogicCharacterServer::popTarget until PathPointsX.length == 0,
+since LogicCharacterServer::popTarget is only referenced as inline of this function
+we will just keep this one.
+	*/
+	PathPointsX.length = 0;
+	PathPointsY.length = 0;
+}
+void LogicCharacterServer::giveReloadBuff(int percent, int ticks) {
+	/*
+added in v30;
+before v30 only ReloadBuffTicks is used since all reload buffs are 100%
+	*/
+	ReloadBuffTicks = ticks;
+	ReloadBuffPercent = percent;
 }

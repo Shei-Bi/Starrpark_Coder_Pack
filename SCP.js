@@ -173,6 +173,7 @@ Interceptor.attach(base.add(0x9510D8), {
 let RootDirPath;
 let ModBase = 0;
 var Buffs = [];
+let HealthPromille = 1.0;
 Interceptor.attach(HomeScreen_enter, {
     onEnter: function (args) {
         RootDirPath = ReadStringFromStringObject(base.add(0x10CDCD0));
@@ -213,17 +214,24 @@ Interceptor.attach(HomeScreen_enter, {
             _ZN20LogicCharacterServer11tickEffectsEv(this.context.x19);
         });
         Interceptor.attach(base.add(0x8887B4), function () {
+            _ZN20LogicCharacterServer9tickGearsEv(this.context.x19);//after tickTimers
             if (this.context.x19.add(60).readInt() != 0) return;
+            HealthPromille = this.context.x19.add(184).readInt() / this.context.x19.add(188).readInt();
             Buffs = [];
             for (var i = 0; i < this.context.x19.add(1140).readInt(); i++) {
                 var b = this.context.x19.add(1128).readPointer().add(8 * i).readPointer();
                 Buffs.push(b.readInt());
             }
-            _ZN20LogicCharacterServer9tickGearsEv(this.context.x19);//after tickTimers
         });
         Interceptor.attach(base.add(0x88717C), function () {
             if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         });
+        // Interceptor.attach(base.add(0x8872C4), function () {
+        //     this.context.x1 = ptr(1);
+        // });
+        // Interceptor.attach(base.add(0x8872C8), function () {
+        //     BitStream_writeInt(this.context.x19, 1, 7);
+        // });
         Interceptor.attach(LogicCharacterServer_attack, {
             onEnter: function (args) {
                 args[4] = ptr(args[4].toInt32() * (100 + _ZN20LogicCharacterServer22getDamageBuffTemporaryEv(args[0])) / 100);
@@ -235,6 +243,7 @@ Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x87DE7C), Mod.getExportByName("_ZN14LogicAccessory16triggerAccessoryEP20LogicCharacterServerii"));
         Interceptor.replace(base.add(0x87DE88), Mod.getExportByName("_ZN14LogicAccessory22endAccessoryActivationEv"));
         Interceptor.replace(base.add(0x8AFD5C), Mod.getExportByName("_ZN9LogicGear6encodeEP9BitStream"));
+        Interceptor.replace(base.add(0x88F450), Mod.getExportByName("_ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
@@ -251,6 +260,7 @@ const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 
 const BitStream_readPositiveIntMax134217727 = new NativeFunction(base.add(0x96C6C0), 'int', ['pointer']); // v53.176 |
 const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer', 'int']); // v53.176 |
 const LogicCharacterServer_attack = new NativeFunction(base.add(0x890D10), 'void', ['pointer', 'int']); // v53.176 |
+const BitStream_writeInt = new NativeFunction(base.add(0x96972C), 'void', ['pointer', 'int', 'int']); // v53.176 |
 //Process.setExceptionHandler(function (deatils) {
 //    console.log(deatils.address.sub(base));
 //    console.log(base);
@@ -382,12 +392,12 @@ class BuffIcon {
         var BuffColor = [0, 0, 0];
         switch (type) {
             case 1:
-                BuffText = "<c681B84>Damage</c>";
+                BuffText = "<c681B84>强攻</c>";
                 BuffColor = [255, 50, 255];
                 BuffIcon = "icon_gear_damage";
                 break;
             case 4:
-                BuffText = "<cFF5F1F>Speed</c>";
+                BuffText = "<cFF5F1F>迅捷</c>";
                 BuffColor = [255, 95, 31];
                 BuffIcon = "icon_gear_speed";
                 break;
