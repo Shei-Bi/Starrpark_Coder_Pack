@@ -57,7 +57,7 @@ public:
 	int ChargeChainDistance;//472
 	int ChargeAnimation;//476
 	int ChargeEndAreaEffectDamage;//480
-	int ChargeUNK1;//484
+	int ChargeEndAreaEffectDamageConst;//484
 	int DamagedTick;//488
 	int PickedItemTick;//492
 	int PrepareAttackTick;//496

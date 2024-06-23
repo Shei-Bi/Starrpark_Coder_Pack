@@ -246,6 +246,8 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 		GameObjectManager->addLogicGameObject(areaEffect);
 		areaEffect->trigger();
 		ChargeEndAreaEffect = spawnedAreaEffect;
+		ChargeEndAreaEffectDamage = damage;
+		ChargeEndAreaEffectDamageConst = 114514;
 	}
 }
 void LogicCharacterServer::addShield(int ticks, int percent) {
