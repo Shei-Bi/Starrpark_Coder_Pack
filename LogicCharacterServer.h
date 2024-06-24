@@ -10,6 +10,7 @@
 #include "LogicVector2.h"
 #include "LogicPathFinder.h"
 #include "LogicAreaEffectData.h"
+#include "BitStream.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
@@ -121,5 +122,6 @@ public:
 	void addShield(int, int);
 	void clearPath();
 	void giveReloadBuff(int, int);
+	void encode(BitStream*, bool, int, int, bool);
 };
 #endif

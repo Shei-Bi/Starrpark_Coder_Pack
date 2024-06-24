@@ -3,6 +3,8 @@
 #include "LogicData.h"
 #include "LogicGameObjectManagerServer.h"
 #include "LogicPlayer.h"
+#include "BitStream.h"
+
 class LogicGameObjectServer
 {
 private:
@@ -66,9 +68,8 @@ public:
 	LogicPlayer* getPlayer() {
 		return ((LogicPlayer * (*)(LogicGameObjectServer*))(base + 0x8AFB78))(this);
 	}
-	~LogicGameObjectServer()
-	{
-		;
+	virtual void encode(BitStream* stream, int fadeCounter) {
+		return ((void (*)(LogicGameObjectServer*, BitStream*, int))(base + 0x8AF7EC))(this, stream, fadeCounter);
 	}
 };
 #endif

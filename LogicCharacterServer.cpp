@@ -275,3 +275,6 @@ before v30 only ReloadBuffTicks is used since all reload buffs are 100%
 	ReloadBuffTicks = ticks;
 	ReloadBuffPercent = percent;
 }
+void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
+	LogicGameObjectServer::encode(stream, fadeCounter);
+}
