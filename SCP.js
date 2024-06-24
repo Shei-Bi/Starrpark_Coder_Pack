@@ -223,15 +223,18 @@ Interceptor.attach(HomeScreen_enter, {
                 Buffs.push(b.readInt());
             }
         });
-        Interceptor.attach(base.add(0x88717C), function () {
-            if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
-        });
+        // Interceptor.attach(base.add(0x88717C), function () {
+        //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
+        // });
         // Interceptor.attach(base.add(0x8872C4), function () {
         //     this.context.x1 = ptr(1);
         // });
         // Interceptor.attach(base.add(0x8872C8), function () {
         //     BitStream_writeInt(this.context.x19, 1, 7);
         // });
+        Interceptor.attach(base.add(0x8AEA04), function () {
+            this.context.x22 = ptr(1);
+        });
         Interceptor.attach(LogicCharacterServer_attack, {
             onEnter: function (args) {
                 args[4] = ptr(args[4].toInt32() * (100 + _ZN20LogicCharacterServer22getDamageBuffTemporaryEv(args[0])) / 100);
@@ -244,6 +247,7 @@ Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x87DE88), Mod.getExportByName("_ZN14LogicAccessory22endAccessoryActivationEv"));
         Interceptor.replace(base.add(0x8AFD5C), Mod.getExportByName("_ZN9LogicGear6encodeEP9BitStream"));
         Interceptor.replace(base.add(0x88F450), Mod.getExportByName("_ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_"));
+        Interceptor.replace(base.add(0x886FE4), Mod.getExportByName("_ZN20LogicCharacterServer6encodeEP9BitStreambiib"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
@@ -271,9 +275,9 @@ Interceptor.attach(base.add(0x87D85C), {
         args[2] = ptr(7);//Accessory Uses
     }
 });
-Armceptor.replace(base.add(0x880FA8), [0xC6, 0xAD, 0x03, 0x94]);//Character decode: damage number 32767->134217727
-Armceptor.nop(base.add(0x8881CC));//Character encode: nop LogicMath::clamp
-Armceptor.replace(base.add(0x8881D8), [0x79, 0x84, 0x03, 0x94]);//Character encode: damage number 32767->134217727
+// Armceptor.replace(base.add(0x880FA8), [0xC6, 0xAD, 0x03, 0x94]);//Character decode: damage number 32767->134217727
+// Armceptor.nop(base.add(0x8881CC));//Character encode: nop LogicMath::clamp
+// Armceptor.replace(base.add(0x8881D8), [0x79, 0x84, 0x03, 0x94]);//Character encode: damage number 32767->134217727
 const StringTable_getMovieClip = new NativeFunction(base.add(0x7BDCB4), 'pointer', ['pointer', 'pointer']); // v53.176 | country popup
 const GameButton = new NativeFunction(base.add(0x504F74), 'void', ['pointer']); // v53.176 | country popup
 const Sprite_addChild = new NativeFunction(base.add(0xA0B3E4), 'void', ['pointer', 'pointer']); // v53.176 | In Stage::addChild()

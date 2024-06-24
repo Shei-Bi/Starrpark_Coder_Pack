@@ -55,5 +55,9 @@ public:
 		}
 		else writePositiveInt(1, 1);
 	}
+	void writePositiveVIntMax16777215(int value)
+	{
+		writePositiveVInt(value, 5);
+	}
 };
 #endif

@@ -282,9 +282,8 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	LogicGameObjectServer::encode(stream, fadeCounter);
 	if (!IsObject) {
 		if (isOwn) {
-			bool isPlayerControlRemoved = stream->writeBoolean(isPlayerControlRemoved());
-			bool hasForcedAngle = stream->writeBoolean(ForcedAngleEndTick + 1 >= getLogicBattleModeServer()->getTick());
-			if (isPlayerControlRemoved || hasForcedAngle) {
+			stream->writeBoolean(isPlayerControlRemoved());
+			if (stream->writeBoolean(ForcedAngleEndTick + 1 >= getLogicBattleModeServer()->getTick()) || isPlayerControlRemoved()) {
 				stream->writePositiveIntMax511(AttackAngle);
 				stream->writePositiveIntMax511(MoveAngle);
 			}
@@ -315,4 +314,12 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writeBoolean(false);
 	stream->writeBoolean(false);
 	stream->writePositiveVIntMax255OftenZero(0);
+	stream->writePositiveVIntMax255OftenZero(0);
+	stream->writeBoolean(false);
+	stream->writePositiveVIntMax255OftenZero(0);
+	stream->writePositiveVIntMax16777215(Hitpoints);
+	stream->writePositiveVIntMax16777215(HitpointsMax);
+	if (Hitpoints <= 0) {
+		;
+	}
 }

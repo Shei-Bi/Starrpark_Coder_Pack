@@ -86,7 +86,7 @@ public:
 	char gap7[1200 - 1128 - 16];
 	int ProjectileEffectId;//1200
 	int SkinEffectId;//1204
-	char gap24[1264 - 1204 + 4];
+	char gap24[1264 - 1204 - 4];
 	bool IsObject;//1264
 	char gap21[1284 - 1264 - 1];
 	int ShieldPercent;//1284
