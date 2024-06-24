@@ -233,7 +233,7 @@ Interceptor.attach(HomeScreen_enter, {
         //     BitStream_writeInt(this.context.x19, 1, 7);
         // });
         Interceptor.attach(base.add(0x8AEA04), function () {
-            this.context.x22 = ptr(1);
+            // this.context.x22 = ptr(1); //LogicGameObjectManager::objects.count = 1 for debugging BitStream
         });
         Interceptor.attach(LogicCharacterServer_attack, {
             onEnter: function (args) {

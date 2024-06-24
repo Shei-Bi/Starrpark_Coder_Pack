@@ -7,6 +7,8 @@ class LogicSkillData : public LogicData
 public:
 	char gap1[340];
 	int BehaviorType;
+	char gap2[356 - 340 - 4];
+	bool HoldToShoot;
 	int getMaxCharge()
 	{
 		return ((int (*)(LogicSkillData*))(base + 0x873D40))(this);

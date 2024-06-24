@@ -335,6 +335,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	}
 	if (data->isHero()) {
 		stream->writePositiveVIntMax255OftenZero(0);
+		stream->writeBoolean(false);
 		stream->writeBoolean(true);
 		stream->writeBoolean(false);
 		stream->writeBoolean(false);
@@ -354,6 +355,26 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			break;
 		}
 		for (int i = 0;i < Gears.length;i++) Gears[i]->encode(stream);//libg invoke it with a3 = "isOwn" idk why
-
 	}
+	if (true)
+		stream->writeBoolean(false);//GamePlayUtil::canUseFastTravel;
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writePositiveIntMax3(0);
+	stream->writeBoolean(false);
+	stream->writePositiveIntMax511(0);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	if (isOwn) {
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+	}
+	stream->writePositiveIntMax31(0);
+	for (int i = 0;i < Skills.length;i++) {
+		Skills[i]->encode(stream, isOwn, this);
+	}
+	stream->writePositiveIntMax3(0);
 }
