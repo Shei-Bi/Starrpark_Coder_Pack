@@ -24,15 +24,19 @@ public:
 	}
 	char gap3[4];
 	int MoveAngle;//76
-	int ShootAngle;//80
-	char gap6[100 - 32];
+	int AttackAngle;//80
+	char gap6[128 - 80 - 4];
+	int State;//128
+	char gap22[152 - 128 - 4];
 	LogicArrayList<int> PathPointsX;//152
 	LogicArrayList<int> PathPointsY;//168
 	int Hitpoints;//184
 	int HitpointsMax;//188
 	char gap18[272 - 188 - 4];
 	int Pathlength;//272
-	char gap1[336 - 272 - 4];
+	char gap1[328 - 272 - 4];
+	int AttackAnimation;//328
+	char gap23[336 - 328 - 4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
 	char gap14[8];
 	bool Charging;//360
@@ -79,7 +83,12 @@ public:
 	int HealthRegenBlockedTick;//976
 	char gap8[152 - 4];
 	LogicArrayList<LogicBuffServer*> Buffs;//1128
-	char gap7[140];
+	char gap7[1200 - 1128 - 16];
+	int ProjectileEffectId;//1200
+	int SkinEffectId;//1204
+	char gap24[1264 - 1204 + 4];
+	bool IsObject;//1264
+	char gap21[1284 - 1264 - 1];
 	int ShieldPercent;//1284
 	char gap12[168 - 140 - 4];
 	int ChargeUp;//1312
@@ -123,5 +132,6 @@ public:
 	void clearPath();
 	void giveReloadBuff(int, int);
 	void encode(BitStream*, bool, int, int, bool);
+	bool isPlayerControlRemoved();
 };
 #endif

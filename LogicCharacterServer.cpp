@@ -46,7 +46,7 @@ int LogicCharacterServer::getMoveAngle()
 void LogicCharacterServer::setForcedAngle(int angle)
 {
 	MoveAngle = angle;
-	ShootAngle = angle;
+	AttackAngle = angle;
 	ForcedAngleEndTick = getLogicBattleModeServer()->getTick();
 }
 void LogicCharacterServer::calculateChargeUp() {
@@ -275,6 +275,44 @@ before v30 only ReloadBuffTicks is used since all reload buffs are 100%
 	ReloadBuffTicks = ticks;
 	ReloadBuffPercent = percent;
 }
+bool LogicCharacterServer::isPlayerControlRemoved() {
+	return ((bool (*)(LogicCharacterServer*))(base + 0x888324))(this);
+}
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
+	if (!IsObject) {
+		if (isOwn) {
+			bool isPlayerControlRemoved = stream->writeBoolean(isPlayerControlRemoved());
+			bool hasForcedAngle = stream->writeBoolean(ForcedAngleEndTick + 1 >= getLogicBattleModeServer()->getTick());
+			if (isPlayerControlRemoved || hasForcedAngle) {
+				stream->writePositiveIntMax511(AttackAngle);
+				stream->writePositiveIntMax511(MoveAngle);
+			}
+		}
+		else {
+			stream->writePositiveIntMax511(AttackAngle);
+			stream->writePositiveIntMax511(MoveAngle);
+		}
+		stream->writePositiveIntMax7(State);
+		stream->writeBoolean(false);
+		stream->writeIntMax63(AttackAnimation);
+		stream->writeBoolean(false);
+		if (stream->writeBoolean(false)) stream->writeBoolean(false);
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+	}
+	stream->writePositiveVIntMax65535OftenZero(ProjectileEffectId);
+	stream->writePositiveVIntMax65535OftenZero(SkinEffectId);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writeBoolean(false);
+	stream->writePositiveVIntMax255OftenZero(0);
 }
