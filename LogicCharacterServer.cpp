@@ -280,6 +280,7 @@ bool LogicCharacterServer::isPlayerControlRemoved() {
 }
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
+	LogicCharacterData* data = (LogicCharacterData*)getData();
 	if (!IsObject) {
 		if (isOwn) {
 			stream->writeBoolean(isPlayerControlRemoved());
@@ -321,5 +322,38 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writePositiveVIntMax16777215(HitpointsMax);
 	if (Hitpoints <= 0) {
 		;
+	}
+	stream->writeBoolean(false);
+	if (data->isHero()) {
+		stream->writePositiveVIntMax255OftenZero(0);
+		stream->writePositiveVIntMax255OftenZero(0);
+		if (stream->writeBoolean(ConsumableShield > 0)) {
+			stream->writePositiveIntMax16383(ConsumableShield);
+			stream->writePositiveIntMax16383(ConsumableShieldMax);
+		}
+		stream->writeBoolean(false);
+	}
+	if (data->isHero()) {
+		stream->writePositiveVIntMax255OftenZero(0);
+		stream->writeBoolean(true);
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+		stream->writeBoolean(false);
+		if (isOwn) {
+			stream->writeBoolean(false);
+		}
+		if (stream->writeBoolean(false)) {
+			stream->writePositiveIntMax15(0);
+			stream->writePositiveIntMax7(0);
+		}
+		switch (ChargeUpType)
+		{
+		default:
+			break;
+		}
+		for (int i = 0;i < Gears.length;i++) Gears[i]->encode(stream);//libg invoke it with a3 = "isOwn" idk why
+
 	}
 }

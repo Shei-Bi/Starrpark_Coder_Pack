@@ -20,6 +20,10 @@ public:
 	{
 		return writePositiveInt(value, 14);
 	}
+	void writePositiveIntMax15(int value)
+	{
+		return writePositiveInt(value, 4);
+	}
 	void writePositiveIntMax511(int value)
 	{
 		return writePositiveInt(value, 9);
@@ -27,6 +31,10 @@ public:
 	void writePositiveIntMax1023(int value)
 	{
 		return writePositiveInt(value, 10);
+	}
+	void writePositiveIntMax8191(int value)
+	{
+		return writePositiveInt(value, 13);
 	}
 	void writeInt(int value, int bits)
 	{

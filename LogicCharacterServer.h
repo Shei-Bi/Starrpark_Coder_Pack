@@ -97,10 +97,13 @@ public:
 	int ChargeUpMax;
 	char gap2[1380 - 336 - 12 - 12 + 8 + 1380 - 2368 + 4];
 	int ForcedAngleEndTick;//1380
-	char gap17[20];
+	char gap17[1404 - 1380 - 4];
 	int ChargeHits;//1404?
-	char gap9[1664 - 1380 - 4 - 24];
-	LogicArrayList<LogicGear*> Gears;
+	char gap25[1504 - 1404 - 4];
+	int ConsumableShield;//1504
+	int ConsumableShieldMax;//1508
+	char gap9[1664 - 1508 - 4];
+	LogicArrayList<LogicGear*> Gears;//1664
 
 	void addConsumableShield(int);
 	void tick();
