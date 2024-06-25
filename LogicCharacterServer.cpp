@@ -12,6 +12,8 @@
 #include "LogicAreaEffectData.h"
 #include "LogicGameObjectFactoryServer.h"
 #include "LogicAreaEffectServer.h"
+#include "LogicGameModeUtil.h"
+#include "LogicGamePlayUtil.h"
 
 void LogicCharacterServer::addConsumableShield(int amount)
 {
@@ -171,9 +173,22 @@ int LogicCharacterServer::getBuffBoost(int type) {
 	*/
 	int buff = 0;
 	for (int i = 0;i < Buffs.length;i++) {
-		if (Buffs[i]->Type == type) buff += Buffs[i]->Modifier;
+		if (Buffs[i]->Type == type) {
+			if (type == LogicBuffServer::HealthRegen) buff++;
+			else buff += Buffs[i]->Modifier;
+		}
 	}
 	return buff;
+}
+LogicBuffServer* LogicCharacterServer::findBuffByType(int type) {
+	/*
+		New Function. Reason: Repeated Usage.
+		--Shei
+	*/
+	for (int i = 0;i < Buffs.length;i++) {
+		if (Buffs[i]->Type == type) return Buffs[i];
+	}
+	return nullptr;
 }
 void LogicCharacterServer::giveSpeedFasterBuff(int modifier, int duration, bool haveVisualEffects) {
 	//todo: visual effects
@@ -306,9 +321,14 @@ void LogicCharacterServer::setPartialStunPromille(int partialStunPromille) {
 void LogicCharacterServer::giveSlipperyDebuff() {
 	if (((LogicCharacterData*)getData())->getSpeed() < 1) return;
 }
+bool LogicCharacterServer::isPet() {
+	if (Index < 0) return false;
+	return !((LogicCharacterData*)getData())->isHero();
+}
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
 	LogicCharacterData* data = (LogicCharacterData*)getData();
+	int mode = getLogicBattleModeServer()->GameModeVariation;
 	if (!IsObject) {
 		if (isOwn) {
 			stream->writeBoolean(isPlayerControlRemoved());
@@ -329,63 +349,111 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(false);//Shaking
 		stream->writeBoolean(ShowStarPowerIcon);
 	}
+	else {
+		stream->writePositiveIntMax7(State);
+		if (data->isTrain() || data->ManualRotations) {
+			stream->writePositiveIntMax511(AttackAngle);
+			stream->writePositiveIntMax511(MoveAngle);
+		}
+		else if (data->getAreaEffect()) stream->writePositiveIntMax511(MoveAngle);
+	}
+	if (data->getLifeTimeTicks()) stream->writePositiveIntMax511(LifeTimeTicks);
 	stream->writePositiveVIntMax65535OftenZero(ProjectileEffectId);
 	stream->writePositiveVIntMax65535OftenZero(SkinEffectId);
+	stream->writeBoolean(findBuffByType(LogicBuffServer::Slippery));
+	stream->writeBoolean(findBuffByType(LogicBuffServer::SpeedFaster));
+	stream->writeBoolean(findBuffByType(LogicBuffServer::SpeedSlower));
+	stream->writeBoolean(false);//Suppress Healing
+	stream->writeBoolean(false);
+	if (stream->writeBoolean(findBuffByType(LogicBuffServer::BelleWeapon))) {
+		stream->writePositiveIntMax7(findBuffByType(LogicBuffServer::BelleWeapon)->Int1);
+	}
+	stream->writeBoolean(findBuffByType(LogicBuffServer::BelleUlti));
+	stream->writeBoolean(false);//IsSilenced
 	stream->writeBoolean(false);
 	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writeBoolean(false);
-	stream->writePositiveVIntMax255OftenZero(0);
-	stream->writePositiveVIntMax255OftenZero(0);
-	stream->writeBoolean(false);
-	stream->writePositiveVIntMax255OftenZero(0);
+	if (stream->writeBoolean(ReloadBuffTicks > 0)) stream->writeIntMax127(ReloadBuffPercent);
+	stream->writePositiveVIntMax255OftenZero(PartialStunPromille / 10);
+	stream->writePositiveVIntMax255OftenZero(0);//Poison
+	stream->writeBoolean(false);//IsCrippled
+	stream->writePositiveVIntMax255OftenZero(getBuffBoost(LogicBuffServer::HealthRegen));
 	stream->writePositiveVIntMax16777215(Hitpoints);
 	stream->writePositiveVIntMax16777215(HitpointsMax);
 	if (Hitpoints <= 0) {
-		;
+		stream->writeIntMax15(0);//DeathEffect
 	}
 	stream->writeBoolean(false);
 	if (data->isHero()) {
-		stream->writePositiveVIntMax255OftenZero(0);
-		stream->writePositiveVIntMax255OftenZero(0);
+		int itemCount = CoinsHeld;
+		if (LogicGameModeUtil::playersCollectBountyStars(mode)) itemCount = LogicMath::max(0, CoinsHeld - 2);
+		stream->writePositiveVIntMax255OftenZero(itemCount);
+		stream->writePositiveVIntMax255OftenZero(BattleRoyalBuffs);
 		if (stream->writeBoolean(ConsumableShield > 0)) {
 			stream->writePositiveIntMax16383(ConsumableShield);
 			stream->writePositiveIntMax16383(ConsumableShieldMax);
 		}
-		stream->writeBoolean(false);
+		stream->writeBoolean(HasRuffsBuff);
+		if (Hitpoints <= 0) stream->writeBoolean(false);//TransformAnimation
 	}
 	if (data->isHero()) {
 		stream->writePositiveVIntMax255OftenZero(0);
 		stream->writeBoolean(false);
 		stream->writeBoolean(true);
-		stream->writeBoolean(false);
-		stream->writeBoolean(false);
-		stream->writeBoolean(false);
-		stream->writeBoolean(false);
+		stream->writeBoolean(Charging);
+		stream->writeBoolean(IsInvincible);
+		stream->writeBoolean(AimingUlti);
+		stream->writeBoolean(ShowUltiAnimation);
 		stream->writeBoolean(false);
 		if (isOwn) {
 			stream->writeBoolean(false);
 		}
+		if (data->WeaponSkill) {
+			if (data->WeaponSkill->getChargedShotCount() >= 1) stream->writeIntMax3(ChargedShotCount);
+			if (isOwn && data->WeaponSkill->getAttackPattern() == 13) stream->writePositiveVIntMax255OftenZero(LogicMath::clamp(SkillHoldTicks, 0, 255));
+			if (data->WeaponSkill->getAttackPattern() == 15) {
+				stream->writePositiveVIntMax255OftenZero(LogicMath::clamp(SkillHoldTicks, 0, 255));
+				if (SkillHoldTicks >= 1) stream->writePositiveIntMax511(SkillHoldAngle);
+			}
+		}
+		if (data->ShouldEncodePetStatus) stream->writeBoolean(false);
+		if (data->HasPowerLevels) stream->writePositiveIntMax3(0);
+		if (data->getUniqueProperty() == 1) stream->writePositiveIntMax3(LogicMath::clamp((3 * ChargeUp / ChargeUpMax), 0, 2));
 		if (stream->writeBoolean(false)) {
 			stream->writePositiveIntMax15(0);
 			stream->writePositiveIntMax7(0);
 		}
+		if (Charging) {
+			stream->writePositiveIntMax255(ChargeAnimation);
+			stream->writePositiveIntMax31(ChargeType);
+			if (ChargeType == 17) stream->writeBoolean(false);//Chunk
+		}
 		switch (ChargeUpType)
 		{
+		case 0:
+			break;
+		case 1:
+		case 7:
+		case 11:
+		case 12:
+			stream->writePositiveVIntMax255OftenZero(AttackChargedUp ? 255 : ChargeUp / 50);
+			break;
+		case 8:
+			stream->writePositiveIntMax1023(ChargeUp);
+			break;
+		case 9:
+			stream->writePositiveIntMax7(ChargeUp);
+			break;
 		default:
+			stream->writePositiveIntMax1023(AttackChargedUp ? 1023 : LogicMath::clamp(ChargeUp / 50, 0, 1023));
 			break;
 		}
 		for (int i = 0;i < Gears.length;i++) Gears[i]->encode(stream);//libg invoke it with a3 = "isOwn" idk why
 	}
-	if (true)
-		stream->writeBoolean(false);//GamePlayUtil::canUseFastTravel;
+	if (data->isTurret()) {
+		stream->writeBoolean(IsHyperchargeMinion);
+		stream->writeBoolean(Size > 0);
+	}
+	if (LogicGamePlayUtil::canUseFastTravel(this)) stream->writeBoolean(IsTeleporting);//GamePlayUtil::canUseFastTravel;
 	stream->writeBoolean(false);
 	stream->writeBoolean(false);
 	stream->writePositiveIntMax3(0);

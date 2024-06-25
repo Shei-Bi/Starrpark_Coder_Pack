@@ -25,6 +25,7 @@ public:
 		SpeedSlower = 3,
 		SpeedFaster = 4,
 		Damage2 = 5,
+		DamageAndSpeed = 6,
 		Slippery = 7,
 		DamageNerf = 8,
 		HealthRegen = 9,

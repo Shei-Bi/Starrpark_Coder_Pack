@@ -9,10 +9,8 @@ class LogicBattleModeServer
 private:
 	/* data */
 public:
-	int a;
-	int b;
-	LogicBattleModeServer(/* args */);
-	~LogicBattleModeServer();
+	char gap1[228];
+	int GameModeVariation;
 	int getTicksGone() {
 		return ((int (*)(LogicBattleModeServer*))(base + 0x9458E0))(this);
 	}

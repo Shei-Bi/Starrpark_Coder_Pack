@@ -32,6 +32,10 @@ public:
 	{
 		return writePositiveInt(value, 5);
 	}
+	void writePositiveIntMax255(int value)
+	{
+		return writePositiveInt(value, 8);
+	}
 	void writePositiveIntMax511(int value)
 	{
 		return writePositiveInt(value, 9);
@@ -52,8 +56,17 @@ public:
 	{
 		return ((void (*)(BitStream*, int, int))(base + 0x96972C))(this, value, bits);
 	}
+	void writeIntMax3(int value) {
+		return writeInt(value, 2);
+	}
+	void writeIntMax15(int value) {
+		return writeInt(value, 4);
+	}
 	void writeIntMax63(int value) {
 		return writeInt(value, 6);
+	}
+	void writeIntMax127(int value) {
+		return writeInt(value, 7);
 	}
 	void writePositiveVInt(int value, int bits)
 	{

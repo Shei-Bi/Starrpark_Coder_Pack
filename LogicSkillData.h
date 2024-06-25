@@ -29,5 +29,13 @@ public:
 	{
 		return ((int (*)(LogicSkillData*))(base + 0x873B8C))(this);
 	}
+	int getChargedShotCount()
+	{
+		return ((int (*)(LogicSkillData*))(base + 0x874124))(this);
+	}
+	int getAttackPattern()
+	{
+		return ((int (*)(LogicSkillData*))(base + 0x873E10))(this);
+	}
 };
 #endif

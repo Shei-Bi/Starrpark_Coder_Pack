@@ -25,16 +25,22 @@ public:
 	char gap3[4];
 	int MoveAngle;//76
 	int AttackAngle;//80
-	char gap6[128 - 80 - 4];
+	int SkillHoldAngle;//84
+	char gap6[128 - 84 - 4];
 	int State;//128
 	char gap22[152 - 128 - 4];
 	LogicArrayList<int> PathPointsX;//152
 	LogicArrayList<int> PathPointsY;//168
 	int Hitpoints;//184
 	int HitpointsMax;//188
-	char gap18[272 - 188 - 4];
+	char gap18[268 - 188 - 4];
+	bool AttackChargedUp;//268
+	char gap34[272 - 268 - 1];
 	int Pathlength;//272
-	char gap1[328 - 272 - 4];
+	char gap1[296 - 272 - 4];
+	bool IsInvincible;//296
+	bool IsTeleporting;//297
+	char gap31[328 - 297 - 1];
 	int AttackAnimation;//328
 	char gap23[336 - 328 - 4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
@@ -81,18 +87,32 @@ public:
 	bool HasReloadBuff;//793;
 	char gap4[976 - 793 - 1];
 	int HealthRegenBlockedTick;//976
-	char gap8[152 - 4];
+	char gap36[996 - 976 - 4];
+	int Size;//996
+	char gap8[1088 - 996 - 4];
+	bool BotMovingFlag;//1088
+	bool AimingUlti;//1089
+	bool BotAimingUlti;//1090
+	bool ShowUltiAnimation;//1091
+	int BattleRoyalBuffs;//1092
+	char gap29[1128 - 1092 - 4];
 	LogicArrayList<LogicBuffServer*> Buffs;//1128
-	char gap7[1200 - 1128 - 16];
+	char gap35[1156 - 1128 - 16];
+	bool IsHyperchargeMinion;//1156
+	char gap7[1200 - 1156 - 1];
 	int ProjectileEffectId;//1200
 	int SkinEffectId;//1204
 	char gap24[1213 - 1204 - 4];
 	bool ShowStarPowerIcon;//1213
 	char gap27[1264 - 1213 - 1];
 	bool IsObject;//1264
-	char gap21[1284 - 1264 - 1];
+	char gap32[1272 - 1264 - 1];
+	int ChargedShotCount;//1272
+	char gap21[1284 - 1272 - 4];
 	int ShieldPercent;//1284
-	char gap12[168 - 140 - 4];
+	char gap28[1292 - 1284 - 4];
+	int LifeTimeTicks;//1292
+	char gap12[1312 - 1292 - 4];
 	int ChargeUp;//1312
 	char gap5[12];
 	int ChargeUpType;
@@ -106,10 +126,14 @@ public:
 	int PartialStunPromille;//1456
 	int PartialStunDecrementTimer;//1460
 	int PartialStunnedTicks;//1464
-	char gap26[1504 - 1464 - 4];
+	char gap30[1473 - 1464 - 4];
+	bool HasRuffsBuff;//1473
+	char gap26[1504 - 1473 - 1];
 	int ConsumableShield;//1504
 	int ConsumableShieldMax;//1508
-	char gap9[1664 - 1508 - 4];
+	char gap33[1532 - 1508 - 4];
+	int SkillHoldTicks;//1532
+	char gap9[1664 - 1532 - 4];
 	LogicArrayList<LogicGear*> Gears;//1664
 
 	void addConsumableShield(int);
@@ -146,5 +170,7 @@ public:
 	void setPartialStunPromille(int);
 	void giveSlipperyDebuff();
 	void triggerStun(int, bool);
+	LogicBuffServer* findBuffByType(int);
+	bool isPet();
 };
 #endif
