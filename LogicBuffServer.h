@@ -25,6 +25,8 @@ public:
 		SpeedSlower = 3,
 		SpeedFaster = 4,
 		Damage2 = 5,
+		Slippery = 7,
+		DamageNerf = 8,
 		HealthRegen = 9,
 		BelleWeapon = 14,
 		BelleUlti = 15

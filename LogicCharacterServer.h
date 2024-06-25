@@ -86,7 +86,9 @@ public:
 	char gap7[1200 - 1128 - 16];
 	int ProjectileEffectId;//1200
 	int SkinEffectId;//1204
-	char gap24[1264 - 1204 - 4];
+	char gap24[1213 - 1204 - 4];
+	bool ShowStarPowerIcon;//1213
+	char gap27[1264 - 1213 - 1];
 	bool IsObject;//1264
 	char gap21[1284 - 1264 - 1];
 	int ShieldPercent;//1284
@@ -99,7 +101,12 @@ public:
 	int ForcedAngleEndTick;//1380
 	char gap17[1404 - 1380 - 4];
 	int ChargeHits;//1404?
-	char gap25[1504 - 1404 - 4];
+	char gap25[1452 - 1404 - 4];
+	bool IsSlippery;//1452
+	int PartialStunPromille;//1456
+	int PartialStunDecrementTimer;//1460
+	int PartialStunnedTicks;//1464
+	char gap26[1504 - 1464 - 4];
 	int ConsumableShield;//1504
 	int ConsumableShieldMax;//1508
 	char gap9[1664 - 1508 - 4];
@@ -136,5 +143,8 @@ public:
 	void giveReloadBuff(int, int);
 	void encode(BitStream*, bool, int, int, bool);
 	bool isPlayerControlRemoved();
+	void setPartialStunPromille(int);
+	void giveSlipperyDebuff();
+	void triggerStun(int, bool);
 };
 #endif

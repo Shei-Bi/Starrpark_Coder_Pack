@@ -18,5 +18,9 @@ public:
 	bool isHero() {
 		return Type == 0;
 	}
+	int getSpeed()
+	{
+		return ((int (*)(LogicCharacterData*))(base + 0x839428))(this);
+	}
 };
 #endif

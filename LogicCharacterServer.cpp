@@ -102,11 +102,30 @@ void LogicCharacterServer::blockHealthRegen()
 {
 	HealthRegenBlockedTick = getLogicBattleModeServer()->getTicksGone();
 }
+void LogicCharacterServer::triggerStun(int ticks, bool isForcedStun) {
+	StunTicks = ticks;
+	Stunned = true;
+}
 void LogicCharacterServer::tickEffects() {
 	for (int i = 0;i < Buffs.length;i++) {
 		if (Buffs[i]->tick(this)) {
 			Buffs.remove(i);
 		}
+	}
+	if (PartialStunnedTicks <= 0) {
+		if (PartialStunPromille > 0 && PartialStunPromille < 1000) {
+			PartialStunDecrementTimer = LogicMath::positify(PartialStunDecrementTimer - 1);
+			if (PartialStunDecrementTimer <= 0) PartialStunPromille = LogicMath::max(0, PartialStunPromille - 2);
+			//todo: Lou 2nd Starpower
+		}
+		if (PartialStunPromille >= 1000) {
+			triggerStun(20, false);
+			PartialStunnedTicks = 20;
+		}
+	}
+	else {
+		PartialStunnedTicks--;
+		PartialStunPromille = 1000;
 	}
 }
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
@@ -278,6 +297,15 @@ before v30 only ReloadBuffTicks is used since all reload buffs are 100%
 bool LogicCharacterServer::isPlayerControlRemoved() {
 	return ((bool (*)(LogicCharacterServer*))(base + 0x888324))(this);
 }
+void LogicCharacterServer::setPartialStunPromille(int partialStunPromille) {
+	if (PartialStunnedTicks <= 0) {
+		PartialStunPromille = LogicMath::clamp(partialStunPromille, 0, 1000);
+		PartialStunDecrementTimer = 40;
+	}
+}
+void LogicCharacterServer::giveSlipperyDebuff() {
+	if (((LogicCharacterData*)getData())->getSpeed() < 1) return;
+}
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
 	LogicCharacterData* data = (LogicCharacterData*)getData();
@@ -294,12 +322,12 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			stream->writePositiveIntMax511(MoveAngle);
 		}
 		stream->writePositiveIntMax7(State);
-		stream->writeBoolean(false);
+		stream->writeBoolean(getDamageBuffTemporary() > 0);
 		stream->writeIntMax63(AttackAnimation);
-		stream->writeBoolean(false);
-		if (stream->writeBoolean(false)) stream->writeBoolean(false);
-		stream->writeBoolean(false);
-		stream->writeBoolean(false);
+		stream->writeBoolean(Knockbacked);
+		if (stream->writeBoolean(Stunned)) stream->writeBoolean(WeaklyStunned);
+		stream->writeBoolean(false);//Shaking
+		stream->writeBoolean(ShowStarPowerIcon);
 	}
 	stream->writePositiveVIntMax65535OftenZero(ProjectileEffectId);
 	stream->writePositiveVIntMax65535OftenZero(SkinEffectId);
