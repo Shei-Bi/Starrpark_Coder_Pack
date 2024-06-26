@@ -6,6 +6,8 @@ class LogicProjectileData : public LogicData
 private:
 	/* data */
 public:
+	char gap1[448];
+	int UniqueProperty;//448
 	LogicProjectileData* getChainedBullet()
 	{
 		return ((LogicProjectileData * (*)(LogicProjectileData*))(base + 0x865B4C))(this);

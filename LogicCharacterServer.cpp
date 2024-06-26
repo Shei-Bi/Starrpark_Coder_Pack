@@ -415,7 +415,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 				if (SkillHoldTicks >= 1) stream->writePositiveIntMax511(SkillHoldAngle);
 			}
 		}
-		if (data->ShouldEncodePetStatus) stream->writeBoolean(false);
+		if (data->ShouldEncodePetStatus || data->getUniqueProperty() == 13 && data->isHero()) stream->writeBoolean(false);
 		if (data->HasPowerLevels) stream->writePositiveIntMax3(0);
 		if (data->getUniqueProperty() == 1) stream->writePositiveIntMax3(LogicMath::clamp((3 * ChargeUp / ChargeUpMax), 0, 2));
 		if (stream->writeBoolean(false)) {
@@ -427,6 +427,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			stream->writePositiveIntMax31(ChargeType);
 			if (ChargeType == 17) stream->writeBoolean(false);//Chunk
 		}
+		if (Skills.length >= 2 && Skills[1]->SkillData->getProjectile() && Skills[1]->SkillData->getProjectile()->UniqueProperty == 5) stream->writeBoolean(false);
 		switch (ChargeUpType)
 		{
 		case 0:
@@ -453,9 +454,11 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(IsHyperchargeMinion);
 		stream->writeBoolean(Size > 0);
 	}
+	if (data->getSpawnedPet()) stream->writeBoolean(SpawningPet);
+	if (data->getUniqueProperty() == 9) stream->writeBoolean(SamHasWeapon);
 	if (LogicGamePlayUtil::canUseFastTravel(this)) stream->writeBoolean(IsTeleporting);//GamePlayUtil::canUseFastTravel;
 	stream->writeBoolean(false);
-	stream->writeBoolean(false);
+	stream->writeBoolean(ShieldTicks > 0 || data->getUniqueProperty() == 13 && !data->isHero() && data->getUniquePropertyValue2() > 0 || data->isHero() && getPlayer() && getPlayer()->getWillowObjectId() >= 1 && LogicDataTables::getItemFor(data, 3)->getValue() > 0);
 	stream->writePositiveIntMax3(0);
 	stream->writeBoolean(false);
 	stream->writePositiveIntMax511(0);
@@ -468,7 +471,18 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(false);
 		stream->writeBoolean(false);
 	}
-	stream->writePositiveIntMax31(0);
+	int damageNumberCount = 0;
+	for (int i = 0;i < DamageNumbers_Value.length;i++) {
+		if (DamageNumbers_Delay[i] == 0) {
+			if (Index == index || DamageNumbers_Index[i] == index) damageNumberCount++;
+		}
+	}
+	stream->writePositiveIntMax31(damageNumberCount);
+	for (int i = 0;i < DamageNumbers_Value.length;i++) {
+		if (DamageNumbers_Delay[i] == 0) {
+			if (Index == index || DamageNumbers_Index[i] == index) stream->writeIntMax32767(LogicMath::clamp(DamageNumbers_Value[i], -32766, 32767));
+		}
+	}
 	for (int i = 0;i < Skills.length;i++) {
 		Skills[i]->encode(stream, isOwn, this);
 	}

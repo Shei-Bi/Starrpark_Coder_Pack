@@ -24,6 +24,10 @@ public:
 	{
 		return writePositiveInt(value, 14);
 	}
+	void writePositiveIntMax32767(int value)
+	{
+		return writePositiveInt(value, 15);
+	}
 	void writePositiveIntMax15(int value)
 	{
 		return writePositiveInt(value, 4);
@@ -67,6 +71,10 @@ public:
 	}
 	void writeIntMax127(int value) {
 		return writeInt(value, 7);
+	}
+	void writeIntMax32767(int value)
+	{
+		return writeInt(value, 15);
 	}
 	void writePositiveVInt(int value, int bits)
 	{

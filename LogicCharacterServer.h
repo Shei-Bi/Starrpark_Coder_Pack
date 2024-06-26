@@ -40,7 +40,9 @@ public:
 	char gap1[296 - 272 - 4];
 	bool IsInvincible;//296
 	bool IsTeleporting;//297
-	char gap31[328 - 297 - 1];
+	bool gap31973827;//298
+	bool SamHasWeapon;//299
+	char gap31[328 - 299 - 1];
 	int AttackAnimation;//328
 	char gap23[336 - 328 - 4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
@@ -85,7 +87,11 @@ public:
 	int MinionDamage;//788
 	bool IsSpecialMinion;//792
 	bool HasReloadBuff;//793;
-	char gap4[976 - 793 - 1];
+	char gap4[904 - 793 - 1];
+	LogicArrayList<int> DamageNumbers_Value;//904
+	LogicArrayList<int> DamageNumbers_Index;//920
+	LogicArrayList<int> DamageNumbers_Delay;//936
+	char gap19372846[976 - 936 - 16];
 	int HealthRegenBlockedTick;//976
 	char gap36[996 - 976 - 4];
 	int Size;//996
@@ -99,7 +105,9 @@ public:
 	LogicArrayList<LogicBuffServer*> Buffs;//1128
 	char gap35[1156 - 1128 - 16];
 	bool IsHyperchargeMinion;//1156
-	char gap7[1200 - 1156 - 1];
+	char gap43711[1176 - 1156 - 1];
+	bool SpawningPet;//1176
+	char gap7[1200 - 1176 - 1];
 	int ProjectileEffectId;//1200
 	int SkinEffectId;//1204
 	char gap24[1213 - 1204 - 4];

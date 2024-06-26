@@ -36,6 +36,10 @@ public:
 			if (SkillData->HoldToShoot) stream->writePositiveIntMax4095(Charges / 20);
 			else stream->writePositiveIntMax4095(Charges);
 		}
+		if (SkillData->skillCanChange()) {
+			stream->writePositiveIntMax255(SkillData->getInstanceID());
+		}
+		if (((LogicCharacterData*)owner->getData())->getUniqueProperty() == 18) stream->writeBoolean(false);//???
 	}
 private:
 

@@ -1,19 +1,13 @@
 #ifndef LD_H
 #define LD_H
+#include "Hook.h"
+
 class LogicData
 {
-private:
-   /* data */
 public:
-   LogicData(/* args */);
-   ~LogicData();
+   int getInstanceID()
+   {
+      return ((int (*)(LogicData*))(base + 0x83F2EC))(this);
+   }
 };
-
-LogicData::LogicData(/* args */)
-{
-}
-
-LogicData::~LogicData()
-{
-}
 #endif

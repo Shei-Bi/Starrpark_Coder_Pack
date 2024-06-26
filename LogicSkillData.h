@@ -2,10 +2,14 @@
 #define LSD_H
 #include "Hook.h"
 #include"LogicData.h"
+#include "LogicProjectileData.h"
+
 class LogicSkillData : public LogicData
 {
 public:
-	char gap1[340];
+	char gap3[88];
+	LogicProjectileData* Projectile;//88
+	char gap1[340 - 88 - 8];
 	int BehaviorType;
 	char gap2[356 - 340 - 4];
 	bool HoldToShoot;
@@ -36,6 +40,17 @@ public:
 	int getAttackPattern()
 	{
 		return ((int (*)(LogicSkillData*))(base + 0x873E10))(this);
+	}
+	LogicProjectileData* getProjectile()
+	{
+		return Projectile;
+	}
+	int getSkillChangeType()
+	{
+		return ((int (*)(LogicSkillData*))(base + 0x874094))(this);
+	}
+	bool skillCanChange() {
+		return ((bool (*)(LogicSkillData*))(base + 0x87406C))(this);
 	}
 };
 #endif

@@ -170,12 +170,27 @@ Interceptor.attach(base.add(0x9510D8), {
         args[6] = NULL;
     }
 });
+Interceptor.attach(base.add(0x8A5F64), {
+    onEnter: function (args) {
+        console.log(`GameObject created: ${ReadStringFromStringObject(LogicData_getName(args[0]))}`);
+    }
+});
+Interceptor.attach(base.add(0x6B1DE8), {
+    onEnter: function (args) {
+        console.log("Go Home Message Sent");
+        RepliedToClient = false;
+    }
+});
+Interceptor.attach(base.add(0x4D8ED8), function () {
+    this.context.x8 = ptr(1);
+});
 let RootDirPath;
 let ModBase = 0;
 var Buffs = [];
 let HealthPromille = 1.0;
-Interceptor.attach(HomeScreen_enter, {
+const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
     onEnter: function (args) {
+        HomeScreenEnterAttach.detach();
         RootDirPath = ReadStringFromStringObject(base.add(0x10CDCD0));
 
         if (RootDirPath.endsWith("/")) {

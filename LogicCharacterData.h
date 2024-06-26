@@ -12,7 +12,8 @@ public:
 	LogicAreaEffectData* AreaEffect;//160
 	char gap1[492 - 160 - 8];
 	int Type;//492
-	char gap4[512 - 492 - 4];
+	char gap4[504 - 492 - 4];
+	LogicCharacterData* Pet;//504
 	LogicSkillData* WeaponSkill;//512
 	LogicSkillData* UltiSkill;//520
 	char gap2[528 - 520 - 8];
@@ -27,6 +28,10 @@ public:
 	int getUniquePropertyValue1()
 	{
 		return ((int (*)(LogicCharacterData*))(base + 0x83A244))(this);
+	}
+	int getUniquePropertyValue2()
+	{
+		return ((int (*)(LogicCharacterData*))(base + 0x83A32C))(this);
 	}
 	bool isHero() {
 		return Type == 0;
@@ -47,6 +52,10 @@ public:
 	int getLifeTimeTicks()
 	{
 		return ((int (*)(LogicCharacterData*))(base + 0x839454))(this);
+	}
+	LogicCharacterData* getSpawnedPet()
+	{
+		return Pet;
 	}
 };
 #endif
