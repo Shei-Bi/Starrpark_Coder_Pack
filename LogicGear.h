@@ -44,7 +44,7 @@ public:
 			Refactor. Reason: Supercell一直用 LogicTileMap::logicToPathFinderTile(logic) / 3 求LogicTile，但前者等价于 / 100 ，也许他这样有特殊的理由......
 			--Shei
 			*/
-			if (owner->getLogicBattleModeServer()->getTileMap()->getTile(owner->GetX() / 300, owner->GetY() / 300)->HidesHero) owner->giveSpeedFasterBuff(GearData->getModifierValue(), 2, false);
+			if (owner->getLogicBattleModeServer()->getTileMap()->getTile(owner->getX() / 300, owner->getY() / 300)->HidesHero) owner->giveSpeedFasterBuff(GearData->getModifierValue(), 2, false);
 			break;
 		}
 	}

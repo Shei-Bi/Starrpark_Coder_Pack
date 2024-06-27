@@ -11,6 +11,8 @@
 #include "LogicPathFinder.h"
 #include "LogicAreaEffectData.h"
 #include "BitStream.h"
+#include "String.h"
+#include "LogicDataSlot.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
@@ -46,7 +48,8 @@ public:
 	int AttackAnimation;//328
 	char gap23[336 - 328 - 4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
-	char gap14[8];
+	char gap14[4];
+	int DamageBuffPermanent;//356
 	bool Charging;//360
 	bool Knockbacked;//361
 	char gap16[2];
@@ -56,9 +59,10 @@ public:
 	int StunTicks;//368
 	char gap11[4];
 	int ShieldTicks;//376
-	int ReloadBuffTicks;//380
-	int ReloadBuffPercent;//384
-	char gap19[440 - 384 - 4];
+	int ReloadBuffTicks;//380 unused
+	LogicArrayList<int> ChargeDamageImmunitys_GlobalID;//384
+	LogicArrayList<int> ChargeDamageImmunitys_Timer;//400
+	char gap19[440 - 400 - 16];
 	int SpawnedTicks;//440
 	int SpawnTick;//444
 	int CastingTime;//448
@@ -91,7 +95,8 @@ public:
 	LogicArrayList<int> DamageNumbers_Value;//904
 	LogicArrayList<int> DamageNumbers_Index;//920
 	LogicArrayList<int> DamageNumbers_Delay;//936
-	char gap19372846[976 - 936 - 16];
+	LogicArrayList <LogicDataSlot*> Starpowers;//952
+	LogicAreaEffectServer* AreaEffect;//968
 	int HealthRegenBlockedTick;//976
 	char gap36[996 - 976 - 4];
 	int Size;//996
@@ -118,17 +123,20 @@ public:
 	int ChargedShotCount;//1272
 	char gap21[1284 - 1272 - 4];
 	int ShieldPercent;//1284
-	char gap28[1292 - 1284 - 4];
+	int CcImmunityTicks;//1288
 	int LifeTimeTicks;//1292
 	char gap12[1312 - 1292 - 4];
 	int ChargeUp;//1312
 	char gap5[12];
-	int ChargeUpType;
-	int ChargeUpMax;
-	char gap2[1380 - 336 - 12 - 12 + 8 + 1380 - 2368 + 4];
+	int ChargeUpType;//1328
+	int ChargeUpMax;//1332
+	char gap2[1380 - 1332 - 4];
 	int ForcedAngleEndTick;//1380
-	char gap17[1404 - 1380 - 4];
-	int ChargeHits;//1404?
+	int TownCrushBossSearchTileTimer;//1384
+	char gap103897[4];
+	LogicGameObjectServer* DraggingObject;//1392
+	int DraggingAngle;//1400
+	int ChargeHits;//1404
 	char gap25[1452 - 1404 - 4];
 	bool IsSlippery;//1452
 	int PartialStunPromille;//1456
@@ -144,41 +152,301 @@ public:
 	char gap9[1664 - 1532 - 4];
 	LogicArrayList<LogicGear*> Gears;//1664
 
-	void addConsumableShield(int);
-	void tick();
-	int getCardValueForPassive(int, int);
-	LogicSkillData* getCurrentCastingSkill();
-	void interruptAllSkills(bool);
-	void stopMovement();
-	int getMoveAngle();
-	void setForcedAngle(int angle);
-	void calculateChargeUp();
-	int heal(int, int, bool, LogicData*);
-	void addExtraHealthRegen(int, int, int, LogicData*);
-	void blockHealthRegen();
-	void tickEffects();
 	void tickGears();//guessed name
-	void tickStarPowers();
-	void setUpgrades(LogicHeroUpgrades*);
-	void applyBuff(int, int, int, int);
-	void giveDamageBuff(int, int);
-	int getDamageBuffTemporary();
-	void giveSpeedFasterBuff(int, int, bool);
 	int getBuffBoost(int);
-	void triggerCharge(int, int, int, int, int, int, bool, int, LogicAreaEffectData*, LogicItemData*, int, int, int, bool, LogicArrayList<LogicVector2*>*, LogicAreaEffectData*);
-	void ensurePathOk(LogicPathFinder*);
-	int getPathLength();
-	void chargeTo(int, int, int, LogicPathFinder*, LogicArrayList<LogicVector2*>*);
-	void moveTo(int, int, bool, int, bool, bool);
-	void addShield(int, int);
-	void clearPath();
-	void giveReloadBuff(int, int);
-	void encode(BitStream*, bool, int, int, bool);
-	bool isPlayerControlRemoved();
-	void setPartialStunPromille(int);
-	void giveSlipperyDebuff();
-	void triggerStun(int, bool);
 	LogicBuffServer* findBuffByType(int);
-	bool isPet();
+
+	void AICanRaiseDead(void);
+	void AICanResurrect(void);
+	void AIactivateAllSkillsOfType(int, LogicSkillData*, LogicSkillData*, LogicSkillData*, int, int, bool, bool, bool, bool, bool);
+	void AIthrowBasketball(int, int);
+	void AIthrowCaptureFlag(void);
+	void AIthrowLaserBall(LogicCharacterServer*, bool);
+	void activateSkill(LogicSkillData*, int, int);
+	void activateSkill(String const&, int, int);
+	void activateSkill(int, int, int);
+	void addAreaEffect(int, int, LogicAreaEffectData*, int, bool);
+	void addCcImmunity(int);
+	void addConsumableShield(int);
+	void addExtraHealthRegen(int, int, int, LogicData*);
+	void addPoint(int, int);
+	void addShield(int, int);
+	void addStars(int);
+	void aiAddSeenEnemy(LogicCharacterServer*);
+	void aiMoveToPreferForest(int, int, bool, bool, bool, bool, bool, bool);
+	void aiUpdateSeenEnemies(void);
+	void aiUseExploreSkills(void);
+	void aiUseMovementSkills(int, int);
+	void aiUseOffensiveSkills(LogicCharacterServer*, bool, bool, bool, bool);
+	void applyBuff(int, int, int, int);//
+	void applyPoison(int, int, int, bool, LogicCharacterServer*, int, bool);
+	void attack(LogicCharacterServer*, int, int, int, int, LogicProjectileData*, int, bool, int, int);
+	void attackedThisTick(int);
+	void blockHealthRegen(void);
+	void bossEngageUseSkills(LogicCharacterServer*, LogicCharacterServer*, bool);
+	void bossExploreUseSkills(void);
+	void bossTownCrusherUseSkills(void);
+	void bossUseFirstGroupSkills(LogicCharacterServer*);
+	void bossUseSecondGroupSkills(LogicCharacterServer*);
+	void buffRoboWarsRobo(int, int, int, int);
+	void calculateCarryableWallBounce(bool, int, int, bool);
+	void calculateChargeUp(void);
+	void calculateDamageBuffsAndNerfs(int);
+	void canGrappleTarget(void);
+	void canMoveAndUseThisSkillSimultaneously(LogicSkillData*);
+	void canTakeHits(void);
+	void cancelSkill(void);
+	bool causeDamage(int, int, int, LogicCharacterServer*, bool, int, int, LogicData*, bool, bool, bool, bool, bool, bool);
+	void chargeTo(int, int, int, LogicPathFinder*, LogicArrayList<LogicVector2*>*);
+	void chargeUlti(int, bool, bool, LogicPlayer*, LogicCharacterServer*);
+	void clearPath(void);
+	void clearSkillList(void);
+	void closeToWater(void);
+	void cripple(int);
+	void destruct(void);
+	void dropCarryable(int, int);
+	void dropThis(void);
+	void encode(BitStream*, bool, int, int, bool);
+	void endRapidFire(void);
+	void ensurePathOk(LogicPathFinder*);
+	void executeBlink(void);
+	void executeKickBack(void);
+	void getAccessory(void);
+	void getActivePet(bool);
+	void getActiveSkill(int);
+	void getActiveSkill(void);
+	void getActiveSkillShield(void);
+	void getAliveTeamMembers(void);
+	void getAttackAngle(void);
+	void getBotSkill(void);
+	void getBuffValue(int);
+	void getBuffVisualStyle(int);
+	int getCardValueForPassive(int, int);
+	void getCarryableData(void);
+	void getCarryableLastOwnerPlayerIndex(int);
+	void getCharacterData(void);
+	void getClosestBossTarget(int, int);
+	void getClosestEnemy(int, int, bool, bool, LogicArrayList<int>*, bool, bool, bool);
+	void getClosestFriendlyHealTargetForAI(void);
+	void getClosestItemForAI(LogicArrayList<LogicData*>*, int);
+	void getClosestProjectileFlyingAgainstYou(int);
+	void getControlledProjectile(void);
+	void getCripplePercent(void);
+	void getCurrentActiveOrCastingSkill(void);
+	void getCurrentAttackSpeedTicks(void);
+	LogicSkillData* getCurrentCastingSkill();
+	int getDamageBuffTemporary();
+	void getDamageEffect(void);
+	void getDeathEffect(void);
+	void getEnemyForAI(bool, bool, bool, LogicArrayList<LogicCharacterServer*>*);
+	void getFurthesAwayOwnMinion(void);
+	void getJumpZAtT(float, float, float, float, float);
+	void getMaxChargedShots(void);
+	int getMoveAngle();
+	void getMovementSpeed(int, int);
+	void getNextSkill(void);
+	void getNextSlipperyPosition(LogicVector2&);
+	void getParentCharacter(void);
+	int getPathLength();
+	void getPosAtTick(int, LogicVector2&, LogicVector2&);
+	void getPowerLevel(void);
+	void getPrevX(void);
+	void getPrevY(void);
+	void getRadius(void);
+	void getRandomTileOnVisionRange(LogicVector2*);
+	void getRapidFireAttackPattern(void);
+	void getRapidFireDamage(void);
+	void getRapidFireProjectile(void);
+	void getRapidFireRange(void);
+	void getRapidFireSpread(void);
+	void getReceivingDamagePercent(void);
+	void getRegeneratePerSecond(void);
+	int getReloadSpeedChangePercent(void);
+	void getReloadTimeTicks(LogicSkillData*, int);
+	void getShootPositionModifiers(int, int, int, int, int, int, int, LogicVector2&, LogicVector2&);
+	void getSizeSubtilesForPathfinding(void);
+	void getSkill(LogicSkillData*);
+	void getSkill(String const&);
+	void getSkill(int);
+	void getSkillHoldedTicks(void);
+	void getSlamZAtT(float);
+	void getSpeedBuff(void);
+	void getStarsForAI(void);
+	void getState(void);
+	void getType(void);
+	void getUltiSkill(void);
+	void getVisionRange(void);
+	void getWeaponSkill(void);
+	void getXForAutoshoot(void);
+	void getYForAutoshoot(void);
+	void giveCleanse(int);
+	void giveCurse(int, int, int);
+	void giveDamageAndSizeBuff(int, int);
+	void giveDamageBuff(int, int);
+	void giveDamageBuff2(int, int);
+	void giveDamageBuffPermanent(int);
+	void giveElectrocution(int, int, int, int, int, int, int);
+	void giveMaxHealthBuff(int, bool, bool, int);
+	void giveReloadBuff(int, int);
+	void giveReloadDebuff(int, int);
+	void giveSilence(int);
+	void giveSlipperyDebuff();//
+	void giveSpeedFasterBuff(int, int, bool);
+	void giveSpeedFasterBuff2(int, int);
+	void giveSpeedSlowerBuff(int, int);
+	void gotDamageThisTick(int);
+	void handleDelayedDeath(void);
+	void handleDynamicWallClearing(void);
+	void handleHealFromDamage(int, bool, LogicCharacterServer*, LogicData*);
+	void handleMoveAndAttack(void);
+	void handleTownCrushBossEnrage(int, int);
+	void hasActiveAccessory(int, int);
+	void hasActiveSkill(int);
+	void hasBuff(int);
+	bool hasCcImmunity(void);
+	void hasChanneledSkillActive(void);
+	void hasForcedMoveAngle(void);
+	void hasSeen(LogicCharacterServer*);
+	void hasSkill(int);
+	void hasUlti(void);
+	bool heal(int, int, bool, LogicData*);
+	void holdSkillStarted(void);
+	void increaseChargeUp(int);
+	void increaseSize(int);
+	void initializeMembers(void);
+	void interruptAllSkills(bool);
+	void isAlien(int);
+	bool isAlive(void);
+	void isBullChargeActive(void);
+	void isChargeUpReady(void);
+	void isForcedVisible(void);
+	void isGiantGrowthed(void);
+	void isGrappled(void);
+	void isImmortalityActive(void);
+	bool isImmuneAndBulletsGoThrough(void);
+	void isImmuneToPushbackFromCharge(void);
+	void isInAirFromPushback(void);
+	void isInRange(int, LogicCharacterServer*, bool, bool, bool, bool);
+	void isJumpingChargeActive(void);
+	void isMinionSummoned(void);
+	void isMoving(void);
+	void isObject(void);
+	bool isPet(void);
+	bool isPlayerControlRemoved(void);
+	void isRadioactiveGlowActive(void);
+	void isShieldActive(void);
+	void isSprintActive(void);
+	void isTargetVisibleToAttack(LogicCharacterServer*, bool);
+	void isWhirlwinding(void);
+	void kill(void);
+	void markItemPickedUpTick(int);
+	void meleeAttack(LogicCharacterServer*, int, int, int, int);
+	void moveTo(int, int, bool, int, bool, bool);
+	void overrideProjectiles(LogicProjectileData*, LogicProjectileData*, int);
+	void pathFindToNextTarget(void);
+	void pathfindTo(int, int, LogicVector2*, LogicPathFinder*, bool, bool, bool, bool);
+	void pauseMovement(void);
+	void pickedUpItemThisTick(int);
+	void popTarget(void);
+	void pushLaserBall(int, int, int, bool, int);
+	void pushOutOfWalls(void);
+	void rapidFireMeleeAttack(int, int, int, int, int);
+	void recalculateBounceCharge(void);
+	void removeCooldowns(void);
+	void removeGameObjectReferences(LogicGameObjectServer*, int);
+	void removeSelfAsChargeTarget(void);
+	void resetAFKTicks(void);
+	void resetEventsOnTick(void);
+	void revealForBots(void);
+	void scaleStatToLevel(int);
+	void setCarryableAim(int, int);
+	void setCarryableLink(LogicCharacterServer*);
+	void setCharacterBuffingVariables(int, int, int, int);
+	void setCharacterSummoningVariables(LogicCharacterData*, int, int, int, int);
+	void setDefaultStartRotation(void);
+	void setDraggingObject(LogicGameObjectServer*, int, int, bool);
+	void setForcedAngle(int);
+	void setGrappleTargetPos(int, int);
+	void setImmunity(int, LogicData*, int);
+	void setInvisible(int);
+	void setItemSummoningVariables(LogicItemData*, int, int, int, int);
+	void setMaxHealth(int);
+	void setMinionDamageAndHealthBonuses(int, int);
+	void setParentGID(int);
+	void setPartialStunPromille(int);
+	void setRadioactiveGlowSeconds(int);
+	void setSelfDestructDamage(int);
+	void setStartPosition(int, int, int);
+	void setStartRotation(int);
+	void setState(int, int);
+	void setToxicFumesDamageIncrease(int);
+	void setUpgrades(LogicHeroUpgrades*);
+	void setVisionOverride(int, int, int);
+	void shouldDestruct(void);
+	void shouldSpawnPet(void);
+	void showDamageNumber(int, int, LogicCharacterServer*);
+	void skipPathPoints(int, int, int, LogicPathFinder*, bool);
+	void spawnItem(LogicItemData*, int, int, int, int, int, int, int, int, LogicCharacterServer*, LogicBattleModeServer*, int);
+	void stopGrapple(void);
+	void stopMovement(void);
+	void summonMinion(LogicCharacterData*, int, int, int, int, int, int, int, LogicBattleModeServer*, int, int, int, bool, bool, int, bool, int);
+	void suppressHealing(int, int);
+	void swapSkillTo(int, LogicSkillData*);
+	void switchRapidFireWeaponCounter(void);
+	void throwCarryable(int, int, bool);
+	void throwScrapAtOwnBase(void);
+	void throwThis(bool);
+	void tick(void);
+	void tickAI(void);
+	void tickAntiTeaming(void);
+	void tickAutoUltiCharge(void);
+	void tickBoss(void);
+	void tickBossTownCrusher(void);
+	void tickBot(void);
+	void tickBotArtTest(void);
+	void tickBotEmotes(void);
+	void tickCarryable(void);
+	void tickEffects(void);
+	void tickEnrage(void);
+	void tickGameModeLogic(void);
+	void tickHeals(void);
+	void tickInvisibility(void);
+	void tickMovePet(void);
+	void tickNpcSkills(void);
+	void tickRapidFire(void);
+	void tickSelfDestruct(void);
+	void tickSkills(void);
+	void tickSpawnMinions(void);
+	void tickStarPowers(void);
+	void tickTile(void);
+	void tickTimers(void);
+	void tickTrain(void);
+	void tickWhirlwind(void);
+	void transformPushBackLengthToStrength(int);
+	void transformPushBackStrengthToLength(int);
+	void triggerAreaEffect(LogicAreaEffectData*, int, int, int, int);
+	void triggerBlink(int, int, LogicAreaEffectData*, LogicAreaEffectData*, int, int);
+	void triggerCharacterBuffingProjectile(LogicProjectileData*, int, int, int, int, int, int);
+	void triggerCharacterTransformingProjectile(LogicProjectileData*, LogicCharacterData*, int, int, int, int, int, int, int, int);
+	void triggerCharge(int, int, int, int, int, int, bool, int, LogicAreaEffectData*, LogicItemData*, int, int, int, bool, LogicArrayList<LogicVector2*>*, LogicAreaEffectData*);
+	void triggerChargeEndAreaEffect(void);
+	void triggerGiantGrowth(int);
+	void triggerGrapple(int, int, int);
+	void triggerLowerCooldowns(int);
+	void triggerPushback(int, int, int, bool, bool, bool, bool, bool, bool, bool, bool, bool, int);
+	void triggerRaiseDead(void);
+	void triggerRapidFire(int, int, int, int, int, int, int, int, int, int, LogicProjectileData*, bool, bool, int, bool);
+	void triggerResurrect(void);
+	void triggerShake(void);
+	void triggerStun(int, bool);//
+	void triggerWhirlwind(int, int, int);
+	void turnAngleTowards(float, int, float);
+	void ultiDisabled(void);
+	void ultiEnabled(void);
+	void ultiUsed(void);
+	void updateChargeDamage(void);
+	void updateMoveDirection(LogicVector2*, LogicVector2*, int, int);
+	void updateSpellCastingDirection(int, int);
+	void wasVisibleByActionWithin(int);
 };
 #endif

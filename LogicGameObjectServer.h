@@ -7,17 +7,15 @@
 
 class LogicGameObjectServer
 {
-private:
-	/* data */
 public:
-	int GlobalID;
-	char gap1[4];
-	LogicData* Data;
-	LogicGameObjectManagerServer* GameObjectManager;
-	int MoveStartTick;
-	int MoveEndTick;
-	char gap2[8];
-	int X;
+	int GlobalID;//8
+	char gap1[4];//12
+	LogicData* Data;//16
+	LogicGameObjectManagerServer* GameObjectManager;//24
+	int MoveStartTick;//32
+	int MoveEndTick;//36
+	char gap2[8];//40
+	int X;//48
 	int Y;
 	int Z;
 	int Index;
@@ -39,11 +37,11 @@ public:
 	virtual void tick()
 	{
 	}
-	int GetX()
+	int getX()
 	{
 		return X;
 	}
-	int GetY()
+	int getY()
 	{
 		return Y;
 	}
@@ -70,6 +68,12 @@ public:
 	}
 	virtual void encode(BitStream* stream, int fadeCounter) {
 		return ((void (*)(LogicGameObjectServer*, BitStream*, int))(base + 0x8AF7EC))(this, stream, fadeCounter);
+	}
+	int getGlobalID() {
+		return GlobalID;
+	}
+	int getCardValueForPassiveFromPlayer(int type, int index) {
+		return ((int (*)(LogicGameObjectServer*, int, int))(base + 0x8AFBC0))(this, type, index);
 	}
 };
 #endif

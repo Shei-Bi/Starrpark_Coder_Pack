@@ -12,21 +12,24 @@
 class LogicAccessory
 {
 public:
-	LogicAccessoryData* AccessoryData;
-	int Uses;
-	int UNK2;
-	int CoolDown;
-	int State;
-	int Type;
-	int ActivationDelay;
-	int X;
-	int Y;
-	int TicksActive;
-	bool IsActive;
-	int qword30;
-	int field_34;
-	int StartUsingTick;
-	int Angle;
+	LogicAccessoryData* AccessoryData;//0
+	int Uses;//8
+	int UNK2;//12
+	int CoolDown;//16
+	int State;//20
+	int Type;//24
+	int ActivationDelay;//28
+	int X;//32
+	int Y;//36
+	int TicksActive;//40
+	bool IsActive;//44
+	int qword30;//48
+	int field_34;//52
+	int StartUsingTick;//56
+	int Angle;//60
+	char gap32878[4];
+	bool WTF;//68
+	bool gap69420;//69
 
 	LogicAccessory(LogicAccessoryData*, int);
 	void encode(BitStream*, bool);
@@ -85,8 +88,8 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 	switch (Type) {
 	case 8://heal
 		if (AccessoryData->getSubType() == 1) {
-			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;//Ãî¾ß¸Ä¸ïºóÎª°Ù·Ö±È
-			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//Ë¯ÃßÒÇ
+			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;//ï¿½ï¿½ß¸Ä¸ï¿½ï¿½Îªï¿½Ù·Ö±ï¿½
+			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//Ë¯ï¿½ï¿½ï¿½ï¿½
 			owner->heal(owner->Index, amount, true, nullptr);
 		}
 		else if (AccessoryData->getSubType() == 2) {
@@ -108,6 +111,8 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 	}
 }
 void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
+	WTF = true;
+	gap69420 = true;
 	State = checkCurrentAccessoryAvailability(owner);
 	CoolDown = LogicMath::max(0, CoolDown - 1);
 	if (IsActive) {
@@ -142,13 +147,13 @@ void LogicAccessory::tickAccessory(LogicCharacterServer* owner) {
 				int deltaY = LogicMath::getRotatedY(range, 0, angle) * 1;
 				LogicTileMap* tileMap = owner->getLogicBattleModeServer()->getTileMap();
 				LogicProjectileServer::shootProjectile(
-					300 * deltaX / range + owner->GetX(),//bullet spawn 300 offset from character
-					300 * deltaY / range + owner->GetY(),//ÆäÊµ¾ÍÊÇÔÚÀë½ÇÉ«Ò»¸ñÔ¶µÄµØ·½·¢Éä×Óµ¯·ÀÖ¹×Óµ¯°Ñ½ÇÉ«Á³µ²×¡
+					300 * deltaX / range + owner->getX(),//bullet spawn 300 offset from character
+					300 * deltaY / range + owner->getY(),//ï¿½ï¿½Êµï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«Ò»ï¿½ï¿½Ô¶ï¿½ÄµØ·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Óµï¿½ï¿½ï¿½Ö¹ï¿½Óµï¿½ï¿½Ñ½ï¿½É«ï¿½ï¿½ï¿½ï¿½×¡
 					owner,
 					owner,
 					projectileData,
-					LogicMath::clamp(deltaX + owner->GetX(), 1, tileMap->LogicWidth - 2),
-					LogicMath::clamp(deltaY + owner->GetY(), 1, tileMap->LogicHeight - 2),
+					LogicMath::clamp(deltaX + owner->getX(), 1, tileMap->LogicWidth - 2),
+					LogicMath::clamp(deltaY + owner->getY(), 1, tileMap->LogicHeight - 2),
 					AccessoryData->getCustomValue3(),
 					AccessoryData->getCustomValue6(),
 					0,
@@ -156,7 +161,7 @@ void LogicAccessory::tickAccessory(LogicCharacterServer* owner) {
 					0,
 					owner->getLogicBattleModeServer(),
 					0,
-					4//1 ÆÕ¹¥ 2 ´óÕÐ 3ÐÇ»Ô 4 Ãî¾ß 
+					4//1 ï¿½Õ¹ï¿½ 2 ï¿½ï¿½ï¿½ï¿½ 3ï¿½Ç»ï¿½ 4 ï¿½ï¿½ï¿½ 
 				);
 			}
 		}

@@ -35,8 +35,8 @@ public:
 		int boomerangY;
 		if (Owner)
 		{
-			boomerangX = Owner->GetX();
-			boomerangY = Owner->GetY();
+			boomerangX = Owner->getX();
+			boomerangY = Owner->getY();
 		}
 		else
 		{
@@ -61,8 +61,8 @@ void LogicProjectileServer::tick() {
 	LogicProjectileData* data = (LogicProjectileData*)getData();
 	if (data->isFriendlyHomingMissile() || data->isHomingMissile() || (data->isBoomerang() && !data->getChainedBullet())) {
 		if (HomingTarget) {
-			TargetX = HomingTarget->GetX();
-			TargetY = HomingTarget->GetY();
+			TargetX = HomingTarget->getX();
+			TargetY = HomingTarget->getY();
 		}
 	}
 }

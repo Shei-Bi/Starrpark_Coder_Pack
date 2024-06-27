@@ -26,12 +26,13 @@ const c_rmdir = new NativeFunction(Module.getExportByName('libc.so', 'rmdir'), '
 const c_unlink = new NativeFunction(Module.getExportByName('libc.so', 'unlink'), 'int', ['pointer']);
 const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), 'float', ['float']);
 
+Armceptor.replace(base.add(0x87F6A8), [0x3F, 0x29, 0x00, 0x71]);//LogicBuffServer::tick 9->10
+
 const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
 const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
 const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
 const BattleScreen_update = new NativeFunction(base.add(0x6A9E40), 'void', ['pointer', 'float']); // v53.176 | String: "land_zone"
 const Stage_instanceAddr = base.add(0x10B8540); // v53.176 | In popups
-
 let RepliedToClient = 0;
 {
     function buf2hex(buffer) { // buffer is an ArrayBuffer
@@ -150,6 +151,7 @@ Interceptor.attach(base.add(0x77BDA4), {
         args[3] = ptr(3);
         args[1] = ptr(0);
         args[2] = LogicDataTablesGetDataById(15000001);
+        args[6] = ptr(1);
     }
 });
 function ReadStringFromStringObject(strObject) {
@@ -162,8 +164,8 @@ function ReadStringFromStringObject(strObject) {
 Interceptor.attach(base.add(0x9510D8), {
     onEnter: function (args) {
         console.log(`level:${args[1].toInt32()}\nsp:${ReadStringFromStringObject(LogicData_getName(args[2]))}\na:${ReadStringFromStringObject(LogicData_getName(args[3]))}\ng1:${ReadStringFromStringObject(LogicData_getName(args[4]))}\ng2:${ReadStringFromStringObject(LogicData_getName(args[5]))}`)
-        args[1] = ptr(11);
-        args[2] = NULL;
+        args[1] = ptr(21);
+        // args[2] = NULL;
         //args[3] = NULL;
         //args[4] = NULL;
         //args[5] = NULL;
@@ -209,6 +211,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         const _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades"), 'void', ['pointer', 'pointer']);
         const _ZN20LogicCharacterServer9tickGearsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer9tickGearsEv"), 'void', ['pointer']);
         const _ZN20LogicCharacterServer22getDamageBuffTemporaryEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer22getDamageBuffTemporaryEv"), 'int', ['pointer']);
+        const _ZN20LogicCharacterServer18updateChargeDamageEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer18updateChargeDamageEv"), 'void', ['pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -238,6 +241,19 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
                 Buffs.push(b.readInt());
             }
         });
+        Interceptor.attach(base.add(0x889F8C), function () {
+            var c = this.context.x19;
+            var t = c.add(468).readInt();
+            //deal damage when landing and only when landing
+            if ((t != 3 && t != 5 && t != 9 && t != 16) || c.add(36).readInt() == c.add(24).readPointer().add(168).readPointer().add(16).readInt()) {
+                _ZN20LogicCharacterServer18updateChargeDamageEv(c);
+            }
+        });
+        Interceptor.attach(base.add(0x88A0F4), function () {
+            var c = this.context.x25;
+            if ((c.add(36).readInt() + c.add(32).readInt()) / 2 - 2 > c.add(24).readPointer().add(168).readPointer().add(16).readInt() && c.add(360).readU8() != 0) return;
+            this.context.x0 = ptr(0);
+        });
         // Interceptor.attach(base.add(0x88717C), function () {
         //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         // });
@@ -263,6 +279,8 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x8AFD5C), Mod.getExportByName("_ZN9LogicGear6encodeEP9BitStream"));
         Interceptor.replace(base.add(0x88F450), Mod.getExportByName("_ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_"));
         Interceptor.replace(base.add(0x886FE4), Mod.getExportByName("_ZN20LogicCharacterServer6encodeEP9BitStreambiib"));
+        Interceptor.replace(base.add(0x888640), Mod.getExportByName("_ZN20LogicCharacterServer22getCardValueForPassiveEii"));
+        Interceptor.replace(base.add(0x8884E0), Mod.getExportByName("_ZN20LogicCharacterServer27getReloadSpeedChangePercentEv"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
@@ -406,9 +424,9 @@ class CharacterSwitchingHUD {
 }
 class BuffIcon {
     constructor(combatHUD, type, yLayer) {
-        var BuffText = "Buff";
+        var BuffText = "Buff" + type.toString();
         var BuffIcon = "icon_gear_damage";
-        var BuffColor = [0, 0, 0];
+        var BuffColor = [255, 255, 255];
         switch (type) {
             case 1:
                 BuffText = "<c681B84>强攻</c>";
@@ -419,6 +437,11 @@ class BuffIcon {
                 BuffText = "<cFF5F1F>迅捷</c>";
                 BuffColor = [255, 95, 31];
                 BuffIcon = "icon_gear_speed";
+                break;
+            case 10:
+                BuffText = "<c22CC22>治疗</c>";
+                BuffColor = [0, 255, 0];
+                BuffIcon = "icon_gear_heal";
                 break;
         }
         const Stage_instancePtr = Stage_instanceAddr.readPointer();

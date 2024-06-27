@@ -27,8 +27,9 @@ public:
 		Damage2 = 5,
 		DamageAndSpeed = 6,
 		Slippery = 7,
-		DamageNerf = 8,
-		HealthRegen = 9,
+		ReloadDebuff = 8,
+		ReloadBuff = 9,
+		HealthRegen = 10,
 		BelleWeapon = 14,
 		BelleUlti = 15
 	};

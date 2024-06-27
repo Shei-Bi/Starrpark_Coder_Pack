@@ -39,12 +39,18 @@ public:
 	bool isTurret() {//guessed
 		return Type == 4;
 	}
+	bool isBoss() {
+		return Type == 1 || Type == 16;
+	}
 	int getSpeed()
 	{
 		return ((int (*)(LogicCharacterData*))(base + 0x839428))(this);
 	}
 	bool isTrain() {
 		return Type == 13 || Type == 19;
+	}
+	bool isTrainingDummy() {
+		return Type == 7;
 	}
 	LogicAreaEffectData* getAreaEffect() {
 		return AreaEffect;

@@ -48,7 +48,14 @@ public:
 			length--;
 			return removed;
 		}
-		return nullptr;
+		return 0;
+	}
+
+	bool contains(T t) {
+		for (int i = 0;i < length;i++) {
+			if (t == array[i]) return true;
+		}
+		return false;
 	}
 };
 template<class T>

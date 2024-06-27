@@ -24,7 +24,7 @@ void LogicCharacterServer::tick()
 	addConsumableShield(114514);
 }
 int LogicCharacterServer::getCardValueForPassive(int type, int index) {
-	return -1;
+	return getCardValueForPassiveFromPlayer(type, index);
 }
 LogicSkillData* LogicCharacterServer::getCurrentCastingSkill() {
 	if (Skills.length < 1) return nullptr;
@@ -94,8 +94,8 @@ void LogicCharacterServer::calculateChargeUp() {
 		ChargeUpMax = getPlayer()->Accessory->AccessoryData->getActiveTicks() * 50;
 	}
 }
-int LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
-	return ((int (*)(LogicCharacterServer*, int, int, bool, LogicData*))(base + 0x88E6F4))(this, healerIndex, amount, shouldShow, source);
+bool LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
+	return ((bool (*)(LogicCharacterServer*, int, int, bool, LogicData*))(base + 0x88E6F4))(this, healerIndex, amount, shouldShow, source);
 }
 void LogicCharacterServer::addExtraHealthRegen(int healPerSecond, int durationTicks, int healerIndex, LogicData* source) {
 	LogicCharacterServer::applyBuff(LogicBuffServer::HealthRegen, durationTicks, healPerSecond, healerIndex);
@@ -214,27 +214,38 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 	if (Index >= 0)
 		;//do anti teaming stuff
 	if (!isUlti && ChargeUpType == 1) ChargeUp = 0;//腹蛇出洞！
-	if (getCardValueForPassive(94, 1) >= 1) addShield(getCardValueForPassive(94, 0), getCardValueForPassive(94, 1));
+	if (getCardValueForPassive(94, 1) >= 1) addShield(getCardValueForPassive(94, 3), getCardValueForPassive(94, 1));
 	UsingUlti = isUlti;
 	Stunned = false;
 	Knockbacked = false;
 	ChargeHits = 0;
 	if (type == 10) {
 		//Colette.
-		int deltaX = x - GetX();
-		int deltaY = y - GetY();
+		int deltaX = x - getX();
+		int deltaY = y - getY();
 		int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
 		if (distance > 0) {
 			deltaX = deltaX * 100 * range / distance;
 			deltaY = deltaY * 100 * range / distance;
 		}
 		clearPath();
-		PathPointsX.add(GetX());
-		PathPointsY.add(GetY());
-		PathPointsX.add(GetX() + deltaX);
-		PathPointsY.add(GetY() + deltaY);
-		PathPointsX.add(GetX());
-		PathPointsY.add(GetY());
+		PathPointsX.add(getX());
+		PathPointsY.add(getY());
+		LogicVector2 vector = LogicVector2(-1, -1);
+		if (LogicGamePlayUtil::getClosestAnyCollision(getX(), getY(), getX() + deltaX, getY() + deltaY, getLogicBattleModeServer()->getTileMap(), &vector, false, false, false, false)) {
+			deltaX = vector.X - getX();
+			deltaY = vector.Y - getY();
+			int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
+			if (distance > 0) {
+				int distanceScaled = LogicMath::max(1, distance - 150);
+				deltaX = distanceScaled * deltaX / distance;
+				deltaY = distanceScaled * deltaY / distance;
+			}
+		}
+		PathPointsX.add(getX() + deltaX);
+		PathPointsY.add(getY() + deltaY);
+		PathPointsX.add(getX());
+		PathPointsY.add(getY());
 		ensurePathOk(getLogicBattleModeServer()->getPathFinder());
 		Pathlength = getPathLength();
 		if (Pathlength > 0) {
@@ -245,16 +256,16 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 	else if (type != 7) {
 		if (useSpecialPathfinding) {
 			if (type == 2 || type == 6) {
-				int deltaX = x - GetX();
-				int deltaY = y - GetY();
+				int deltaX = x - getX();
+				int deltaY = y - getY();
 				int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
 				speed = LogicMath::max(1, distance * speed / 3000);
 			}
 			chargeTo(x, y, speed, getLogicBattleModeServer()->getPathFinder(), nullptr);
 		}
 	}
-	if (getCardValueForPassive(22, 1) > 0) addShield(getCardValueForPassive(22, 1), getCardValueForPassive(22, 0));
-	if (getCardValueForPassive(54, 1) > 0) giveReloadBuff(getCardValueForPassive(54, 1), 100);
+	if (getCardValueForPassive(22, 1) > 0) addShield(getCardValueForPassive(22, 1), getCardValueForPassive(22, 2));
+	if (getCardValueForPassive(54, 1) > 0) giveReloadBuff(100, getCardValueForPassive(54, 1));
 	Charging = true;
 	TravelSpeed = speed;
 	ChargeDamage = damage;
@@ -263,12 +274,14 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 	ChargePushback = pushback;
 	ChargeType = type;
 	ChargeChainDistance = range;
+	ChargeDamageImmunitys_GlobalID.length = 0;
+	ChargeDamageImmunitys_Timer.length = 0;
 	if (type == 6) {
 		;//piper.
 	}
 	else if (type == 2) {
 		LogicAreaEffectServer* areaEffect = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(spawnedAreaEffect);
-		areaEffect->setPosition(GetX(), GetY(), 0);
+		areaEffect->setPosition(getX(), getY(), 0);
 		areaEffect->Index = Index;
 		areaEffect->TeamIndex = TeamIndex;
 		areaEffect->WorldIndex = WorldIndex;
@@ -306,11 +319,16 @@ void LogicCharacterServer::giveReloadBuff(int percent, int ticks) {
 added in v30;
 before v30 only ReloadBuffTicks is used since all reload buffs are 100%
 	*/
-	ReloadBuffTicks = ticks;
-	ReloadBuffPercent = percent;
+	applyBuff(LogicBuffServer::ReloadBuff, ticks, percent, 0);
+}
+void LogicCharacterServer::giveReloadDebuff(int percent, int ticks) {
+	applyBuff(LogicBuffServer::ReloadDebuff, ticks, percent, 0);
 }
 bool LogicCharacterServer::isPlayerControlRemoved() {
 	return ((bool (*)(LogicCharacterServer*))(base + 0x888324))(this);
+}
+bool LogicCharacterServer::isImmuneAndBulletsGoThrough() {
+	return ((bool (*)(LogicCharacterServer*))(base + 0x8940DC))(this);
 }
 void LogicCharacterServer::setPartialStunPromille(int partialStunPromille) {
 	if (PartialStunnedTicks <= 0) {
@@ -324,6 +342,85 @@ void LogicCharacterServer::giveSlipperyDebuff() {
 bool LogicCharacterServer::isPet() {
 	if (Index < 0) return false;
 	return !((LogicCharacterData*)getData())->isHero();
+}
+bool LogicCharacterServer::causeDamage(int sourceIndex, int damage, int damageConst, LogicCharacterServer* source, bool shouldShow, int sourceX, int sourceY, LogicData* sourceData, bool ignoreImmuneAndBulletsGoThrough, bool isUlti, bool forcedDamage, bool showEffect, bool isFromTencentBrawlLeaveBattle, bool idk) {
+	return ((bool (*)(LogicCharacterServer*, int, int, int, LogicCharacterServer*, bool, int, int, LogicData*, bool, bool, bool, bool, bool, bool))(base + 0x88C614))(this, sourceIndex, damage, damageConst, source, shouldShow, sourceX, sourceY, sourceData, ignoreImmuneAndBulletsGoThrough, isUlti, forcedDamage, showEffect, isFromTencentBrawlLeaveBattle, idk);
+}
+bool LogicCharacterServer::isAlive() {
+	return Hitpoints > 0;
+}
+void LogicCharacterServer::updateChargeDamage() {
+	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10) {
+		LogicCharacterData* data = (LogicCharacterData*)getData();
+		int damageRadius = 400;
+		int ticksGone = getLogicBattleModeServer()->getTick();
+		if (ChargeType == 3 || ChargeType == 9 || data->isBoss()) damageRadius = 800;
+		//todo: damage nerfs (cripple)
+
+		if (ChargeType == 7 || data->isTrain()) {//别人只能撞一次，达里尔和矿车可以撞很多次
+			for (int i = 0;i < ChargeDamageImmunitys_GlobalID.length;i++) {
+				if (!--ChargeDamageImmunitys_Timer[i]) {
+					ChargeDamageImmunitys_GlobalID.remove(i);
+					ChargeDamageImmunitys_Timer.remove(i);
+				}
+			}
+		}
+		if (ChargeType == 10 && (MoveEndTick - (MoveEndTick - MoveStartTick) / 2) == getLogicBattleModeServer()->getTick()) {
+			ChargeDamageImmunitys_GlobalID.length = 0;
+			ChargeDamageImmunitys_Timer.length = 0;//科莱特可以撞两次
+		}
+		LogicArrayList<LogicCharacterServer*> characters;
+		GameObjectManager->getCharacters(&characters);
+		for (int i = 0;i < characters.length;i++) {
+			LogicCharacterServer* character = characters[i];
+			if (character->isAlive() &&
+				character->TeamIndex != TeamIndex &&
+				!character->isImmuneAndBulletsGoThrough() &&
+				LogicGamePlayUtil::getDistanceBetween(getX(), getY(), character->getX(), character->getY()) <= damageRadius &&
+				!ChargeDamageImmunitys_GlobalID.contains(character->getGlobalID())) {
+				ChargeDamageImmunitys_GlobalID.add(character->getGlobalID());
+				if (ChargeType == 7 || data->isTrain()) {//只有达里尔和矿车按时间计算无敌帧
+					ChargeDamageImmunitys_Timer.add(10);
+				}
+				if (character->causeDamage(Index,
+					ChargeType == 10 ? LogicGamePlayUtil::calculatePercentDamage(ChargePercentDamage, ChargeDamage, true, getDamageBuffTemporary() + DamageBuffPermanent, 0/*todo: cripple*/, 1000, character) : ChargeDamage,
+					ChargeType == 10 ? 1000 : ChargeDamageConst,
+					this, true, getX(), getY(), nullptr, false, UsingUlti, false, true, false, false)) {
+					ChargeHits++;
+					//todo: Primo's Fire
+
+					if (getCardValueForPassive(93, 1) >= 1 && character->isAlive()) {
+						LogicCharacterData* thatData = (LogicCharacterData*)character->getData();
+						if ((thatData->isHero() || thatData->isTrainingDummy()) && ticksGone + 2 < MoveEndTick) {
+							character->setDraggingObject(this, character->getX() - getX(), character->getY() - getY(), false);
+						}
+					}
+					if (getCardValueForPassive(94, 1) >= 1) {
+						addShield(getCardValueForPassive(94, 3), getCardValueForPassive(94, 1) + getCardValueForPassive(94, 2) * ChargeHits);
+					}
+					character->triggerPushback(getX(), getY(), ChargePushback, true, false, false, data->isTrain(), data->isTrain(), false, false, false, false, 0);
+				}
+			}
+		}
+	}
+}
+void LogicCharacterServer::triggerPushback(int x, int y, int length, bool knockIntoAir, bool ignoreCcImmunity, bool idk7, bool idk8, bool idk9, bool idk10, bool Bouncing, bool isForced, bool idk, int extraKnockUp) {
+	return ((void (*)(LogicCharacterServer*, int, int, int, bool, bool, bool, bool, bool, bool, bool, bool, bool, int))(base + 0x89C698))(this, x, y, length, knockIntoAir, ignoreCcImmunity, idk7, idk8, idk9, idk10, Bouncing, isForced, idk, extraKnockUp);
+
+}
+bool LogicCharacterServer::hasCcImmunity() {
+	//todo: TownCrushBoss rangeState > 0 and Bulls's 3rd Starpower
+	return CcImmunityTicks > 0;
+}
+void LogicCharacterServer::setDraggingObject(LogicGameObjectServer* target, int x, int y, bool ignoreCcImmunity) {
+	if (!ignoreCcImmunity && (IsInvincible || hasCcImmunity())) return;
+	DraggingAngle = LogicMath::getAngle(x, y);
+	DraggingObject = target;
+	stopMovement();
+	interruptAllSkills(false);
+}
+int LogicCharacterServer::getReloadSpeedChangePercent() {
+	return getBuffBoost(LogicBuffServer::ReloadBuff) - getBuffBoost(LogicBuffServer::ReloadDebuff);
 }
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
@@ -372,7 +469,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writeBoolean(false);//IsSilenced
 	stream->writeBoolean(false);
 	stream->writeBoolean(false);
-	if (stream->writeBoolean(ReloadBuffTicks > 0)) stream->writeIntMax127(ReloadBuffPercent);
+	if (stream->writeBoolean(getReloadSpeedChangePercent())) stream->writeIntMax127(LogicMath::clamp(getReloadSpeedChangePercent(), -100, 100));
 	stream->writePositiveVIntMax255OftenZero(PartialStunPromille / 10);
 	stream->writePositiveVIntMax255OftenZero(0);//Poison
 	stream->writeBoolean(false);//IsCrippled
@@ -403,7 +500,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(IsInvincible);
 		stream->writeBoolean(AimingUlti);
 		stream->writeBoolean(ShowUltiAnimation);
-		stream->writeBoolean(false);
+		stream->writeBoolean(CcImmunityTicks > 0);
 		if (isOwn) {
 			stream->writeBoolean(false);
 		}
@@ -480,7 +577,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writePositiveIntMax31(damageNumberCount);
 	for (int i = 0;i < DamageNumbers_Value.length;i++) {
 		if (DamageNumbers_Delay[i] == 0) {
-			if (Index == index || DamageNumbers_Index[i] == index) stream->writeIntMax32767(LogicMath::clamp(DamageNumbers_Value[i], -32766, 32767));
+			if (Index == index || DamageNumbers_Index[i] == index) stream->writeIntMax32767(LogicMath::clamp(DamageNumbers_Value[i], -32767, 32767));
 		}
 	}
 	for (int i = 0;i < Skills.length;i++) {
