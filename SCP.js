@@ -190,6 +190,7 @@ let RootDirPath;
 let ModBase = 0;
 var Buffs = [];
 let HealthPromille = 1.0;
+let HandleCollisonPatchValues = [];
 const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
     onEnter: function (args) {
         HomeScreenEnterAttach.detach();
@@ -212,6 +213,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         const _ZN20LogicCharacterServer9tickGearsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer9tickGearsEv"), 'void', ['pointer']);
         const _ZN20LogicCharacterServer22getDamageBuffTemporaryEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer22getDamageBuffTemporaryEv"), 'int', ['pointer']);
         const _ZN20LogicCharacterServer18updateChargeDamageEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer18updateChargeDamageEv"), 'void', ['pointer']);
+        const _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"), 'void', ['pointer', 'pointer', 'int', 'int', 'int']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -225,6 +227,10 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             _ZN20LogicCharacterServer17calculateChargeUpEv(self);
             _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades(self, a2);
         }, 'void', ['pointer', 'pointer']));
+        Interceptor.replace(LogicProjectileServer_applyDamageSpecialEffects, new NativeCallback(function (self, a2, a3, a4, a5) {
+            LogicProjectileServer_applyDamageSpecialEffects(self, a2, a3, a4, a5);
+            _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib(self, a2, HandleCollisonPatchValues[0], HandleCollisonPatchValues[1], a5);
+        }, 'void', ['pointer', 'pointer', 'int', 'int', 'int']));
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
         });
@@ -254,6 +260,14 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             if ((c.add(36).readInt() + c.add(32).readInt()) / 2 - 2 > c.add(24).readPointer().add(168).readPointer().add(16).readInt() && c.add(360).readU8() != 0) return;
             this.context.x0 = ptr(0);
         });
+        Interceptor.attach(base.add(0x8B7590), function () {
+            HandleCollisonPatchValues[0] = this.context.x2.toInt32();
+            HandleCollisonPatchValues[1] = this.context.x3.toInt32();
+        });
+        Interceptor.attach(base.add(0x8B5FA0), function () {
+            HandleCollisonPatchValues[0] = this.context.x2.toInt32();
+            HandleCollisonPatchValues[1] = this.context.x3.toInt32();
+        });
         // Interceptor.attach(base.add(0x88717C), function () {
         //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         // });
@@ -281,6 +295,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x886FE4), Mod.getExportByName("_ZN20LogicCharacterServer6encodeEP9BitStreambiib"));
         Interceptor.replace(base.add(0x888640), Mod.getExportByName("_ZN20LogicCharacterServer22getCardValueForPassiveEii"));
         Interceptor.replace(base.add(0x8884E0), Mod.getExportByName("_ZN20LogicCharacterServer27getReloadSpeedChangePercentEv"));
+        Interceptor.replace(base.add(0x8B8C60), Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
@@ -298,6 +313,7 @@ const BitStream_readPositiveIntMax134217727 = new NativeFunction(base.add(0x96C6
 const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer', 'int']); // v53.176 |
 const LogicCharacterServer_attack = new NativeFunction(base.add(0x890D10), 'void', ['pointer', 'int']); // v53.176 |
 const BitStream_writeInt = new NativeFunction(base.add(0x96972C), 'void', ['pointer', 'int', 'int']); // v53.176 |
+const LogicProjectileServer_applyDamageSpecialEffects = new NativeFunction(base.add(0x8B8C60), 'void', ['pointer', 'pointer', 'int', 'int', 'int']); // v53.176 |
 //Process.setExceptionHandler(function (deatils) {
 //    console.log(deatils.address.sub(base));
 //    console.log(base);

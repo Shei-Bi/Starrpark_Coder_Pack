@@ -24,5 +24,9 @@ public:
 	{
 		return ((bool (*)(LogicProjectileData*))(base + 0x865DCC))(this);
 	}
+	int getLifeStealPercent()
+	{
+		return ((int (*)(LogicProjectileData*))(base + 0x865C14))(this);
+	}
 };
 #endif
