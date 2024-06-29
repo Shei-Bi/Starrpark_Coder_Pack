@@ -210,6 +210,15 @@ void LogicCharacterServer::chargeTo(int x, int y, int speed, LogicPathFinder* pa
 	((void (*)(LogicCharacterServer*, int, int, int, LogicPathFinder*, LogicArrayList<LogicVector2*>*))(base + 0x89A6BC))(this, x, y, speed, pathFinder, presetWaypoints);
 
 }
+int LogicCharacterServer::getSizeSubtilesForPathfinding() {
+	LogicCharacterData* data = (LogicCharacterData*)getData();
+	if (data->isCarryable()) {
+		if (data->getCollisionRadius() >= 200) return 2;
+		return 0;
+	}
+	if (data->isBoss() || data->getCollisionRadius() > 200) return 2;
+	return 1;
+}
 void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageConst, int pushback, int speed, bool useSpecialPathfinding, int type, LogicAreaEffectData* spawnedAreaEffect, LogicItemData* spawnedItem, int itemParams1, int itemParams2, int range, bool isUlti, LogicArrayList<LogicVector2*>* presetWaypoints, LogicAreaEffectData* spawnedAreaEffect2) {
 	if (Index >= 0)
 		;//do anti teaming stuff
@@ -232,7 +241,7 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 		PathPointsX.add(getX());
 		PathPointsY.add(getY());
 		LogicVector2 vector = LogicVector2(-1, -1);
-		if (LogicGamePlayUtil::getClosestAnyCollision(getX(), getY(), getX() + deltaX, getY() + deltaY, getLogicBattleModeServer()->getTileMap(), &vector, false, false, false, false)) {
+		if (LogicGamePlayUtil::getClosestPathfinderCollision(getSizeSubtilesForPathfinding(), getX(), getY(), getX() + deltaX, getY() + deltaY, getLogicBattleModeServer()->getPathFinder(), &vector, true, true)) {
 			deltaX = vector.X - getX();
 			deltaY = vector.Y - getY();
 			int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -392,7 +401,7 @@ void LogicCharacterServer::updateChargeDamage() {
 					if (getCardValueForPassive(93, 1) >= 1 && character->isAlive()) {
 						LogicCharacterData* thatData = (LogicCharacterData*)character->getData();
 						if ((thatData->isHero() || thatData->isTrainingDummy()) && ticksGone + 2 < MoveEndTick) {
-							character->setDraggingObject(this, character->getX() - getX(), character->getY() - getY(), false);
+							character->setDraggingObject(this, getX() - character->getX(), getY() - character->getY(), false);
 						}
 					}
 					if (getCardValueForPassive(94, 1) >= 1) {

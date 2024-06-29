@@ -264,7 +264,7 @@ public:
 	int getReloadSpeedChangePercent(void);
 	void getReloadTimeTicks(LogicSkillData*, int);
 	void getShootPositionModifiers(int, int, int, int, int, int, int, LogicVector2&, LogicVector2&);
-	void getSizeSubtilesForPathfinding(void);
+	int getSizeSubtilesForPathfinding(void);
 	void getSkill(LogicSkillData*);
 	void getSkill(String const&);
 	void getSkill(int);

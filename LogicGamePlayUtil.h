@@ -24,5 +24,8 @@ public:
 	static bool getClosestAnyCollision(int startX, int startY, int endX, int endY, LogicTileMap* tileMap, LogicVector2* outVector, bool a, bool b, bool c, bool d) {
 		return ((bool (*)(int, int, int, int, LogicTileMap*, LogicVector2*, bool, bool, bool, bool))(base + 0x9744C0))(startX, startY, endX, endY, tileMap, outVector, a, b, c, d);
 	}
+	static bool getClosestPathfinderCollision(int pathfindingSizeSubtiles, int startX, int startY, int endX, int endY, LogicPathFinder* pathFinder, LogicVector2* outVector, bool ignoreWaterTiles, bool ignoreIsDestructibleAnyTiles) {
+		return ((bool (*)(int, int, int, int, int, LogicPathFinder*, LogicVector2*, bool, bool))(base + 0x974A38))(pathfindingSizeSubtiles, startX, startY, endX, endY, pathFinder, outVector, ignoreWaterTiles, ignoreIsDestructibleAnyTiles);
+	}
 };
 #endif

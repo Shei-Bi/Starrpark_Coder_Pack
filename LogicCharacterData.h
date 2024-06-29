@@ -21,6 +21,10 @@ public:
 	char gap5[544 - 528 - 1];
 	bool HasPowerLevels;//544
 	bool ManualRotations;//545
+	int getCollisionRadius()
+	{
+		return ((int (*)(LogicCharacterData*))(base + 0x8395DC))(this);
+	}
 	int getUniqueProperty()
 	{
 		return ((int (*)(LogicCharacterData*))(base + 0x83A234))(this);
@@ -62,6 +66,9 @@ public:
 	LogicCharacterData* getSpawnedPet()
 	{
 		return Pet;
+	}
+	bool isCarryable() {
+		return ((bool (*)(LogicCharacterData*))(base + 0x83A028))(this);
 	}
 };
 #endif
