@@ -295,7 +295,9 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x886FE4), Mod.getExportByName("_ZN20LogicCharacterServer6encodeEP9BitStreambiib"));
         Interceptor.replace(base.add(0x888640), Mod.getExportByName("_ZN20LogicCharacterServer22getCardValueForPassiveEii"));
         Interceptor.replace(base.add(0x8884E0), Mod.getExportByName("_ZN20LogicCharacterServer27getReloadSpeedChangePercentEv"));
-        Interceptor.replace(base.add(0x8B8C60), Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"));
+        Interceptor.replace(base.add(0x89D314), Mod.getExportByName("_ZN20LogicCharacterServer11triggerStunEib"));
+        Interceptor.replace(base.add(0x897BFC), Mod.getExportByName("_ZN20LogicCharacterServer23getControlledProjectileEv"));
+        Interceptor.replace(base.add(0x87E68C), Mod.getExportByName("_ZN21LogicAreaEffectServer4tickEv"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();

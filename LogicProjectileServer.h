@@ -113,9 +113,12 @@ LogicProjectileServer* LogicProjectileServer::shootProjectile(int startX, int st
 	return ((LogicProjectileServer * (*)(int, int, LogicCharacterServer*, LogicGameObjectServer*, LogicProjectileData*, int, int, int, int, int, bool, int, LogicBattleModeServer*, int, int))(base + 0x8B8E08))(startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory);
 };
 void LogicProjectileServer::applyDamageSpecialEffects(LogicCharacterServer* target, int damage, int damageConst, bool reserved) {
+	LogicProjectileData* data = (LogicProjectileData*)getData();
 	if (Owner) {
-		LogicProjectileData* data = (LogicProjectileData*)getData();
 		if (data->getLifeStealPercent() > 0) Owner->heal(Index, data->getLifeStealPercent() * damage / 100, true, data);
+	}
+	if (data->getPartialStunPromille() > 0) {
+		target->setPartialStunPromille(target->PartialStunPromille + data->getPartialStunPromille());
 	}
 }
 #endif

@@ -34,9 +34,7 @@ public:
 		X = 0;
 		Y = 0;
 	}
-	virtual void tick()
-	{
-	}
+	virtual void tick();
 	int getX()
 	{
 		return X;
@@ -76,4 +74,7 @@ public:
 		return ((int (*)(LogicGameObjectServer*, int, int))(base + 0x8AFBC0))(this, type, index);
 	}
 };
+void LogicGameObjectServer::tick() {
+	;
+}
 #endif

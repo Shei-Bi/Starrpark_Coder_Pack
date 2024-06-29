@@ -21,7 +21,7 @@ void LogicCharacterServer::addConsumableShield(int amount)
 }
 void LogicCharacterServer::tick()
 {
-	addConsumableShield(114514);
+	;
 }
 int LogicCharacterServer::getCardValueForPassive(int type, int index) {
 	return getCardValueForPassiveFromPlayer(type, index);
@@ -104,9 +104,21 @@ void LogicCharacterServer::blockHealthRegen()
 {
 	HealthRegenBlockedTick = getLogicBattleModeServer()->getTicksGone();
 }
+LogicProjectileServer* LogicCharacterServer::getControlledProjectile() {
+	LogicArrayList<LogicProjectileServer*> projectiles;
+	GameObjectManager->getProjectiles(&projectiles);
+	for (int i = 0;i < projectiles.length;i++) {
+		LogicProjectileServer* projectile = projectiles[i];
+		if (projectile->Index == Index && ((LogicProjectileData*)projectile->getData())->getTravelType() == 5) return projectile;
+	}
+	return nullptr;
+}
 void LogicCharacterServer::triggerStun(int ticks, bool isForcedStun) {
 	StunTicks = ticks;
 	Stunned = true;
+	interruptAllSkills(false);
+	if (!(Charging || Knockbacked) || isForcedStun) stopMovement();
+	if (getControlledProjectile()) getControlledProjectile()->targetReached(5);
 }
 void LogicCharacterServer::tickEffects() {
 	for (int i = 0;i < Buffs.length;i++) {
@@ -127,7 +139,7 @@ void LogicCharacterServer::tickEffects() {
 	}
 	else {
 		PartialStunnedTicks--;
-		PartialStunPromille = 1000;
+		PartialStunPromille = PartialStunnedTicks ? 1000 : 0;
 	}
 }
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
@@ -345,8 +357,15 @@ void LogicCharacterServer::setPartialStunPromille(int partialStunPromille) {
 		PartialStunDecrementTimer = 40;
 	}
 }
-void LogicCharacterServer::giveSlipperyDebuff() {
+void LogicCharacterServer::giveSlipperyDebuff(int modifier, int ticks) {
 	if (((LogicCharacterData*)getData())->getSpeed() < 1) return;
+	bool shouldRefreshSlipperyStatus = true;
+	for (int i = 0;i < Buffs.length;i++) {
+		LogicBuffServer* buff = Buffs[i];
+		if (buff->Type == 7) shouldRefreshSlipperyStatus = false;
+	}
+	applyBuff(7, ticks, modifier, 0);
+	if (shouldRefreshSlipperyStatus) IsSlippery = true;
 }
 bool LogicCharacterServer::isPet() {
 	if (Index < 0) return false;
@@ -430,6 +449,9 @@ void LogicCharacterServer::setDraggingObject(LogicGameObjectServer* target, int 
 }
 int LogicCharacterServer::getReloadSpeedChangePercent() {
 	return getBuffBoost(LogicBuffServer::ReloadBuff) - getBuffBoost(LogicBuffServer::ReloadDebuff);
+}
+int LogicCharacterServer::getRadius() {
+	return ((LogicCharacterData*)getData())->getCollisionRadius();
 }
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);

@@ -28,5 +28,13 @@ public:
 	{
 		return ((int (*)(LogicProjectileData*))(base + 0x865C14))(this);
 	}
+	int getPartialStunPromille()
+	{
+		return ((int (*)(LogicProjectileData*))(base + 0x865BDC))(this);
+	}
+	int getTravelType()
+	{
+		return ((int (*)(LogicProjectileData*))(base + 0x865DE4))(this);
+	}
 };
 #endif

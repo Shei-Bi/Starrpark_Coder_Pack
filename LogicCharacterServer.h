@@ -98,7 +98,9 @@ public:
 	LogicArrayList <LogicDataSlot*> Starpowers;//952
 	LogicAreaEffectServer* AreaEffect;//968
 	int HealthRegenBlockedTick;//976
-	char gap36[996 - 976 - 4];
+	char gap36[988 - 976 - 4];
+	int DelayedDeathTicks;//988
+	char gap184978[996 - 988 - 4];
 	int Size;//996
 	char gap8[1088 - 996 - 4];
 	bool BotMovingFlag;//1088
@@ -230,7 +232,7 @@ public:
 	void getClosestFriendlyHealTargetForAI(void);
 	void getClosestItemForAI(LogicArrayList<LogicData*>*, int);
 	void getClosestProjectileFlyingAgainstYou(int);
-	void getControlledProjectile(void);
+	LogicProjectileServer* getControlledProjectile(void);
 	void getCripplePercent(void);
 	void getCurrentActiveOrCastingSkill(void);
 	void getCurrentAttackSpeedTicks(void);
@@ -252,7 +254,7 @@ public:
 	void getPowerLevel(void);
 	void getPrevX(void);
 	void getPrevY(void);
-	void getRadius(void);
+	int getRadius(void);
 	void getRandomTileOnVisionRange(LogicVector2*);
 	void getRapidFireAttackPattern(void);
 	void getRapidFireDamage(void);
@@ -290,7 +292,7 @@ public:
 	void giveReloadBuff(int, int);
 	void giveReloadDebuff(int, int);
 	void giveSilence(int);
-	void giveSlipperyDebuff();//
+	void giveSlipperyDebuff(int, int);
 	void giveSpeedFasterBuff(int, int, bool);
 	void giveSpeedFasterBuff2(int, int);
 	void giveSpeedSlowerBuff(int, int);
