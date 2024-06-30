@@ -75,6 +75,7 @@ void LogicCharacterServer::calculateChargeUp() {
 	case 3:
 		ChargeUpType = 1;
 		ChargeUpMax = characterData->getUniquePropertyValue1() * 50;
+		if (getCardValueForPassive(122, 1) >= 1) ChargeUpMax -= 50 * getCardValueForPassive(122, 1);
 		break;
 	case 10:
 		ChargeUpType = 9;
@@ -89,9 +90,58 @@ void LogicCharacterServer::calculateChargeUp() {
 		ChargeUpMax = characterData->getUniquePropertyValue1();
 		break;
 	}
-	if (getPlayer() && getPlayer()->Accessory && getPlayer()->Accessory->AccessoryData->getShowCountdown()) {
-		ChargeUpType = 7;
-		ChargeUpMax = getPlayer()->Accessory->AccessoryData->getActiveTicks() * 50;
+	LogicPlayer* player = getPlayer();
+	if (player) {
+		if (getCardValueForPassive(60, 1) >= 0) {
+			ChargeUpType = 2;
+			ChargeUpMax = getCardValueForPassive(60, 3);
+			return;
+		}
+		if (getCardValueForPassive(66, 1) >= 0) {
+			ChargeUpType = 3;
+			ChargeUpMax = getCardValueForPassive(66, 2);
+			return;
+		}
+		if (getCardValueForPassive(67, 1) >= 0) {
+			ChargeUpType = 4;
+			ChargeUpMax = getCardValueForPassive(67, 1);
+			ChargeUp = ChargeUpMax;
+			return;
+		}
+		if (getCardValueForPassive(82, 1) >= 0) {
+			ChargeUpType = 6;
+			ChargeUpMax = getCardValueForPassive(82, 1);
+			return;
+		}
+		if (getCardValueForPassive(132, 1) >= 0) {
+			ChargeUpType = 6;
+			ChargeUpMax = getCardValueForPassive(132, 1);
+			return;
+		}
+		if (getCardValueForPassive(101, 1) >= 0) {
+			ChargeUpType = 6;
+			ChargeUpMax = getCardValueForPassive(101, 1) * 50;
+			return;
+		}
+		if (getCardValueForPassive(129, 1) >= 0) {
+			ChargeUpType = 6;
+			ChargeUpMax = getCardValueForPassive(129, 1) * 50;
+			return;
+		}
+		if (getCardValueForPassive(131, 1) >= 0) {
+			ChargeUpType = 6;
+			ChargeUpMax = getCardValueForPassive(131, 1) * 50;
+			return;
+		}
+		if (getCardValueForPassive(183, 1) >= 0) {
+			ChargeUpType = 12;
+			ChargeUpMax = getCardValueForPassive(183, 1) * 50;
+			return;
+		}
+		if (player->Accessory && player->Accessory->AccessoryData->getShowCountdown()) {
+			ChargeUpType = 7;
+			ChargeUpMax = player->Accessory->AccessoryData->getActiveTicks() * 50;
+		}
 	}
 }
 bool LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
