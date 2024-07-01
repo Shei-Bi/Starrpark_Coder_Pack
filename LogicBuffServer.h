@@ -5,11 +5,11 @@
 class LogicBuffServer
 {
 public:
-	int Type;
-	int Duration;
-	int MaxDuration;
-	int Modifier;
-	int Int1;
+	int Type;//*
+	int Duration;//4
+	int MaxDuration;//8
+	int Modifier;//12
+	int Int1;//16
 	int BelleWeaponRadius;
 	int BelleWeaponBounces;
 	int field_1C;

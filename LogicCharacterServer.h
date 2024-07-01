@@ -139,20 +139,65 @@ public:
 	LogicGameObjectServer* DraggingObject;//1392
 	int DraggingAngle;//1400
 	int ChargeHits;//1404
-	char gap25[1452 - 1404 - 4];
+	char gap25[1432 - 1404 - 4];
+	LogicArrayList<LogicVector2*> PrevPositions; //1432
+	int PrevZ;//1448
 	bool IsSlippery;//1452
 	int PartialStunPromille;//1456
 	int PartialStunDecrementTimer;//1460
 	int PartialStunnedTicks;//1464
-	char gap30[1473 - 1464 - 4];
+	int StateLockedTicks;//1468 (for Amber, if she don't lock her State for 2 ticks after attacking then walk-attack facing will unpreferable)
+	bool LeonCloneVisualHasUlti;//1472
 	bool HasRuffsBuff;//1473
-	char gap26[1504 - 1473 - 1];
+	bool DoesNotCountTowardsMaxSpawns;//1474
+	int RuffsCooldownTimer;//1476
+	LogicVector2 LastTrailAreaPosition;//1480
+	LogicCharacterServer* BuzzHookedCharacter;//1488
+	LogicVector2 BuzzHookedPosition;//1496
 	int ConsumableShield;//1504
 	int ConsumableShieldMax;//1508
-	char gap33[1532 - 1508 - 4];
+	int ConsumableShieldTicks;//1512
+	int ConsumableShieldTicksMax;//1516
+	char gap8914871834[4];//1520
+	int UnmovableInvicibleTimer;//1524
+	bool IgnoreDeployTime;//1528 (for lolla pet)
+	bool DoNotUseDefaultDeathEffect;//1529 (for Meg and Bonnie)
 	int SkillHoldTicks;//1532
-	char gap9[1664 - 1532 - 4];
+	char gap397865[4];
+	int WillowPuppetingTicks;//1540
+	int WillowPuppetingMiniumHitpointPercentage;//1544
+	int WillowPuppetingIndex;//1548
+	int DougTimer1;//1552
+	int DougTimer2;//1556
+	int DougIndex;//1560
+	int DougTeamIndex;//1564
+	int KitAttachingTicks;//1568
+	bool KitAttaching;//1572
+	int KitAttachingIndex;//1576
+	int KitAttachingTeamIndex;//1580
+	bool TwimUnknownBoolean;//1584
+	int ShadowRealmTicks;//1588
+	int ShadowRealmWorldIndex;//1592
+	int ShadowRealmTimerMax;//1596
+	bool OnEnterShadowRealm;//1600
+	bool HasProjectileShieldSkill;//1601
+	LogicVector2 MinionInvasionSpawnPosition;//1604
+	char gap32989[4];
+	LogicArrayList<LogicData*> UNK_AttackSpecialParams;//1616
+	LogicArrayList<LogicGameObjectServer*> UNK_Teammates;//1632
+	LogicArrayList<LogicVector2*> UNK_Vector2s;//1648
 	LogicArrayList<LogicGear*> Gears;//1664
+
+	//crazy guessed names xD
+	int SpikeTileDamageTimer;//1680
+	int PoisonTileDamageTimer;//1684
+	char gap19839289[4];//1688
+	int ChesterWeaponCounter;//1692
+	LogicCharacterServer* CordeliusStarpowerComboTarget;//1696
+	LogicItemServer* ChunkUltiTarget;//1704
+	LogicProjectileServer* CharlieYoyo;//1712
+	LogicCharacterServer* CharlieCocconLinkedCharacter;//1720
+	LogicCharacterServer* KitAttachingCharacter;//1728
 
 	void tickGears();//guessed name
 	int getBuffBoost(int);
