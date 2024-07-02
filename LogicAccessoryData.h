@@ -2,6 +2,8 @@
 #define LAD_H
 #include "Hook.h"
 #include"LogicData.h"
+#include "String.h"
+
 class LogicAccessoryData : public LogicData
 {
 public:
@@ -53,9 +55,9 @@ public:
 	{
 		return ((int (*)(LogicAccessoryData*))(base + 0x82AB74))(this);
 	}
-	void* getCustomObject()
+	String* getCustomObject()
 	{
-		return ((void* (*)(LogicAccessoryData*))(base + 0x82AB14))(this);
+		return ((String * (*)(LogicAccessoryData*))(base + 0x82AB14))(this);
 	}
 	bool getShowCountdown()
 	{

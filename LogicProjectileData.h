@@ -1,6 +1,8 @@
 #ifndef LPD_H
 #define LPD_H
 #include "Hook.h"
+#include "String.h"
+
 class LogicProjectileData : public LogicData
 {
 private:
@@ -35,6 +37,9 @@ public:
 	int getTravelType()
 	{
 		return ((int (*)(LogicProjectileData*))(base + 0x865DE4))(this);
+	}
+	String* getCustomObject() {
+		return ((String * (*)(LogicProjectileData*))(base + 0x865E34))(this);
 	}
 };
 #endif

@@ -365,7 +365,13 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 		areaEffect->trigger();
 		ChargeEndAreaEffect = spawnedAreaEffect;
 		ChargeEndAreaEffectDamage = damage;
-		ChargeEndAreaEffectDamageConst = 114514;
+		ChargeEndAreaEffectDamageConst = damageConst;
+	}
+	else if (spawnedAreaEffect2) {
+		//buzz.
+		ChargeEndAreaEffect = spawnedAreaEffect2;
+		ChargeEndAreaEffectDamage = damage;
+		ChargeEndAreaEffectDamageConst = damageConst;
 	}
 }
 void LogicCharacterServer::addShield(int ticks, int percent) {
@@ -426,6 +432,17 @@ bool LogicCharacterServer::causeDamage(int sourceIndex, int damage, int damageCo
 }
 bool LogicCharacterServer::isAlive() {
 	return Hitpoints > 0;
+}
+void LogicCharacterServer::triggerPullRope(LogicCharacterServer* target) {
+	BuzzHookedCharacter = target;
+	if (target) {
+		BuzzHookedPosition.X = target->getX();
+		BuzzHookedPosition.Y = target->getY();
+	}
+	else {
+		BuzzHookedPosition.X = -1;
+		BuzzHookedPosition.Y = -1;
+	}
 }
 void LogicCharacterServer::updateChargeDamage() {
 	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10) {

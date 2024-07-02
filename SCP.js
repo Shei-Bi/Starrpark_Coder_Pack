@@ -145,6 +145,7 @@ function WriteToMemory(address, valueType, value) {
     Memory[`write${valueType}`](address, value);
 }
 const LogicDataTablesGetDataById = new NativeFunction(base.add(0x842AEC), 'pointer', ['int']);
+const LogicDataTables_getAreaEffectByName = new NativeFunction(base.add(0x849898), 'pointer', ['pointer', 'pointer']); // v53.176 | String: "SpawnAreaEffectObject"
 
 Interceptor.attach(base.add(0x77BDA4), {
     onEnter: function (args) {
@@ -214,6 +215,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         const _ZN20LogicCharacterServer22getDamageBuffTemporaryEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer22getDamageBuffTemporaryEv"), 'int', ['pointer']);
         const _ZN20LogicCharacterServer18updateChargeDamageEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer18updateChargeDamageEv"), 'void', ['pointer']);
         const _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"), 'void', ['pointer', 'pointer', 'int', 'int', 'int']);
+        const _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_ = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_"), 'void', ['pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer', 'int', 'int', 'int', 'int', 'pointer', 'pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -231,6 +233,10 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             LogicProjectileServer_applyDamageSpecialEffects(self, a2, a3, a4, a5);
             _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib(self, a2, HandleCollisonPatchValues[0], HandleCollisonPatchValues[1], a5);
         }, 'void', ['pointer', 'pointer', 'int', 'int', 'int']));
+        Interceptor.replace(base.add(0x958CEC), new NativeCallback(function (self) {
+            if (self.add(8).readInt() == 0) return;
+            new NativeFunction(base.add(0x958CEC), 'void', ['pointer'])(self);
+        }, 'void', ['pointer']));
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
         });
@@ -268,6 +274,15 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             HandleCollisonPatchValues[0] = this.context.x2.toInt32();
             HandleCollisonPatchValues[1] = this.context.x3.toInt32();
         });
+        Interceptor.attach(base.add(0x8B6BC8), function () {
+            var c = this.context.x0;
+            var t = this.context.x1;
+            _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, t.add(48).readInt(), t.add(52).readInt(), 0, 0, 0, 3000, 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, LogicDataTables_getAreaEffectByName(this.context.x21.add(16).readPointer().add(472), NULL));
+        });
+        Interceptor.attach(base.add(0x88A2CC), function () {
+            var c = this.context.x19;
+            _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, c.add(96).readInt(), c.add(100).readInt(), 0, 0, 0, c.add(500).readInt(), 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, c.add(512).readPointer());
+        });
         // Interceptor.attach(base.add(0x88717C), function () {
         //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         // });
@@ -298,6 +313,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x89D314), Mod.getExportByName("_ZN20LogicCharacterServer11triggerStunEib"));
         Interceptor.replace(base.add(0x897BFC), Mod.getExportByName("_ZN20LogicCharacterServer23getControlledProjectileEv"));
         Interceptor.replace(base.add(0x87E68C), Mod.getExportByName("_ZN21LogicAreaEffectServer4tickEv"));
+        // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();

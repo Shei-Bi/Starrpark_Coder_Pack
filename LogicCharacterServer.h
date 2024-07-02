@@ -82,16 +82,36 @@ public:
 	int ChargeUNK2;//504
 	int ChargeUNK3;//508
 	LogicAreaEffectData* ChargeEndAreaEffect;//512
-	char gap13[733 - 512 - 8];
+	char AttackSpecialParams[724 - 512 - 8];
+	bool IsInvisible;//724
+	int InvisibilityState;//728
+	bool NoAI;//732
 	bool UsingUlti;//733
-	char gap20[776 - 733 - 1];
+	int JanetTargetMoveAngle;//736
+	int JanetActualMoveAngle;//740
+	int BurstAutoAttackModeAttackTimer;//744
+	int BurstAutoAttackModeBulletsShoot;//748
+	int BurstAutoAttackModeDamage;//752
+	int BurstAutoAttackModeDamageConst;//756
+	LogicVector2 BurstAutoAttackModePosition;//760 (?)
+	int AoeRegenerateHeal;//768
+	int AoeRegenerateInterval;//772 (Shall be unused)
 	int StaticSpeedBuff;//776
 	int CoinsHeld;//780
 	int DestructAfterTicks;//784
 	int MinionDamage;//788
 	bool IsSpecialMinion;//792
 	bool HasReloadBuff;//793;
-	char gap4[904 - 793 - 1];
+	bool HasCharacterBuffingVariables;//794
+	bool IsPushbackedAndCanNotTakeHits;//795
+	bool IsGrappled;//796
+	bool IsPushbackedAndCanNotBePushbacked;//797
+	int ProjectileDataKickback;//800 (????????)
+	int CripplePercent;//804
+	int CrippleEndTick;//808
+	bool Crippled;//812
+	int AutoUltiChargeTimer;//816
+	char BotVariables[904 - 816 - 4];
 	LogicArrayList<int> DamageNumbers_Value;//904
 	LogicArrayList<int> DamageNumbers_Index;//920
 	LogicArrayList<int> DamageNumbers_Delay;//936
@@ -202,6 +222,7 @@ public:
 	void tickGears();//guessed name
 	int getBuffBoost(int);
 	LogicBuffServer* findBuffByType(int);
+	void triggerPullRope(LogicCharacterServer*);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
