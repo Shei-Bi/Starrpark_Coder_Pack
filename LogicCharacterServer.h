@@ -13,6 +13,7 @@
 #include "BitStream.h"
 #include "String.h"
 #include "LogicDataSlot.h"
+#include "LogicPoisonServer.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
@@ -165,12 +166,19 @@ public:
 	LogicSkillData* ChesterNextUlti;//1008
 	LogicCharacterServer* Carryable;//1016
 	char gap8[1088 - 1016 - 8];
+	int CarryableLastOwnerPlayerIndex;//1056
+	int CarryableUnkownInt1;//1060
+	int CarryableUnkownInt2;//1064
+	bool CarryableUnkownBoolean;//1068
+	LogicVector2 VectorUnknownUnused1;//1072
+	LogicVector2 VectorUnknownUnused2;//1080
 	bool BotMovingFlag;//1088
 	bool AimingUlti;//1089
 	bool BotAimingUlti;//1090
 	bool ShowUltiAnimation;//1091
 	int BattleRoyalBuffs;//1092
-	char gap29[1128 - 1092 - 4];
+	LogicArrayList<LogicPoisonServer*> Poisons;//1096
+	char gap29[1128 - 1096 - 16];
 	LogicArrayList<LogicBuffServer*> Buffs;//1128
 	char gap35[1156 - 1128 - 16];
 	bool IsHyperchargeMinion;//1156
