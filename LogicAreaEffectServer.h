@@ -10,7 +10,6 @@
 class LogicAreaEffectServer : public LogicGameObjectServer
 {
 public:
-	char gap1[76 - 72];
 	int StartingTick;//76
 	int EndingTick;//80
 	int LifeTimeConsumedPromille;//84

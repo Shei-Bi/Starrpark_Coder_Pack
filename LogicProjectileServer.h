@@ -8,7 +8,7 @@
 class LogicProjectileServer : public LogicGameObjectServer
 {
 public:
-	char gap1[96 - 72];
+	char gap1[96 - 76];
 	int StartX;//96
 	int StartY;//100
 	int TargetX;//104

@@ -283,6 +283,9 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             var c = this.context.x19;
             _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, c.add(96).readInt(), c.add(100).readInt(), 0, 0, 0, c.add(500).readInt(), 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, c.add(512).readPointer());
         });
+        Interceptor.attach(base.add(0x661D58), function () {
+            new NativeFunction(base.add(0x94CEF8), 'void', ['pointer'])(this.context.x21);
+        });
         // Interceptor.attach(base.add(0x88717C), function () {
         //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         // });

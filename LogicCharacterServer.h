@@ -24,45 +24,82 @@ public:
 	{
 		;
 	}
-	char gap3[4];
 	int MoveAngle;//76
 	int AttackAngle;//80
 	int SkillHoldAngle;//84
-	char gap6[128 - 84 - 4];
+	LogicVector2 TempVector1;//88
+	LogicVector2 TempVector2;//96
+	LogicVector2 TempVector3;//104
+	LogicVector2 TempVector4;//112
+	LogicVector2 TempVector5;//120
 	int State;//128
-	char gap22[152 - 128 - 4];
+	int RapidFireLastAttackedTick;//132
+	int RapidFireLastAttackedTickAdd2;//136 (????)
+	char gap8986786488[4];//140
+	int MinionIdleAnimationTimer;//144 (when reaching 700,has 50% chance to turn to random angle)
+	char gap1497314978[4];//148
 	LogicArrayList<int> PathPointsX;//152
 	LogicArrayList<int> PathPointsY;//168
 	int Hitpoints;//184
 	int HitpointsMax;//188
-	char gap18[268 - 188 - 4];
+	int HitpointsMaxOriginal;//192
+	int RapidFireDamage;//196
+	int RapidFireShootTimes;//200 (= ActiveTime / MsBetweenAttacks)
+	int RapidFireShootIndex;//204
+	bool RapidFireWeaponCounter;//208 (false = left hand)
+	int RapidFireProjectileSpecialEffect;//212 (for lola 1st sp)
+	int RapidFireDamageConst;//216
+	int RapidFireAttackPattern;//220
+	int RapidFireNumBulletsInOneAttack;//224
+	char gap41938479387[4];
+	LogicProjectileData* RapidFireProjectile;//232
+	int RapidFireSpread;//240
+	int RapidFireMsBetweenAttacks;//244
+	int RapidFireRange;//248
+	char gap198472047[4];//252
+	LogicVector2 RapidFireAttackPosition;//256
+	int RapidFireExtraRange;//264
 	bool AttackChargedUp;//268
-	char gap34[272 - 268 - 1];
 	int Pathlength;//272
-	char gap1[296 - 272 - 4];
+	char gap10384384034[4];//276
+	int ParentGID;//280
+	int LastHealthRegenTick;//284
+	int LastAILogicTick;//288
+	int ScheduledAILogicTick;//292
 	bool IsInvincible;//296
 	bool IsTeleporting;//297
 	bool gap31973827;//298
 	bool SamHasWeapon;//299
-	char gap31[328 - 299 - 1];
+	int BlinkX;//300
+	int BlinkY;//304
+	char gap31[4];
+	int GiantGrowthTicks;//312
+	int RadioactiveGlowEndTick;//316
+	int ToxicFumesDamageEndTick;//320
+	int ToxicFumesDamageIncrease;//324
 	int AttackAnimation;//328
-	char gap23[336 - 328 - 4];
+	char gap23[4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
-	char gap14[4];
+	bool RapidFireTwoGuns;//352
 	int DamageBuffPermanent;//356
 	bool Charging;//360
 	bool Knockbacked;//361
-	char gap16[2];
+	bool KnockbackedAndCanNotActivateCcImmunityGadget;//362
+	bool KnockbackedBackwards;//true for passive knockbacks, false for offensive knockbacks, true for Janet 2nd gadget
 	bool Stunned;//364
 	bool WeaklyStunned;//365
-	char gap15[2];
 	int StunTicks;//368
-	char gap11[4];
+	int ShakeTicks;//372
 	int ShieldTicks;//376
 	int ReloadBuffTicks;//380 unused
 	LogicArrayList<int> ChargeDamageImmunitys_GlobalID;//384
 	LogicArrayList<int> ChargeDamageImmunitys_Timer;//400
-	char gap19[440 - 400 - 16];
+	LogicCharacterServer* AutoAttackTarget;//416
+	int AutoAttackX;//424
+	int AutoAttackY;//428
+	bool HasAutoAttackTarget;//432
+	bool BotUnknownBoolean1;//433
+	bool BotArtTestUnknownInt1;//436
 	int SpawnedTicks;//440
 	int SpawnTick;//444
 	int CastingTime;//448
@@ -118,11 +155,16 @@ public:
 	LogicArrayList <LogicDataSlot*> Starpowers;//952
 	LogicAreaEffectServer* AreaEffect;//968
 	int HealthRegenBlockedTick;//976
-	char gap36[988 - 976 - 4];
+	int SpawnMinionTimer;//980
+	int TicksSinceLastMinionSpawn;//984 (for encode)
 	int DelayedDeathTicks;//988
-	char gap184978[996 - 988 - 4];
-	int Size;//996
-	char gap8[1088 - 996 - 4];
+	int DamagedFromAngle;//992 (for encode)
+	int Size;//996 
+	int RoboWarsRoboLevel;//1000
+	char gap938493849[4];//1004
+	LogicSkillData* ChesterNextUlti;//1008
+	LogicCharacterServer* Carryable;//1016
+	char gap8[1088 - 1016 - 8];
 	bool BotMovingFlag;//1088
 	bool AimingUlti;//1089
 	bool BotAimingUlti;//1090

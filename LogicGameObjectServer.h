@@ -4,6 +4,7 @@
 #include "LogicGameObjectManagerServer.h"
 #include "LogicPlayer.h"
 #include "BitStream.h"
+#include "LogicArrayList.h"
 
 class LogicGameObjectServer
 {
@@ -14,13 +15,14 @@ public:
 	LogicGameObjectManagerServer* GameObjectManager;//24
 	int MoveStartTick;//32
 	int MoveEndTick;//36
-	char gap2[8];//40
+	LogicArrayList<int>* FadeCounterServer;//40
 	int X;//48
-	int Y;
-	int Z;
-	int Index;
-	int TeamIndex;
-	int WorldIndex;
+	int Y;//52
+	int Z;//56
+	int Index;//60
+	int TeamIndex;//64
+	int WorldIndex;//68
+	int FadeCounterClient;//72 (Unused)
 
 	LogicGameObjectServer(LogicData* logicData)
 	{
