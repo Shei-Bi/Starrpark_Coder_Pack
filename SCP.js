@@ -277,15 +277,16 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.attach(base.add(0x8B6BC8), function () {
             var c = this.context.x0;
             var t = this.context.x1;
-            _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, t.add(48).readInt(), t.add(52).readInt(), 0, 0, 0, 3000, 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, LogicDataTables_getAreaEffectByName(this.context.x21.add(16).readPointer().add(472), NULL));
+            _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, t.add(48).readInt(), t.add(52).readInt(), 0, 0, 0, 4000, 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, LogicDataTables_getAreaEffectByName(this.context.x21.add(16).readPointer().add(472), NULL));
         });
         Interceptor.attach(base.add(0x88A2CC), function () {
             var c = this.context.x19;
             _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_(c, c.add(96).readInt(), c.add(100).readInt(), 0, 0, 0, c.add(500).readInt(), 1, 13, NULL, NULL, 0, 0, 0, 1, NULL, c.add(512).readPointer());
         });
-        Interceptor.attach(base.add(0x661D58), function () {
-            new NativeFunction(base.add(0x94CEF8), 'void', ['pointer'])(this.context.x21);
-        });
+        WriteToMemory(base.add(0x661D3C), "ByteArray", [0x1F, 0x20, 0x03, 0xD5, 0xE2, 0x03, 0x1F, 0x2A, 0xE0, 0x03,
+            0x15, 0xAA, 0xE1, 0x03, 0x14, 0xAA, 0xC0, 0xAB, 0x0B, 0x94,
+            0xE0, 0x03, 0x15, 0xAA, 0x69, 0xAC, 0x0B, 0x94, 0x25, 0x00,
+            0x00, 0x14]);
         // Interceptor.attach(base.add(0x88717C), function () {
         //     if (_ZN20LogicCharacterServer22getDamageBuffTemporaryEv(this.context.x20) > 0) this.context.x1 = ptr(1);
         // });
@@ -316,6 +317,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x89D314), Mod.getExportByName("_ZN20LogicCharacterServer11triggerStunEib"));
         Interceptor.replace(base.add(0x897BFC), Mod.getExportByName("_ZN20LogicCharacterServer23getControlledProjectileEv"));
         Interceptor.replace(base.add(0x87E68C), Mod.getExportByName("_ZN21LogicAreaEffectServer4tickEv"));
+        Interceptor.replace(base.add(0x88E538), Mod.getExportByName("_ZN20LogicCharacterServer11swapSkillToEiP14LogicSkillData"));
         // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));

@@ -22,8 +22,9 @@ public:
 	char gap1[6];
 	int Level;//48
 	int ChargesPerShoot;//52
-	bool IsUltiSkill;//53
-	LogicSkillServer(LogicSkillData*, int);
+	bool IsUltiSkill;//56
+	char gap2[64 - 56 - 1];
+	LogicSkillServer(LogicSkillData*, bool);
 
 	void addCharge(LogicCharacterServer*, int);
 	void encode(BitStream* stream, bool isOwn, LogicCharacterServer* owner) {
@@ -44,8 +45,17 @@ public:
 private:
 
 };
-LogicSkillServer::LogicSkillServer(LogicSkillData* data, int isUltiSkill) {
+LogicSkillServer::LogicSkillServer(LogicSkillData* data, bool isUltiSkill) {
 	SkillData = data;
+	ActiveTime = 0;
+	MaxActiveTime = 0;
+	CoolDown = 0;
+	field_14 = 0;
+	field_1C = 0;
+	X = 0;
+	Y = 0;
+	OnActivate = false;
+	Boolean2 = false;
 	Level = 0;
 	ChargesPerShoot = 1;
 	Charges = LogicMath::max(1000, 1000 * data->getMaxCharge());

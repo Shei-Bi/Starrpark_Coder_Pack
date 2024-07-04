@@ -281,6 +281,13 @@ int LogicCharacterServer::getSizeSubtilesForPathfinding() {
 	if (data->isBoss() || data->getCollisionRadius() > 200) return 2;
 	return 1;
 }
+void LogicCharacterServer::swapSkillTo(int index, LogicSkillData* data) {
+	LogicSkillServer* newSkill = new LogicSkillServer(data, index == 1);
+	LogicSkillServer* oldSkill = Skills[index];
+	Skills[index] = newSkill;
+	newSkill->Charges = oldSkill->Charges;
+	newSkill->Level = oldSkill->Level;
+}
 void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageConst, int pushback, int speed, bool useSpecialPathfinding, int type, LogicAreaEffectData* spawnedAreaEffect, LogicItemData* spawnedItem, int itemParams1, int itemParams2, int range, bool isUlti, LogicArrayList<LogicVector2*>* presetWaypoints, LogicAreaEffectData* spawnedAreaEffect2) {
 	if (Index >= 0)
 		;//do anti teaming stuff
@@ -653,6 +660,10 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	if (data->getUniqueProperty() == 9) stream->writeBoolean(SamHasWeapon);
 	if (LogicGamePlayUtil::canUseFastTravel(this)) stream->writeBoolean(IsTeleporting);//GamePlayUtil::canUseFastTravel;
 	stream->writeBoolean(false);
+	if (data->getUniqueProperty() == 11 && isOwn) {
+		stream->writeIntMax255(ChesterNextUlti->getInstanceID());
+		stream->writePositiveIntMax7(ChesterWeaponCounter);
+	}
 	stream->writeBoolean(ShieldTicks > 0 || data->getUniqueProperty() == 13 && !data->isHero() && data->getUniquePropertyValue2() > 0 || data->isHero() && getPlayer() && getPlayer()->getWillowObjectId() >= 1 && LogicDataTables::getItemFor(data, 3)->getValue() > 0);
 	stream->writePositiveIntMax3(0);
 	stream->writeBoolean(false);
