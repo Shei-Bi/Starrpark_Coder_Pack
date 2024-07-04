@@ -52,5 +52,8 @@ public:
 	bool skillCanChange() {
 		return ((bool (*)(LogicSkillData*))(base + 0x87406C))(this);
 	}
+	int getDamage() {
+		return ((int (*)(LogicSkillData*))(base + 0x873D48))(this);
+	}
 };
 #endif

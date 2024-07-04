@@ -8,7 +8,12 @@ class LogicProjectileData : public LogicData
 private:
 	/* data */
 public:
-	char gap1[448];
+	char gap18499138493[372];
+	int PoisonDamagePercent;//372
+	int PoisonTickCount;//376
+	char gap1[408 - 376 - 4];
+	int PoisonType;//408
+	char gap13198349[448 - 408 - 4];
 	int UniqueProperty;//448
 	LogicProjectileData* getChainedBullet()
 	{

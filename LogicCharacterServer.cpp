@@ -14,6 +14,7 @@
 #include "LogicAreaEffectServer.h"
 #include "LogicGameModeUtil.h"
 #include "LogicGamePlayUtil.h"
+#include "LogicPoisonServer.h"
 
 void LogicCharacterServer::addConsumableShield(int amount)
 {
@@ -121,6 +122,18 @@ void LogicCharacterServer::tickDuplicatorAndCocconAndMinionPercenter() {
 }
 void LogicCharacterServer::tickConductor() {
 	return ((void (*)(LogicCharacterServer*))(base + 0x88C400))(this);
+}
+void LogicCharacterServer::applyPoison(int index, int damage, int damageConst, bool isUlti, LogicCharacterServer* source, int type, int tickCount) {
+	if (LogicPoisonServer::allowStacking(type)) goto LABEL_1;
+	for (int i = 0;i < Poisons.length;i++) {
+		LogicPoisonServer* poison = Poisons[i];
+		if (poison->Type == type && poison->EffectTimes * poison->Damage < damage) {
+			poison->refreshPoison(type, damage, damageConst, tickCount, isUlti);
+			return;
+		}
+	}
+LABEL_1:
+	Poisons.add(new LogicPoisonServer(damage, damageConst, tickCount, isUlti, source, index, type));
 }
 int LogicCharacterServer::getCardValueForPassive(int type, int index) {
 	return getCardValueForPassiveFromPlayer(type, index);
@@ -270,6 +283,11 @@ void LogicCharacterServer::triggerStun(int ticks, bool isForcedStun) {
 	if (getControlledProjectile()) getControlledProjectile()->targetReached(5);
 }
 void LogicCharacterServer::tickEffects() {
+	for (int i = 0;i < Poisons.length;i++) {
+		if (Poisons[i]->tick(this)) {
+			Poisons.remove(i);
+		}
+	}
 	for (int i = 0;i < Buffs.length;i++) {
 		if (Buffs[i]->tick(this)) {
 			Buffs.remove(i);
@@ -588,7 +606,9 @@ void LogicCharacterServer::updateChargeDamage() {
 					ChargeType == 10 ? 1000 : ChargeDamageConst,
 					this, true, getX(), getY(), nullptr, false, UsingUlti, false, true, false, false)) {
 					ChargeHits++;
-					//todo: Primo's Fire
+					if (getCardValueForPassive(19, 1) >= 1) {
+						character->applyPoison(Index, getCardValueForPassive(19, 1) * character->Skills[0]->SkillData->getDamage() * (character->Skills[0]->Level + 9) / 10 / 100, 0, true, this, 2, 4);
+					}
 
 					if (getCardValueForPassive(93, 1) >= 1 && character->isAlive()) {
 						LogicCharacterData* thatData = (LogicCharacterData*)character->getData();
@@ -675,7 +695,11 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writeBoolean(false);
 	if (stream->writeBoolean(getReloadSpeedChangePercent())) stream->writeIntMax127(LogicMath::clamp(getReloadSpeedChangePercent(), -100, 100));
 	stream->writePositiveVIntMax255OftenZero(PartialStunPromille / 10);
-	stream->writePositiveVIntMax255OftenZero(0);//Poison
+	stream->writePositiveVIntMax255OftenZero(Poisons.length);
+	for (int i = 0;i < Poisons.length;i++) {
+		stream->writePositiveIntMax15(Poisons[i]->Type);
+		stream->writePositiveIntMax15(Poisons[i]->Index);
+	}
 	stream->writeBoolean(false);//IsCrippled
 	stream->writePositiveVIntMax255OftenZero(getBuffBoost(LogicBuffServer::HealthRegen));
 	stream->writePositiveVIntMax16777215(Hitpoints);

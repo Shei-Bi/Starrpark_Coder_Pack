@@ -13,12 +13,12 @@
 #include "BitStream.h"
 #include "String.h"
 #include "LogicDataSlot.h"
-#include "LogicPoisonServer.h"
 #include "LogicImmunityServer.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
 class LogicGear;
+class LogicPoisonServer;
 class LogicCharacterServer : public LogicGameObjectServer
 {
 public:
@@ -328,7 +328,7 @@ public:
 	void aiUseMovementSkills(int, int);
 	void aiUseOffensiveSkills(LogicCharacterServer*, bool, bool, bool, bool);
 	void applyBuff(int, int, int, int);//
-	void applyPoison(int, int, int, bool, LogicCharacterServer*, int, bool);
+	void applyPoison(int, int, int, bool, LogicCharacterServer*, int, int);//
 	void attack(LogicCharacterServer*, int, int, int, int, LogicProjectileData*, int, bool, int, int);
 	void attackedThisTick(int);
 	void blockHealthRegen(void);

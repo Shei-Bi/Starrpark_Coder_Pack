@@ -233,12 +233,13 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             LogicProjectileServer_applyDamageSpecialEffects(self, a2, a3, a4, a5);
             _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib(self, a2, HandleCollisonPatchValues[0], HandleCollisonPatchValues[1], a5);
         }, 'void', ['pointer', 'pointer', 'int', 'int', 'int']));
-        Interceptor.replace(base.add(0x958CEC), new NativeCallback(function (self) {
-            if (self.add(8).readInt() == 0) return;
-            new NativeFunction(base.add(0x958CEC), 'void', ['pointer'])(self);
-        }, 'void', ['pointer']));
+        Interceptor.attach(base.add(0x94579C), function () {//infinite ulti patch
+            if (this.context.x20.add(8).readInt() == 0) {
+                this.context.x20.add(76).writeInt(4000);
+            }
+        });
         Mod.enumerateSymbols().forEach(element => {
-            if (element.name == "_ZL4base") element.address.writePointer(base);
+            if (element.name == "base") element.address.writePointer(base);
         });
         Interceptor.attach(base.add(0x889F8C), function () {
             var c = this.context.x19;

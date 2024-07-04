@@ -19,6 +19,8 @@ public:
 	char gap2[4];
 	LogicCharacterServer* Owner;//144
 	LogicCharacterServer* HomingTarget;//148
+	char gap8497934879[436 - 148 - 8];
+	int SkillType;//436
 
 	void addIgnoredTarget(int, int);
 	void addIgnoredTargetToLinkedProjectiles(int, int);
@@ -119,6 +121,9 @@ void LogicProjectileServer::applyDamageSpecialEffects(LogicCharacterServer* targ
 	}
 	if (data->getPartialStunPromille() > 0) {
 		target->setPartialStunPromille(target->PartialStunPromille + data->getPartialStunPromille());
+	}
+	if (data->PoisonDamagePercent >= 1) {
+		target->applyPoison(Index, data->PoisonDamagePercent * damage / 100, data->PoisonDamagePercent * damageConst / 100, SkillType == 2, Owner, data->PoisonType, data->PoisonTickCount);
 	}
 }
 #endif
