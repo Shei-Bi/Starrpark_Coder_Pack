@@ -603,7 +603,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			stream->writeBoolean(false);
 		}
 		if (data->WeaponSkill) {
-			if (data->WeaponSkill->getChargedShotCount() >= 1) stream->writeIntMax3(ChargedShotCount);
+			if (data->WeaponSkill->getChargedShotCount() >= 1) stream->writeIntMax3(ChargedShotHits);
 			if (isOwn && data->WeaponSkill->getAttackPattern() == 13) stream->writePositiveVIntMax255OftenZero(LogicMath::clamp(SkillHoldTicks, 0, 255));
 			if (data->WeaponSkill->getAttackPattern() == 15) {
 				stream->writePositiveVIntMax255OftenZero(LogicMath::clamp(SkillHoldTicks, 0, 255));

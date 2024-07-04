@@ -14,6 +14,7 @@
 #include "String.h"
 #include "LogicDataSlot.h"
 #include "LogicPoisonServer.h"
+#include "LogicImmunityServer.h"
 
 class LogicSkillServer;
 class LogicBuffServer;
@@ -100,7 +101,7 @@ public:
 	int AutoAttackY;//428
 	bool HasAutoAttackTarget;//432
 	bool BotUnknownBoolean1;//433
-	bool BotArtTestUnknownInt1;//436
+	int BotArtTestUnknownInt1;//436
 	int SpawnedTicks;//440
 	int SpawnTick;//444
 	int CastingTime;//448
@@ -165,7 +166,7 @@ public:
 	char gap938493849[4];//1004
 	LogicSkillData* ChesterNextUlti;//1008
 	LogicCharacterServer* Carryable;//1016
-	char gap8[1088 - 1016 - 8];
+	char gap8[1056 - 1016 - 8];
 	int CarryableLastOwnerPlayerIndex;//1056
 	int CarryableUnkownInt1;//1060
 	int CarryableUnkownInt2;//1064
@@ -178,38 +179,64 @@ public:
 	bool ShowUltiAnimation;//1091
 	int BattleRoyalBuffs;//1092
 	LogicArrayList<LogicPoisonServer*> Poisons;//1096
-	char gap29[1128 - 1096 - 16];
+	LogicArrayList<LogicImmunityServer*> Immunitys;//1112;
 	LogicArrayList<LogicBuffServer*> Buffs;//1128
-	char gap35[1156 - 1128 - 16];
+	int LastDamageSourceIndex;//1144
+	int MinionMaxHealthBuff;//1148
+	int TravelledPathLength;//1152
 	bool IsHyperchargeMinion;//1156
-	char gap43711[1176 - 1156 - 1];
+	LogicItemData* SummoningItem;//1160
+	LogicCharacterData* SummoningCharacter;//1168
 	bool SpawningPet;//1176
-	char gap7[1200 - 1176 - 1];
+	bool SummoningCharacterUnknownVariableBoolean;//1177
+	int SummoningCharacterNumSpawns;//1180
+	int SummoningCharacterMaxSpawns;//1184
+	int SummoningCharacterDamage;//1188
+	int SummoningItemDamage;//1192
+	int SummoningCharacterHitpoints;//1196
 	int ProjectileEffectId;//1200
 	int SkinEffectId;//1204
-	char gap24[1213 - 1204 - 4];
+	int MinionFollowOwnerTimer;//1208
+	bool MinionChargesUlti;//1212
 	bool ShowStarPowerIcon;//1213
-	char gap27[1264 - 1213 - 1];
+	char PathfindingVariablesUnused[1236 - 1213 - 1];
+	int BuffVisualStyleTicks;//1236
+	int BuffVisualStyle;//1240
+	int CarryableAimX;//1244
+	int CarryableAimY;//1248
+	int CarryableAimTicks;//1252
+	bool InvisibilityBreaksWhenAttack;//1256 (这玩意死了四年，到里昂出极冲的时候复活了)
+	int InvisibilityRevealDistance;//1260
 	bool IsObject;//1264
-	char gap32[1272 - 1264 - 1];
-	int ChargedShotCount;//1272
-	char gap21[1284 - 1272 - 4];
+	int RapidFireLastUpdatedTick;//1268
+	int ChargedShotHits;//1272
+	int ChargedShotMisses;//1276
+	int MaxStarpowerCachedChargeUp;//1280
 	int ShieldPercent;//1284
 	int CcImmunityTicks;//1288
 	int LifeTimeTicks;//1292
-	char gap12[1312 - 1292 - 4];
+	LogicArrayList<int> UnknownUnused;//1296
 	int ChargeUp;//1312
-	char gap5[12];
+	int LastAshChargeUpTick;//1316
+	char gap5[8];
 	int ChargeUpType;//1328
 	int ChargeUpMax;//1332
-	char gap2[1380 - 1332 - 4];
+	char gap1239187943874[8];
+	LogicProjectileData* OverrideProjectile;//1344
+	LogicProjectileData* OverrideProjectileSecondary;//1352
+	int OverrideProjectileEndTick;//1360
+	int VisionOverrideX;//1364
+	int VisionOverrideY;//1368
+	int VisionOverrideTicks;//1372
+	int PoisonCloudDamageTimer;//1376
 	int ForcedAngleEndTick;//1380
 	int TownCrushBossSearchTileTimer;//1384
 	char gap103897[4];
 	LogicGameObjectServer* DraggingObject;//1392
 	int DraggingAngle;//1400
 	int ChargeHits;//1404
-	char gap25[1432 - 1404 - 4];
+	bool ForceAILogicNextTick;//1408
+	char gap25[1432 - 1408 - 4];
 	LogicArrayList<LogicVector2*> PrevPositions; //1432
 	int PrevZ;//1448
 	bool IsSlippery;//1452
