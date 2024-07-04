@@ -121,8 +121,10 @@ public:
 	int ChargeUNK2;//504
 	int ChargeUNK3;//508
 	LogicAreaEffectData* ChargeEndAreaEffect;//512
-	char AttackSpecialParams[724 - 512 - 8];
+	char AttackSpecialParams[720 - 512 - 8];
+	int InvisibleTicks;//720
 	bool IsInvisible;//724
+	bool IsRevealed;//725
 	int InvisibilityState;//728
 	bool NoAI;//732
 	bool UsingUlti;//733
@@ -275,7 +277,7 @@ public:
 	bool TwimUnknownBoolean;//1584
 	int ShadowRealmTicks;//1588
 	int ShadowRealmWorldIndex;//1592
-	int ShadowRealmTimerMax;//1596
+	int ShadowRealmTicksMax;//1596
 	bool OnEnterShadowRealm;//1600
 	bool HasProjectileShieldSkill;//1601
 	LogicVector2 MinionInvasionSpawnPosition;//1604
@@ -300,6 +302,8 @@ public:
 	int getBuffBoost(int);
 	LogicBuffServer* findBuffByType(int);
 	void triggerPullRope(LogicCharacterServer*);
+	void tickDuplicatorAndCocconAndMinionPercenter();
+	void tickConductor();
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);

@@ -240,19 +240,6 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Mod.enumerateSymbols().forEach(element => {
             if (element.name == "_ZL4base") element.address.writePointer(base);
         });
-        Interceptor.attach(base.add(0x8887D4), function () {
-            _ZN20LogicCharacterServer11tickEffectsEv(this.context.x19);
-        });
-        Interceptor.attach(base.add(0x8887B4), function () {
-            _ZN20LogicCharacterServer9tickGearsEv(this.context.x19);//after tickTimers
-            if (this.context.x19.add(60).readInt() != 0) return;
-            HealthPromille = this.context.x19.add(184).readInt() / this.context.x19.add(188).readInt();
-            Buffs = [];
-            for (var i = 0; i < this.context.x19.add(1140).readInt(); i++) {
-                var b = this.context.x19.add(1128).readPointer().add(8 * i).readPointer();
-                Buffs.push(b.readInt());
-            }
-        });
         Interceptor.attach(base.add(0x889F8C), function () {
             var c = this.context.x19;
             var t = c.add(468).readInt();
@@ -318,6 +305,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x897BFC), Mod.getExportByName("_ZN20LogicCharacterServer23getControlledProjectileEv"));
         Interceptor.replace(base.add(0x87E68C), Mod.getExportByName("_ZN21LogicAreaEffectServer4tickEv"));
         Interceptor.replace(base.add(0x88E538), Mod.getExportByName("_ZN20LogicCharacterServer11swapSkillToEiP14LogicSkillData"));
+        Interceptor.replace(base.add(0x888704), Mod.getExportByName("_ZN20LogicCharacterServer4tickEv"));
         // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
         //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
         //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));

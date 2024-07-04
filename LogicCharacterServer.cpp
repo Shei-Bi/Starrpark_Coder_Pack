@@ -21,7 +21,106 @@ void LogicCharacterServer::addConsumableShield(int amount)
 }
 void LogicCharacterServer::tick()
 {
+	LogicCharacterData* data = (LogicCharacterData*)getData();
+	if (data->isTrain()) tickTrain();
+	if (isAlive()) {
+		tickTimers();
+		tickGears();
+		tickStarPowers();
+		executeBlink();
+		handleDynamicWallClearing();
+		pushOutOfWalls();
+		tickSkills();
+		tickTile();
+		tickInvisibility();
+		tickHeals();
+		handleMoveAndAttack();
+		tickSpawnMinions();
+		tickEffects();
+		handleDelayedDeath();
+		tickDuplicatorAndCocconAndMinionPercenter();
+		tickMovePet();
+		executeKickBack();
+		tickAutoUltiCharge();
+		tickGameModeLogic();
+		tickAntiTeaming();
+		tickSelfDestruct();
+		tickConductor();
+		if (AreaEffect) {
+			AreaEffect->setPosition(getX(), getY(), 0);
+		}
+	}
+	else {
+		InvisibleTicks = 0;
+		IsInvisible = false;
+		IsRevealed = false;
+		DestructAfterTicks--;
+		ShadowRealmTicks = 0;
+		ShadowRealmWorldIndex = 0;
+	}
+}
+void LogicCharacterServer::tickTrain() {
 	;
+}
+void LogicCharacterServer::tickStarPowers() {
+	;
+}
+void LogicCharacterServer::executeBlink() {
+	;
+}
+void LogicCharacterServer::handleDynamicWallClearing() {
+	;
+}
+void LogicCharacterServer::pushOutOfWalls() {
+	;
+}
+void LogicCharacterServer::tickInvisibility() {
+	;
+}
+void LogicCharacterServer::tickSpawnMinions() {
+	;
+}
+void LogicCharacterServer::tickMovePet() {
+	;
+}
+void LogicCharacterServer::executeKickBack() {
+	;
+}
+void LogicCharacterServer::tickAutoUltiCharge() {
+	;
+}
+void LogicCharacterServer::tickGameModeLogic() {
+	;
+}
+void LogicCharacterServer::tickAntiTeaming() {
+	;
+}
+void LogicCharacterServer::tickTimers() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x888834))(this);
+}
+void LogicCharacterServer::tickSkills() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x888D98))(this);
+}
+void LogicCharacterServer::tickTile() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x8891AC))(this);
+}
+void LogicCharacterServer::tickHeals() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x889528))(this);
+}
+void LogicCharacterServer::handleMoveAndAttack() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x8896EC))(this);
+}
+void LogicCharacterServer::handleDelayedDeath() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x88BDD4))(this);
+}
+void LogicCharacterServer::tickSelfDestruct() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x88C0D4))(this);
+}
+void LogicCharacterServer::tickDuplicatorAndCocconAndMinionPercenter() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x88BF14))(this);
+}
+void LogicCharacterServer::tickConductor() {
+	return ((void (*)(LogicCharacterServer*))(base + 0x88C400))(this);
 }
 int LogicCharacterServer::getCardValueForPassive(int type, int index) {
 	return getCardValueForPassiveFromPlayer(type, index);
