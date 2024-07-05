@@ -10,13 +10,14 @@ public:
 	int MaxDuration;//8
 	int Modifier;//12
 	int Int1;//16
-	int BelleWeaponRadius;
-	int BelleWeaponBounces;
-	int field_1C;
-	LogicData* SourceData;
-	int Index;
-	int TeamIndex;
-	int WorldIndex;
+	int BelleWeaponRadius;//20
+	int BelleWeaponBounces;//24
+	int field_1C;//28
+	LogicData* SourceData;//32
+	int Index;//40
+	int TeamIndex;//44
+	int WorldIndex;//48
+	int BelleWeaponSpecialEffectType;//52
 
 	enum BuffTypes//guessed names
 	{

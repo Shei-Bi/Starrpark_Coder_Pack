@@ -28,8 +28,9 @@ public:
 	int StartUsingTick;//56
 	int Angle;//60
 	char gap32878[4];
-	bool WTF;//68
-	bool gap69420;//69
+	bool IsWeaponChangeEnabled;//68
+	bool IsUltiChangeEnabled;//69
+	bool HasActivated;
 
 	LogicAccessory(LogicAccessoryData*, int);
 	void encode(BitStream*, bool);
@@ -57,7 +58,7 @@ void LogicAccessory::encode(BitStream* stream, bool isSelf) {
 	}
 }
 int LogicAccessory::checkCurrentAccessoryAvailability(LogicCharacterServer* Owner) {
-	if (IsActive) return 1;
+	if (IsActive && !HasActivated) return 1;
 	if (Uses < 1) return 4;
 	if (CoolDown > 0) return 5;
 	return 0;
@@ -96,13 +97,23 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 			owner->addExtraHealthRegen(AccessoryData->getCustomValue1() * owner->HitpointsMax / 100, AccessoryData->getActiveTicks(), owner->Index, AccessoryData);
 		}
 		break;
+	case 31://ulti_change
+		switch (AccessoryData->getSubType())
+		{
+		case 1://buzz
+			owner->chargeUlti(AccessoryData->getCustomValue5(), false, true, owner->getPlayer(), owner);
+			break;
+		}
+		break;
 	}
 	if (AccessoryData->getActiveTicks() < 1) {
-		/*
-		Refactor. Reason: same code
-		--Shei
-		*/
-		endAccessoryActivation();
+		if (Type == 31) {
+			HasActivated = true;
+		}
+		else {
+			IsActive = false;
+		}
+		CoolDown = AccessoryData->getCoolDown();
 	}
 	else {
 		TicksActive = 0;
@@ -111,14 +122,19 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 	}
 }
 void LogicAccessory::updateAccessory(LogicCharacterServer* owner) {
-	WTF = true;
-	gap69420 = true;
+	IsWeaponChangeEnabled = true;
+	IsUltiChangeEnabled = true;
 	State = checkCurrentAccessoryAvailability(owner);
 	CoolDown = LogicMath::max(0, CoolDown - 1);
-	if (IsActive) {
+	if (IsActive && !HasActivated) {
 		if (ActivationDelay < 1) {
 			if (TicksActive >= AccessoryData->getActiveTicks()) {
-				IsActive = false;
+				if (Type == 31) {
+					HasActivated = true;
+				}
+				else {
+					IsActive = false;
+				}
 				CoolDown = AccessoryData->getCoolDown();
 			}
 			else {
@@ -173,10 +189,13 @@ void LogicAccessory::endAccessoryActivation()
 	{
 		IsActive = false;
 		CoolDown = AccessoryData->getCoolDown();
+		HasActivated = false;
 	}
 }
-void LogicAccessory::interrupt(bool a2, LogicCharacterServer* a3)
+void LogicAccessory::interrupt(bool ignoreAccessory, LogicCharacterServer* owner)
 {
-	;
+	if (ignoreAccessory) return;
+	if ((Type == 23 || Type == 31) && owner->Hitpoints > 0) return;
+	endAccessoryActivation();
 }
 #endif

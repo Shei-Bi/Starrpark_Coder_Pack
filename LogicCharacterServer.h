@@ -434,7 +434,7 @@ public:
 	void giveDamageBuff(int, int);
 	void giveDamageBuff2(int, int);
 	void giveDamageBuffPermanent(int);
-	void giveElectrocution(int, int, int, int, int, int, int);
+	void giveElectrocution(int, int, int, int, int, int, int, int);//
 	void giveMaxHealthBuff(int, bool, bool, int);
 	void giveReloadBuff(int, int);
 	void giveReloadDebuff(int, int);

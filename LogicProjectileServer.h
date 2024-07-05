@@ -8,19 +8,27 @@
 class LogicProjectileServer : public LogicGameObjectServer
 {
 public:
-	char gap1[96 - 76];
+	char gap1[88 - 76];
+	LogicVector2 PositionVector;//88
 	int StartX;//96
 	int StartY;//100
 	int TargetX;//104
 	int TargetY;//108
-	char gap3[20];
+	char gap3[128 - 108 - 4];
+	int DefaultZ;//128
 	int Damage;//132
 	int NormalDMG;//136
 	char gap2[4];
 	LogicCharacterServer* Owner;//144
-	LogicCharacterServer* HomingTarget;//148
-	char gap8497934879[436 - 148 - 8];
+	LogicCharacterServer* HomingTarget;//152
+	char gap8497934879[420 - 152 - 8];
+	int Angle;//420
+	char gap913489384[4];
+	int EarlyTicks;//428
+	char gap98493[4];
 	int SkillType;//436
+	char gap1413948390840[744 - 436 - 4];
+	int BelleWeaponBounces;
 
 	void addIgnoredTarget(int, int);
 	void addIgnoredTargetToLinkedProjectiles(int, int);
@@ -35,8 +43,8 @@ public:
 	int getModifiedDamage(int, bool, int);
 	int getModifiedPushback(void);
 	int getModifiedScale(int);
-	void getNextSteeredPos(LogicVector2&);
-	void getPosAtTick(int, LogicVector2&);
+	int getNextSteeredPos(LogicVector2&);
+	int getPosAtTick(int, LogicVector2&);
 	void getProjectileData(void);
 	void getProjectileSpeed(LogicCharacterServer*, LogicProjectileData const*, bool);
 	void getProjectileZAtT(float, float, float, float, float);
@@ -74,7 +82,7 @@ public:
 	void shouldDestruct(void);
 	void targetReached(int);
 	void tick(void);
-	void tickMovement(void);
+	bool tickMovement(void);
 	void updateTrailAreaEffect(void);
 };
 void LogicProjectileServer::targetReached(int type) {
@@ -125,5 +133,40 @@ void LogicProjectileServer::applyDamageSpecialEffects(LogicCharacterServer* targ
 	if (data->PoisonDamagePercent >= 1) {
 		target->applyPoison(Index, data->PoisonDamagePercent * damage / 100, data->PoisonDamagePercent * damageConst / 100, SkillType == 2, Owner, data->PoisonType, data->PoisonTickCount);
 	}
+	if (data->UniqueProperty == 3 && BelleWeaponBounces < data->CustomUniquePropertyValue) {
+		target->giveElectrocution(damage / 2, damageConst / 2, BelleWeaponBounces, 3, data->AppliedEffectVisualType, Index, TeamIndex, WorldIndex);
+	}
+}
+int LogicProjectileServer::getPosAtTick(int ticks, LogicVector2& outVector) {
+	return ((int (*)(LogicProjectileServer*, int, LogicVector2&))(base + 0x8B7D08))(this, ticks, outVector);
+}
+int LogicProjectileServer::getNextSteeredPos(LogicVector2& outVector) {
+	int ticksGone = getLogicBattleModeServer()->getTicksGone();
+	LogicProjectileData* data = (LogicProjectileData*)getData();
+	// if (ticksGone + EarlyTicks - MoveStartTick <= data->SteerIgnoreTicks) {
+	outVector.X = getX() + LogicMath::cos(Angle) * data->Speed / 20 / 1024;
+	outVector.Y = getY() + LogicMath::sin(Angle) * data->Speed / 20 / 1024;
+	return DefaultZ;
+	// }
+	// else {
+	// 	if (data->TravelType == )
+
+	// }
+}
+bool LogicProjectileServer::tickMovement() {
+	int ticksGone = getLogicBattleModeServer()->getTicksGone();
+	int nowTick = ticksGone + EarlyTicks;
+	if (nowTick > MoveEndTick) return true;
+	LogicProjectileData* data = (LogicProjectileData*)getData();
+	int z = data->SteerStrength > 0 ? getNextSteeredPos(PositionVector) : getPosAtTick(nowTick, PositionVector);
+	if (data->Indirect) {
+		LogicTileMap* tileMap = getLogicBattleModeServer()->getTileMap();
+		if (PositionVector.X < 2 || PositionVector.X >= tileMap->LogicWidth - 2 || PositionVector.Y < 2 || PositionVector.Y >= tileMap->LogicHeight - 2) {
+			setPosition(LogicMath::clamp(PositionVector.X, 1, tileMap->LogicWidth - 2), LogicMath::clamp(PositionVector.Y, 1, tileMap->LogicHeight - 2), z);
+			return true;
+		}
+	}
+	setPosition(PositionVector.X, PositionVector.Y, z);
+	return nowTick == MoveEndTick;
 }
 #endif

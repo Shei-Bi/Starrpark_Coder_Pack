@@ -66,9 +66,6 @@ void LogicCharacterServer::tickTrain() {
 void LogicCharacterServer::tickStarPowers() {
 	;
 }
-void LogicCharacterServer::executeBlink() {
-	;
-}
 void LogicCharacterServer::handleDynamicWallClearing() {
 	;
 }
@@ -345,6 +342,16 @@ int LogicCharacterServer::getDamageBuffTemporary() {
 	}
 	return damageBuff;
 }
+void LogicCharacterServer::giveElectrocution(int damage, int damageConst, int bounces, int maxBounces, int effectType, int index, int teamIndex, int worldIndex) {
+	LogicBuffServer* buff = new LogicBuffServer(LogicBuffServer::BelleWeapon, 20, damage, damageConst);
+	buff->BelleWeaponBounces = bounces;
+	buff->BelleWeaponRadius = 6000;
+	buff->BelleWeaponSpecialEffectType = effectType;
+	buff->Index = index;
+	buff->TeamIndex = teamIndex;
+	buff->WorldIndex = worldIndex;
+	Buffs.add(buff);
+}
 int LogicCharacterServer::getBuffBoost(int type) {
 	/*
 		New Function. Reason: Repeated Usage.
@@ -557,6 +564,41 @@ bool LogicCharacterServer::causeDamage(int sourceIndex, int damage, int damageCo
 bool LogicCharacterServer::isAlive() {
 	return Hitpoints > 0;
 }
+void LogicCharacterServer::chargeUlti(int value, bool isUlti, bool absoluteValue, LogicPlayer* targetPlayer, LogicCharacterServer* target) {
+	return ((void (*)(LogicCharacterServer*, int, bool, bool, LogicPlayer*, LogicCharacterServer*))(base + 0x89390C))(this, value, isUlti, absoluteValue, targetPlayer, target);
+}
+void LogicCharacterServer::triggerBlink(int x, int y, LogicAreaEffectData* areaEffectEnd, LogicAreaEffectData* areaEffectStart, int damage, int damageConst) {
+	IsTeleporting = true;
+	if (areaEffectEnd) {
+		LogicAreaEffectServer* areaEffect = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(areaEffectEnd);
+		areaEffect->setPosition(x, y, 0);
+		areaEffect->Index = Index;
+		areaEffect->Damage = damage;
+		areaEffect->DamageConst = damageConst;
+		GameObjectManager->addLogicGameObject(areaEffect);
+		areaEffect->trigger();
+	}
+	if (areaEffectStart) {
+		LogicAreaEffectServer* areaEffect = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(areaEffectStart);
+		areaEffect->setPosition(getX(), getY(), 0);
+		areaEffect->Index = Index;
+		areaEffect->Damage = damage;
+		areaEffect->DamageConst = damageConst;
+		GameObjectManager->addLogicGameObject(areaEffect);
+		areaEffect->trigger();
+	}
+	stopMovement();
+	BlinkX = x;
+	BlinkY = y;
+}
+void LogicCharacterServer::executeBlink() {
+	if (BlinkX != -1) {
+		stopMovement();
+		setPosition(BlinkX, BlinkY, 0);
+		IsTeleporting = true;
+		BlinkX = -1;
+	}
+}
 void LogicCharacterServer::triggerPullRope(LogicCharacterServer* target) {
 	BuzzHookedCharacter = target;
 	if (target) {
@@ -687,7 +729,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writeBoolean(false);//Suppress Healing
 	stream->writeBoolean(false);
 	if (stream->writeBoolean(findBuffByType(LogicBuffServer::BelleWeapon))) {
-		stream->writePositiveIntMax7(findBuffByType(LogicBuffServer::BelleWeapon)->Int1);
+		stream->writePositiveIntMax7(findBuffByType(LogicBuffServer::BelleWeapon)->BelleWeaponSpecialEffectType);
 	}
 	stream->writeBoolean(findBuffByType(LogicBuffServer::BelleUlti));
 	stream->writeBoolean(false);//IsSilenced

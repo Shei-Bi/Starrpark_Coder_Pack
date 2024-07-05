@@ -27,7 +27,7 @@ const c_unlink = new NativeFunction(Module.getExportByName('libc.so', 'unlink'),
 const m_atanf = new NativeFunction(Module.getExportByName('libm.so', 'atanf'), 'float', ['float']);
 
 Armceptor.replace(base.add(0x87F6A8), [0x3F, 0x29, 0x00, 0x71]);//LogicBuffServer::tick 9->10
-
+Armceptor.replace(base.add(0x87F76C), [0x1F, 0x39, 0x00, 0x71]);//LogicBuffServer::onBuffEnd 13->14
 const HomeScreen_enter = new NativeFunction(base.add(0x6BD6A4), 'void', ['pointer']); // v53.176 | String: "HomeScreen::enter - active theme sc file doesn't exist! theme: "
 const LogicData_getName = new NativeFunction(base.add(0x83F2F4), 'pointer', ['pointer']); // v53.176 | country item
 const BattleScreen_enter = new NativeFunction(base.add(0x6A6DB0), 'void', ['pointer']); // v53.176 | String: "land_zone"
@@ -233,9 +233,13 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             LogicProjectileServer_applyDamageSpecialEffects(self, a2, a3, a4, a5);
             _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib(self, a2, HandleCollisonPatchValues[0], HandleCollisonPatchValues[1], a5);
         }, 'void', ['pointer', 'pointer', 'int', 'int', 'int']));
+        // Interceptor.replace(LogicProjectileServer_shootProjectile, new NativeCallback(function (startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory) {
+        //     console.log(startX, startY, endX, endY, ReadStringFromStringObject(LogicData_getName(projectileData)));
+        //     return LogicProjectileServer_shootProjectile(startX, startY, source, shooter, projectileData, endX, endY, damage, normalDMG, a10, a11, a12, battleMode, a14, catagory);
+        // }, 'pointer', ['int', 'int', 'pointer', 'pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'int', 'int']));
         Interceptor.attach(base.add(0x94579C), function () {//infinite ulti patch
             if (this.context.x20.add(8).readInt() == 0) {
-                this.context.x20.add(76).writeInt(4000);
+                // this.context.x20.add(76).writeInt(4000);
             }
         });
         Mod.enumerateSymbols().forEach(element => {
@@ -307,9 +311,8 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x87E68C), Mod.getExportByName("_ZN21LogicAreaEffectServer4tickEv"));
         Interceptor.replace(base.add(0x88E538), Mod.getExportByName("_ZN20LogicCharacterServer11swapSkillToEiP14LogicSkillData"));
         Interceptor.replace(base.add(0x888704), Mod.getExportByName("_ZN20LogicCharacterServer4tickEv"));
+        Interceptor.replace(base.add(0x8B429C), Mod.getExportByName("_ZN21LogicProjectileServer12tickMovementEv"));
         // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
-        //Interceptor.replace(base.add(0x8B7620), new NativeCallback(function (self) { _ZN21LogicProjectileServer15returnBoomerangEv(self); }, 'void', ['pointer']));
-        //Interceptor.replace(Mod.getExportByName("_ZN21LogicProjectileServer15ShootProjectileEiiP20LogicCharacterServerP21LogicGameObjectServerP19LogicProjectileDataiiiiibiP21LogicBattleModeServerii"), base.add(0x8B8E08));
         Interceptor.flush();
     }
 });
@@ -326,6 +329,7 @@ const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x969
 const LogicCharacterServer_attack = new NativeFunction(base.add(0x890D10), 'void', ['pointer', 'int']); // v53.176 |
 const BitStream_writeInt = new NativeFunction(base.add(0x96972C), 'void', ['pointer', 'int', 'int']); // v53.176 |
 const LogicProjectileServer_applyDamageSpecialEffects = new NativeFunction(base.add(0x8B8C60), 'void', ['pointer', 'pointer', 'int', 'int', 'int']); // v53.176 |
+const LogicProjectileServer_shootProjectile = new NativeFunction(base.add(0x8B8E08), 'pointer', ['int', 'int', 'pointer', 'pointer', 'pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'int', 'int']); // v53.176 |
 //Process.setExceptionHandler(function (deatils) {
 //    console.log(deatils.address.sub(base));
 //    console.log(base);
@@ -333,6 +337,7 @@ const LogicProjectileServer_applyDamageSpecialEffects = new NativeFunction(base.
 //})
 Interceptor.attach(base.add(0x87D85C), {
     onEnter: function (args) {
+        args[0].writeByteArray(new Uint8Array(104).buffer);
         args[2] = ptr(7);//Accessory Uses
     }
 });
