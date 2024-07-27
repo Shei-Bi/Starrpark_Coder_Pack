@@ -16,5 +16,9 @@ public:
 	char gap2[31]; // 69 to 99
 	int TileDamage; // 100
 	int TileSpeedChange; // 104
+
+	int setData(LogicTileData *newTileData) {
+		return ((int (*)(LogicTile*, LogicTileData*))(base + 0x7F9DD4))(this, newTileData);
+	}
 };
 #endif
