@@ -20,7 +20,7 @@ public:
       this->X = this->Y = 0;
    }
    int LogicVector2::dot(LogicVector2 *vec2) {
-      this->X * vec2->X + this->Y * vec2->Y;
+      return this->X * vec2->X + this->Y * vec2->Y;
    }
    bool LogicVector2::isEqual(LogicVector2 *vec2) {
       if (vec2 == nullptr) return false;
