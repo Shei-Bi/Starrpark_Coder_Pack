@@ -89,8 +89,8 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 	switch (Type) {
 	case 8://heal
 		if (AccessoryData->getSubType() == 1) {
-			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;//��߸ĸ��Ϊ�ٷֱ�
-			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//˯����
+			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;
+			if (amount == 0) amount = owner->HitpointsMax - owner->Hitpoints;//睡眠仪
 			owner->heal(owner->Index, amount, true, nullptr);
 		}
 		else if (AccessoryData->getSubType() == 2) {
