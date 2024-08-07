@@ -224,11 +224,6 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             _ZN21LogicProjectileServer4tickEv(self);
             LogicProjectileServer_tick(self);
         }, 'void', ['pointer', 'int']));
-        Interceptor.replace(LogicCharacterServer_setUpgrades, new NativeCallback(function (self, a2) {
-            LogicCharacterServer_setUpgrades(self, a2);
-            _ZN20LogicCharacterServer17calculateChargeUpEv(self);
-            _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades(self, a2);
-        }, 'void', ['pointer', 'pointer']));
         Interceptor.replace(LogicProjectileServer_applyDamageSpecialEffects, new NativeCallback(function (self, a2, a3, a4, a5) {
             LogicProjectileServer_applyDamageSpecialEffects(self, a2, a3, a4, a5);
             _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib(self, a2, HandleCollisonPatchValues[0], HandleCollisonPatchValues[1], a5);
@@ -312,6 +307,8 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x88E538), Mod.getExportByName("_ZN20LogicCharacterServer11swapSkillToEiP14LogicSkillData"));
         Interceptor.replace(base.add(0x888704), Mod.getExportByName("_ZN20LogicCharacterServer4tickEv"));
         Interceptor.replace(base.add(0x8B429C), Mod.getExportByName("_ZN21LogicProjectileServer12tickMovementEv"));
+        Interceptor.replace(base.add(0x948B80), Mod.getExportByName("_ZN21LogicBattleModeServer9spawnHeroEP18LogicCharacterDataP17LogicHeroUpgradesiiib"));
+        Interceptor.replace(base.add(0x888830), Mod.getExportByName("_ZN20LogicCharacterServer13addAreaEffectEiiP19LogicAreaEffectDataib"));
         // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
         Interceptor.flush();
     }
@@ -323,7 +320,6 @@ const LogicProjectileServer_tick = new NativeFunction(base.add(0x8B3E24), 'void'
 const LogicBattleModeServer_tick = new NativeFunction(base.add(0x9458E8), 'void', ['pointer']); // v53.176 | 
 const LogicBattleModeServer_tickUpdate = new NativeFunction(base.add(0x94CC08), 'void', ['pointer', 'int']); // v53.176 | 
 const LogicProjectileServer_targetReached = new NativeFunction(base.add(0x8B7620), 'void', ['pointer', 'int']); // v53.176 | 
-const LogicCharacterServer_setUpgrades = new NativeFunction(base.add(0x89B04C), 'void', ['pointer', 'pointer']); // v53.176 |
 const BitStream_readPositiveIntMax134217727 = new NativeFunction(base.add(0x96C6C0), 'int', ['pointer']); // v53.176 |
 const BitStream_writePositiveIntMax134217727 = new NativeFunction(base.add(0x9693BC), 'void', ['pointer', 'int']); // v53.176 |
 const LogicCharacterServer_attack = new NativeFunction(base.add(0x890D10), 'void', ['pointer', 'int']); // v53.176 |

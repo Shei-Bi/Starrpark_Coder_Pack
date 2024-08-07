@@ -21,8 +21,8 @@ public:
 	bool ShouldDestruct;//108
 	char ga3278437[120 - 108 - 1];
 	int FadeCounter;//120
-	char gap197846[132 - 120 - 4];
-	LogicCharacterServer* Owner;//132
+	char gap197846[128 - 120 - 4];
+	LogicCharacterServer* Owner;//128
 	void setSource(LogicCharacterServer* source, int skillType, bool idk) {
 		return ((void (*)(LogicAreaEffectServer*, LogicCharacterServer*, int, int))(base + 0x87E78C))(this, source, skillType, idk);
 	}
@@ -66,6 +66,20 @@ void LogicAreaEffectServer::tick() {
 			}
 		}
 	}
-
+	if (type == 28 || type == 32) {
+		if (++EffectTimer < 20) return;
+		EffectTimer = 0;
+		LogicArrayList<LogicCharacterServer*> characters;
+		GameObjectManager->getCharacters(&characters);
+		for (int i = 0;i < characters.length;i++) {
+			LogicCharacterServer* character = characters[i];
+			bool teamFlag = type == 28 ? character->TeamIndex != TeamIndex : character->TeamIndex == TeamIndex;
+			if (teamFlag && character->isAlive() && !character->isImmuneAndBulletsGoThrough()) {
+				if (LogicGamePlayUtil::getDistanceBetween(getX(), getY(), character->getX(), character->getY()) <= data->getRadius() + character->getRadius() - 50) {
+					Owner->chargeUlti(data->getCustomValue(), false, true, getPlayer(), Owner);
+				}
+			}
+		}
+	}
 }
 #endif

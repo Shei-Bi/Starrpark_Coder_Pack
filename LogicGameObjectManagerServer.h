@@ -1,6 +1,5 @@
 #ifndef LGOMS_H
 #define LGOMS_H
-#include "LogicBattleModeServer.h"
 #include "LogicArrayList.h"
 
 class LogicGameObjectServer;
@@ -8,6 +7,7 @@ class LogicItemServer;
 class LogicCharacterServer;
 class LogicProjectileServer;
 class LogicAreaEffectServer;
+class LogicBattleModeServer;
 class LogicGameObjectManagerServer
 {
 public:

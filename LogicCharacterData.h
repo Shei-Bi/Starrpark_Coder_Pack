@@ -70,5 +70,11 @@ public:
 	bool isCarryable() {
 		return ((bool (*)(LogicCharacterData*))(base + 0x83A028))(this);
 	}
+	int getHitpoints() {
+		return ((int (*)(LogicCharacterData*))(base + 0x839430))(this);
+	}
+	int getUltiChargeInitial() {
+		return ((int (*)(LogicCharacterData*))(base + 0x83948C))(this);
+	}
 };
 #endif

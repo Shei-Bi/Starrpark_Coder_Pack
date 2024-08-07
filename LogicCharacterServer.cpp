@@ -16,6 +16,10 @@
 #include "LogicGamePlayUtil.h"
 #include "LogicPoisonServer.h"
 
+LogicSkillData* LogicCharacterServer::getUltiSkill() {
+	if (Skills.length >= 2) return Skills[1]->SkillData;
+	return ((LogicCharacterData*)getData())->UltiSkill;
+}
 void LogicCharacterServer::addConsumableShield(int amount)
 {
 	;
@@ -253,6 +257,9 @@ void LogicCharacterServer::calculateChargeUp() {
 		}
 	}
 }
+LogicSkillData* LogicCharacterServer::getNextChesterUlti(LogicSkillData* orginal, bool shouldBeDifferentFromOrginal) {
+	return ((LogicSkillData * (*)(LogicCharacterServer*, LogicSkillData*, bool))(base + 0x8A4F58))(this, orginal, shouldBeDifferentFromOrginal);
+}
 bool LogicCharacterServer::heal(int healerIndex, int amount, bool shouldShow, LogicData* source) {
 	return ((bool (*)(LogicCharacterServer*, int, int, bool, LogicData*))(base + 0x88E6F4))(this, healerIndex, amount, shouldShow, source);
 }
@@ -271,6 +278,27 @@ LogicProjectileServer* LogicCharacterServer::getControlledProjectile() {
 		if (projectile->Index == Index && ((LogicProjectileData*)projectile->getData())->getTravelType() == 5) return projectile;
 	}
 	return nullptr;
+}
+void LogicCharacterServer::addAreaEffect(int damage, int dot, LogicAreaEffectData* d, int skillType, bool idk) {
+	if (!d) d = ((LogicCharacterData*)getData())->getAreaEffect();
+	LogicAreaEffectServer* a = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(d);
+	int damageFromData = d->getDamage();
+	if (damageFromData >= 1) {
+		a->Damage = damageFromData + damage;
+		a->DamageConst = damageFromData;
+	}
+	else {
+		a->Damage = damageFromData - damage;
+		a->DamageConst = 0;
+	}
+	a->setPosition(getX(), getY(), 0);
+	a->Index = Index;
+	a->TeamIndex = TeamIndex;
+	a->WorldIndex = WorldIndex;
+	a->setSource(this, skillType, false);
+	this->AreaEffect = a;
+	GameObjectManager->addLogicGameObject(a);
+	a->trigger();
 }
 void LogicCharacterServer::triggerStun(int ticks, bool isForcedStun) {
 	StunTicks = ticks;
@@ -306,8 +334,45 @@ void LogicCharacterServer::tickEffects() {
 		PartialStunPromille = PartialStunnedTicks ? 1000 : 0;
 	}
 }
+void LogicCharacterServer::setDefaultStartRotation() {
+	if (TeamIndex == 1) {
+		AttackAngle = 90;
+		MoveAngle = 90;
+	}
+	else {
+		AttackAngle = 270;
+		MoveAngle = 270;
+	}
+}
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
-	if (!upgrades) return;//�˻�û������
+	if (upgrades) {
+		ShowStarPowerIcon = upgrades->CardData || upgrades->OverchargeData;
+		int level = upgrades->Level;
+		LogicCharacterData* data = (LogicCharacterData*)getData();
+		int hitpoints = HitpointsMax + data->getHitpoints() / 10 * level;
+		Hitpoints = hitpoints;
+		HitpointsMax = hitpoints;
+		HitpointsMaxOriginal = hitpoints;
+		for (int i = 0; i < Skills.length; i++)
+		{
+			Skills[i]->setNumUpgrades(level);
+		}
+		switch (upgrades->CardData->getType()) {
+		case 29:
+			StaticSpeedBuff += upgrades->CardData->getValue();
+			break;
+		case 51:
+			hitpoints = HitpointsMax + HitpointsMax * upgrades->CardData->getValue() / 100;
+			Hitpoints = hitpoints;
+			HitpointsMax = hitpoints;
+			HitpointsMaxOriginal = hitpoints;
+			break;
+		case 48:
+			Skills[0]->addCharge(this, 100);
+			break;
+		}
+	}
+
 	if (upgrades->GearData1) Gears.add(new LogicGear(upgrades->GearData1));
 	if (upgrades->GearData2) Gears.add(new LogicGear(upgrades->GearData2));
 }

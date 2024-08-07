@@ -27,6 +27,9 @@ public:
 	LogicSkillServer(LogicSkillData*, bool);
 
 	void addCharge(LogicCharacterServer*, int);
+	void setNumUpgrades(int level) {
+		Level = level;
+	}
 	void encode(BitStream* stream, bool isOwn, LogicCharacterServer* owner) {
 		stream->writePositiveVIntMax255OftenZero(ActiveTime / 50);
 		stream->writePositiveVIntMax255OftenZero(MaxActiveTime / 50);

@@ -83,6 +83,7 @@ public:
 	char gap23[4];
 	LogicArrayList<LogicSkillServer*> Skills;//336
 	bool RapidFireTwoGuns;//352
+	bool IsBot;//353
 	int DamageBuffPermanent;//356
 	bool Charging;//360
 	bool Knockbacked;//361
@@ -304,6 +305,7 @@ public:
 	void triggerPullRope(LogicCharacterServer*);
 	void tickDuplicatorAndCocconAndMinionPercenter();
 	void tickConductor();
+	LogicSkillData* getNextChesterUlti(LogicSkillData*, bool);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
@@ -423,9 +425,9 @@ public:
 	void getStarsForAI(void);
 	void getState(void);
 	void getType(void);
-	void getUltiSkill(void);
+	LogicSkillData* getUltiSkill(void);
 	void getVisionRange(void);
-	void getWeaponSkill(void);
+	LogicSkillData* getWeaponSkill(void);
 	void getXForAutoshoot(void);
 	void getYForAutoshoot(void);
 	void giveCleanse(int);

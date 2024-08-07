@@ -9,10 +9,16 @@ public:
     int Type;
 
     int getRadius() {
-        return ((int (*)(LogicAreaEffectData*))(base + 0x82D998))(this);
+        return *(int*)((char*)this + 156);
+    }
+    int getCustomValue() {
+        return *(int*)((char*)this + 168);
     }
     int getCustomValue2() {
-        return ((int (*)(LogicAreaEffectData*))(base + 0x82D9B0))(this);
+        return *(int*)((char*)this + 172);
+    }
+    int getDamage() {
+        return *(int*)((char*)this + 160);
     }
 };
 #endif
