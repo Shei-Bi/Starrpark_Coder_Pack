@@ -4,6 +4,7 @@
 #include "LogicAreaEffectData.h"
 #include "LogicProjectileData.h"
 #include "LogicCardData.h"
+#include "LogicTileData.h"
 #include "String.h"
 
 class LogicDataTables
@@ -17,6 +18,9 @@ public:
 	}
 	static LogicCardData* getItemFor(LogicCharacterData* character, int metaType) {
 		return ((LogicCardData * (*)(LogicCharacterData*, int))(base + 0x844944))(character, metaType);
+	}
+	static LogicTileData* getOpenTileData() {
+		return ((LogicTileData * (*)(void))(base + 0x84BB74))();
 	}
 };
 #endif

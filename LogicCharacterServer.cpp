@@ -411,6 +411,7 @@ void LogicCharacterServer::swapSkillTo(int index, LogicSkillData* data) {
 	Skills[index] = newSkill;
 	newSkill->Charges = oldSkill->Charges;
 	newSkill->Level = oldSkill->Level;
+	delete oldSkill;
 }
 void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageConst, int pushback, int speed, bool useSpecialPathfinding, int type, LogicAreaEffectData* spawnedAreaEffect, LogicItemData* spawnedItem, int itemParams1, int itemParams2, int range, bool isUlti, LogicArrayList<LogicVector2*>* presetWaypoints, LogicAreaEffectData* spawnedAreaEffect2) {
 	if (Index >= 0)
