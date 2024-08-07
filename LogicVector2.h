@@ -16,17 +16,17 @@ public:
       X = x;
       Y = y;
    }
-   void LogicVector2::destruct() {
+   void destruct() {
       this->X = this->Y = 0;
    }
-   int LogicVector2::dot(LogicVector2 *vec2) {
+   int dot(LogicVector2* vec2) {
       return this->X * vec2->X + this->Y * vec2->Y;
    }
-   bool LogicVector2::isEqual(LogicVector2 *vec2) {
+   bool isEqual(LogicVector2* vec2) {
       if (vec2 == nullptr) return false;
       return vec2->X == this->X && vec2->Y == this->Y;
    }
-   inline int LogicVector2::getAngle() {
+   inline int getAngle() {
       return LogicMath::getAngle(this->X, this->Y);
    }
 };
