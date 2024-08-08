@@ -344,10 +344,13 @@ void LogicCharacterServer::setDefaultStartRotation() {
 		MoveAngle = 270;
 	}
 }
+bool LogicCharacterServer::isObject() {
+	return IsObject;
+}
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
 	if (upgrades) {
-		ShowStarPowerIcon = upgrades->CardData || upgrades->OverchargeData;
-		int level = upgrades->Level;
+		ShowStarPowerIcon = upgrades->starPower || upgrades->overcharge;
+		int level = upgrades->heroLevel;
 		LogicCharacterData* data = (LogicCharacterData*)getData();
 		int hitpoints = HitpointsMax + data->getHitpoints() / 10 * level;
 		Hitpoints = hitpoints;
@@ -357,12 +360,13 @@ void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
 		{
 			Skills[i]->setNumUpgrades(level);
 		}
-		switch (upgrades->CardData->getType()) {
+		calculateChargeUp();
+		switch (upgrades->starPower->getType()) {
 		case 29:
-			StaticSpeedBuff += upgrades->CardData->getValue();
+			StaticSpeedBuff += upgrades->starPower->getValue();
 			break;
 		case 51:
-			hitpoints = HitpointsMax + HitpointsMax * upgrades->CardData->getValue() / 100;
+			hitpoints = HitpointsMax + HitpointsMax * upgrades->starPower->getValue() / 100;
 			Hitpoints = hitpoints;
 			HitpointsMax = hitpoints;
 			HitpointsMaxOriginal = hitpoints;
@@ -373,8 +377,8 @@ void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
 		}
 	}
 
-	if (upgrades->GearData1) Gears.add(new LogicGear(upgrades->GearData1));
-	if (upgrades->GearData2) Gears.add(new LogicGear(upgrades->GearData2));
+	if (upgrades->gearBoost1) Gears.add(new LogicGear(upgrades->gearBoost1));
+	if (upgrades->gearBoost2) Gears.add(new LogicGear(upgrades->gearBoost2));
 }
 void LogicCharacterServer::applyBuff(int type, int duration, int modifier, int int1) {
 	if (Buffs.length < 1 || LogicBuffServer::canBuffStack(type)) {
@@ -753,6 +757,18 @@ int LogicCharacterServer::getReloadSpeedChangePercent() {
 }
 int LogicCharacterServer::getRadius() {
 	return ((LogicCharacterData*)getData())->getCollisionRadius();
+}
+LogicCharacterServer* LogicCharacterServer::triggerTransformation(LogicCharacterData* data) {
+	Hitpoints = 0;
+	DoNotUseDefaultDeathEffect = true;
+	LogicPlayer* player = getPlayer();
+	if (player) {
+		LogicCharacterServer* c = getLogicBattleModeServer()->spawnHero(data, player->getCurrentHeroSetup()->upgrades, Index, TeamIndex, WorldIndex, IsBot);
+		c->setPosition(getX(), getY(), 0);
+		player->characterGID = c->getGlobalID();
+		return c;
+	}
+	return nullptr;
 }
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);

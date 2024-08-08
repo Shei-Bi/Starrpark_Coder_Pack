@@ -35,9 +35,22 @@ public:
 	LogicPathFinder* getPathFinder() {
 		return ((LogicPathFinder * (*)(LogicBattleModeServer*))(base + 0x94E278))(this);
 	}
+	LogicPlayer* getPlayer(int index) {
+		if (index < 0 || index >= *(int*)((char*)this + 132)) {
+			return nullptr;
+		}
+		return *(LogicPlayer**)(*(char**)((char*)this + 120) + 8 * index);
+	}
 	LogicCharacterServer* spawnHero(LogicCharacterData*, LogicHeroUpgrades*, int, int, int, bool);
 };
 LogicCharacterServer* LogicBattleModeServer::spawnHero(LogicCharacterData* character, LogicHeroUpgrades* upgrades, int index, int teamIndex, int worldIndex, bool isBot) {
+	LogicPlayer* player = getPlayer(index);
+	if (player) {
+		player->PetCharacterSkin = nullptr;
+		if (character->getUniqueProperty() == 2 || character->getUniqueProperty() == 7) {//梅格邦妮 Meg and Bonnie
+			player->PetCharacterSkin = player->getCurrentHeroSetup()->Skin->getPetSkin();
+		}
+	}
 	LogicCharacterServer* hero = (LogicCharacterServer*)LogicGameObjectFactoryServer::createGameObjectByData(character);
 	GameObjectManager->addLogicGameObject(hero);
 	hero->Index = index;
@@ -52,8 +65,8 @@ LogicCharacterServer* LogicBattleModeServer::spawnHero(LogicCharacterData* chara
 		hero->SpawnTick = INTRO_TICKS + getTicksGone();
 		hero->IsInvincible = hero->SpawnTick > 0;
 	}
-	if (hero->getPlayer()) {
-		hero->getPlayer()->ultiCharge = hero->getPlayer()->ultiChargeMax * character->getUltiChargeInitial() / 100;
+	if (player) {
+		player->UltiCharge = player->UltiChargeMax * character->getUltiChargeInitial() / 100;
 	}
 	if (character->getUniqueProperty() == 11) {
 		hero->swapSkillTo(1, hero->getNextChesterUlti(hero->getUltiSkill(), true));

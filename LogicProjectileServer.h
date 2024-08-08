@@ -5,6 +5,8 @@
 #include "LogicBattleModeServer.h"
 #include "LogicProjectileData.h"
 #include "Hook.h"
+#include "LogicGamePlayUtil.h"
+
 class LogicProjectileServer : public LogicGameObjectServer
 {
 public:
@@ -21,7 +23,9 @@ public:
 	char gap2[4];
 	LogicCharacterServer* Owner;//144
 	LogicCharacterServer* HomingTarget;//152
-	char gap8497934879[420 - 152 - 8];
+	char gap138438984[240 - 152 - 8];
+	int TotalDelta;//240
+	char gap8497934879[420 - 240 - 4];
 	int Angle;//420
 	char gap913489384[4];
 	int EarlyTicks;//428
@@ -143,15 +147,43 @@ int LogicProjectileServer::getPosAtTick(int ticks, LogicVector2& outVector) {
 int LogicProjectileServer::getNextSteeredPos(LogicVector2& outVector) {
 	int ticksGone = getLogicBattleModeServer()->getTicksGone();
 	LogicProjectileData* data = (LogicProjectileData*)getData();
-	// if (ticksGone + EarlyTicks - MoveStartTick <= data->SteerIgnoreTicks) {
-	outVector.X = getX() + LogicMath::cos(Angle) * data->Speed / 20 / 1024;
-	outVector.Y = getY() + LogicMath::sin(Angle) * data->Speed / 20 / 1024;
+	int targetAngle = Angle;
+	if (ticksGone + EarlyTicks - MoveStartTick > data->SteerIgnoreTicks) {
+		switch (data->getTravelType()) {
+		case 4://佩佩二妙等 piper 2nd gadget
+		{
+			int distance = data->HomeDistance * 300;
+			LogicCharacterServer* target = nullptr;
+			LogicArrayList<LogicCharacterServer*> characters;
+			GameObjectManager->getCharacters(&characters);
+			for (int i = 0;i < characters.length;i++) {
+				LogicCharacterServer* character = characters[i];
+				if (character->isAlive() && character->TeamIndex != TeamIndex && (character->TeamIndex != -1 || !character->isObject()) && (!character->IsInvisible || character->IsRevealed)) {
+					int dis = LogicGamePlayUtil::getDistanceBetween(getX(), getY(), character->getX(), character->getY());
+					if (dis < distance) {
+						target = character;
+						distance = dis;
+					}
+				}
+			}
+			if (target) {
+				targetAngle = LogicMath::getAngle(target->getX() - getX(), target->getY() - getY());
+			}
+		}
+		break;
+		case 10://贝尔 belle
+			if (HomingTarget) targetAngle = LogicMath::getAngle(HomingTarget->getX() - getX(), HomingTarget->getY() - getY());
+			break;
+		}
+	}
+	int speed = data->Speed;
+	if (data->getTravelType() == 5) {
+		speed = speed * 0.4 + speed * 0.6 * TotalDelta / 1000;
+	}
+	Angle = LogicMath::normalizeAngle360(Angle + (LogicMath::normalizeAngle360(targetAngle - Angle) < 180 ? 1 : -1) * LogicMath::min(LogicMath::getAngleBetween(Angle, targetAngle), data->SteerStrength));
+	outVector.X = getX() + LogicMath::cos(Angle) * speed / 20 / 1024;
+	outVector.Y = getY() + LogicMath::sin(Angle) * speed / 20 / 1024;
 	return DefaultZ;
-	// }
-	// else {
-	// 	if (data->TravelType == )
-
-	// }
 }
 bool LogicProjectileServer::tickMovement() {
 	int ticksGone = getLogicBattleModeServer()->getTicksGone();

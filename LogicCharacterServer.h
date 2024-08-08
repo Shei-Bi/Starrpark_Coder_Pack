@@ -306,6 +306,7 @@ public:
 	void tickDuplicatorAndCocconAndMinionPercenter();
 	void tickConductor();
 	LogicSkillData* getNextChesterUlti(LogicSkillData*, bool);
+	LogicCharacterServer* triggerTransformation(LogicCharacterData*);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
@@ -481,7 +482,7 @@ public:
 	void isJumpingChargeActive(void);
 	void isMinionSummoned(void);
 	void isMoving(void);
-	void isObject(void);
+	bool isObject(void);
 	bool isPet(void);
 	bool isPlayerControlRemoved(void);
 	void isRadioactiveGlowActive(void);

@@ -6,13 +6,12 @@
 
 class LogicHeroUpgrades
 {
-public:
-	int Level;//0
-	char gap[4];
-	LogicCardData* CardData;//8
-	LogicAccessoryData* AccessoryData;//16
-	LogicGearData* GearData1;//24
-	LogicGearData* GearData2;//32
-	LogicCardData* OverchargeData;//40
+public://found names from json encode lol
+	int heroLevel;//0
+	LogicCardData* starPower;//8
+	LogicAccessoryData* accessory;//16
+	LogicGearData* gearBoost1;//24
+	LogicGearData* gearBoost2;//32
+	LogicCardData* overcharge;//40
 };
 #endif

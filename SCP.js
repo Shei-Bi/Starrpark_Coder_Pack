@@ -173,11 +173,11 @@ Interceptor.attach(base.add(0x9510D8), {
         args[6] = NULL;
     }
 });
-Interceptor.attach(base.add(0x8A5F64), {
-    onEnter: function (args) {
-        console.log(`GameObject created: ${ReadStringFromStringObject(LogicData_getName(args[0]))}`);
-    }
-});
+// Interceptor.attach(base.add(0x8A5F64), {
+//     onEnter: function (args) {
+//         console.log(`GameObject created: ${ReadStringFromStringObject(LogicData_getName(args[0]))}`);
+//     }
+// });
 Interceptor.attach(base.add(0x6B1DE8), {
     onEnter: function (args) {
         console.log("Go Home Message Sent");
@@ -208,10 +208,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         });
         const _ZN21LogicProjectileServer13targetReachedEi = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer13targetReachedEi"), 'void', ['pointer', 'int']);
         const _ZN21LogicProjectileServer4tickEv = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer4tickEv"), 'void', ['pointer']);
-        const _ZN20LogicCharacterServer17calculateChargeUpEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer17calculateChargeUpEv"), 'void', ['pointer']);
-        const _ZN20LogicCharacterServer11tickEffectsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11tickEffectsEv"), 'void', ['pointer']);
-        const _ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer11setUpgradesEP17LogicHeroUpgrades"), 'void', ['pointer', 'pointer']);
-        const _ZN20LogicCharacterServer9tickGearsEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer9tickGearsEv"), 'void', ['pointer']);
+
         const _ZN20LogicCharacterServer22getDamageBuffTemporaryEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer22getDamageBuffTemporaryEv"), 'int', ['pointer']);
         const _ZN20LogicCharacterServer18updateChargeDamageEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer18updateChargeDamageEv"), 'void', ['pointer']);
         const _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"), 'void', ['pointer', 'pointer', 'int', 'int', 'int']);
@@ -309,7 +306,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         Interceptor.replace(base.add(0x8B429C), Mod.getExportByName("_ZN21LogicProjectileServer12tickMovementEv"));
         Interceptor.replace(base.add(0x948B80), Mod.getExportByName("_ZN21LogicBattleModeServer9spawnHeroEP18LogicCharacterDataP17LogicHeroUpgradesiiib"));
         Interceptor.replace(base.add(0x888830), Mod.getExportByName("_ZN20LogicCharacterServer13addAreaEffectEiiP19LogicAreaEffectDataib"));
-        // Interceptor.replace(base.add(0x89E880), Mod.getExportByName("_ZN20LogicCharacterServer15triggerPullRopeEPS_"));
+        Interceptor.replace(base.add(0x89E3B0), Mod.getExportByName("_ZN20LogicCharacterServer21triggerTransformationEP18LogicCharacterData"));
         Interceptor.flush();
     }
 });
