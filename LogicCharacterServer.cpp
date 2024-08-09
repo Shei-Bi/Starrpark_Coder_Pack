@@ -482,6 +482,10 @@ void LogicCharacterServer::swapSkillTo(int index, LogicSkillData* data) {
 	newSkill->Level = oldSkill->Level;
 	delete oldSkill;
 }
+void LogicCharacterServer::moveTo(int x, int y, bool usePresetSpeed, int presetSpeed, bool canPassDestructibleAny, bool canUseFastTravel) {
+	((void (*)(LogicCharacterServer*, int, int, bool, int, bool, bool))(base + 0x89037C))(this, x, y, usePresetSpeed, presetSpeed, canPassDestructibleAny, canUseFastTravel);
+
+}
 void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageConst, int pushback, int speed, bool useSpecialPathfinding, int type, LogicAreaEffectData* spawnedAreaEffect, LogicItemData* spawnedItem, int itemParams1, int itemParams2, int range, bool isUlti, LogicArrayList<LogicVector2*>* presetWaypoints, LogicAreaEffectData* spawnedAreaEffect2) {
 	if (Index >= 0)
 		;//do anti teaming stuff
@@ -534,6 +538,9 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 				speed = LogicMath::max(1, distance * speed / 3000);
 			}
 			chargeTo(x, y, speed, getLogicBattleModeServer()->getPathFinder(), nullptr);
+		}
+		else {
+			moveTo(x, y, true, speed, false, false);
 		}
 	}
 	if (getCardValueForPassive(22, 1) > 0) addShield(getCardValueForPassive(22, 1), getCardValueForPassive(22, 2));
@@ -681,7 +688,7 @@ void LogicCharacterServer::triggerPullRope(LogicCharacterServer* target) {
 	}
 }
 void LogicCharacterServer::updateChargeDamage() {
-	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10) {
+	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || (ChargeType == 5 && ChargeDamage) || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10) {
 		LogicCharacterData* data = (LogicCharacterData*)getData();
 		int damageRadius = 400;
 		int ticksGone = getLogicBattleModeServer()->getTick();
@@ -719,7 +726,7 @@ void LogicCharacterServer::updateChargeDamage() {
 					this, true, getX(), getY(), nullptr, false, UsingUlti, false, true, false, false)) {
 					ChargeHits++;
 					if (getCardValueForPassive(19, 1) >= 1) {
-						character->applyPoison(Index, getCardValueForPassive(19, 1) * character->Skills[0]->SkillData->getDamage() * (character->Skills[0]->Level + 9) / 10 / 100, 0, true, this, 2, 4);
+						character->applyPoison(Index, getCardValueForPassive(19, 1) * getDamageForCalculatingCardDamageAfterV52() / 100, 0, true, this, 2, 4);
 					}
 
 					if (getCardValueForPassive(93, 1) >= 1 && character->isAlive()) {
@@ -741,6 +748,9 @@ void LogicCharacterServer::triggerPushback(int x, int y, int length, bool knockI
 	return ((void (*)(LogicCharacterServer*, int, int, int, bool, bool, bool, bool, bool, bool, bool, bool, bool, int))(base + 0x89C698))(this, x, y, length, knockIntoAir, ignoreCcImmunity, idk7, idk8, idk9, idk10, Bouncing, isForced, idk, extraKnockUp);
 
 }
+void LogicCharacterServer::triggerAreaEffect(LogicAreaEffectData* areaEffect, int x, int y, int damage, int skillType) {
+	((void (*)(LogicCharacterServer*, LogicAreaEffectData*, int, int, int, int))(base + 0x8977C8))(this, areaEffect, x, y, damage, skillType);
+}
 bool LogicCharacterServer::hasCcImmunity() {
 	//todo: TownCrushBoss rangeState > 0 and Bulls's 3rd Starpower
 	return CcImmunityTicks > 0;
@@ -758,6 +768,9 @@ int LogicCharacterServer::getReloadSpeedChangePercent() {
 int LogicCharacterServer::getRadius() {
 	return ((LogicCharacterData*)getData())->getCollisionRadius();
 }
+int LogicCharacterServer::getDamageForCalculatingCardDamageAfterV52() {
+	return Skills[0]->SkillData->getDamage() * (Skills[0]->Level + 9) / 10 * (100 + getDamageBuffTemporary() + DamageBuffPermanent) / 100;
+}
 LogicCharacterServer* LogicCharacterServer::triggerTransformation(LogicCharacterData* data) {
 	Hitpoints = 0;
 	DoNotUseDefaultDeathEffect = true;
@@ -769,6 +782,22 @@ LogicCharacterServer* LogicCharacterServer::triggerTransformation(LogicCharacter
 		return c;
 	}
 	return nullptr;
+}
+int LogicCharacterServer::getPowerLevel() {
+	LogicCharacterData* data = ((LogicCharacterData*)getData());
+	if (data->HasPowerLevels) {
+		// if(getPlayer()) return getPlayer()
+	}
+	return 3;
+}
+int LogicCharacterServer::getMovementSpeed() {
+	LogicCharacterData* data = ((LogicCharacterData*)getData());
+	int speed = data->getSpeed();
+	speed += getBuffBoost(LogicBuffServer::SpeedFaster);
+	speed += getBuffBoost(LogicBuffServer::SpeedSlower);
+	if (data->HasPowerLevels && getPowerLevel() > 0)
+		speed += 170;
+	return speed;
 }
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);

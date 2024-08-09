@@ -41,10 +41,19 @@ public:
 	void updateAccessory(LogicCharacterServer*);
 	void tickAccessory(LogicCharacterServer*);
 	void endAccessoryActivation();
+	int getActivationAngle(LogicCharacterServer*);
 };
 LogicAccessory::LogicAccessory(LogicAccessoryData* data, int count) {
 	AccessoryData = data;
 	IsActive = false;
+}
+int LogicAccessory::getActivationAngle(LogicCharacterServer* owner) {
+	/*当客户端激活妙句时会按渲染系统中自己角色的朝向告诉服务器角度，这个值与当前客户端移动按钮角度相同
+		如果直接取服务器角色角度会和客户端不一致
+	*/
+	if (!X && !Y)
+		return owner->MoveAngle;
+	return LogicMath::getAngle(X, Y);
 }
 void LogicAccessory::encode(BitStream* stream, bool isSelf) {
 	if (isSelf) {
@@ -86,7 +95,17 @@ void LogicAccessory::triggerAccessory(LogicCharacterServer* owner, int x, int y)
 	Uses--;
 }
 void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
+	int angle = getActivationAngle(owner);
 	switch (Type) {
+	case 1://jump 布洛克1妙 Brock 1st gadget
+		owner->triggerPushback(owner->getX() - LogicMath::getRotatedX(1000, 0, angle), owner->getY() - LogicMath::getRotatedY(1000, 0, angle), AccessoryData->getCustomValue1(), true, false, true, true, false, true, true, false, false, 0);
+		break;
+	case 2://dash 雪莉1妙 Shelly 1st gadget
+		owner->triggerCharge(owner->getX() + LogicMath::getRotatedX(AccessoryData->getCustomValue1(), 0, angle), owner->getY() + LogicMath::getRotatedY(AccessoryData->getCustomValue1(), 0, angle), owner->getDamageForCalculatingCardDamageAfterV52() * AccessoryData->getCustomValue4() / 100, 0, AccessoryData->getCustomValue3(), AccessoryData->getCustomValue2(), false, 5, nullptr, nullptr, 0, 0, AccessoryData->getCustomValue1(), false, nullptr, nullptr);
+		break;
+	case 4://teleport_to_pet
+
+		break;
 	case 8://heal
 		if (AccessoryData->getSubType() == 1) {
 			int amount = AccessoryData->getCustomValue1() * owner->HitpointsMax / 100;
@@ -105,6 +124,20 @@ void LogicAccessory::activateAccessory(LogicCharacterServer* owner) {
 			break;
 		}
 		break;
+	}
+	if (Type != 7) {//repeat_area
+		LogicAreaEffectData* a = LogicDataTables::getAreaEffectByName(AccessoryData->getAreaEffect(), nullptr);
+		if (a)
+			owner->triggerAreaEffect(a, owner->getX(), owner->getY(), 0, 4);
+	}
+	if (AccessoryData->getShieldPercent() >= 1) {
+		owner->addShield(AccessoryData->getShieldTicks(), AccessoryData->getShieldPercent());
+	}
+	if (AccessoryData->getSpeedBoost() >= 1) {
+		owner->giveSpeedFasterBuff(AccessoryData->getSpeedBoost(), AccessoryData->getSpeedBoostTicks(), false);
+	}
+	if (AccessoryData->getConsumesAmmo()) {
+		owner->Skills[0]->addCharge(owner, -100);
 	}
 	if (AccessoryData->getActiveTicks() < 1) {
 		if (Type == 31) {

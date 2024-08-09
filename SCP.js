@@ -213,6 +213,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         const _ZN20LogicCharacterServer18updateChargeDamageEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer18updateChargeDamageEv"), 'void', ['pointer']);
         const _ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib = new NativeFunction(Mod.getExportByName("_ZN21LogicProjectileServer25applyDamageSpecialEffectsEP20LogicCharacterServeriib"), 'void', ['pointer', 'pointer', 'int', 'int', 'int']);
         const _ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_ = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer13triggerChargeEiiiiiibiP19LogicAreaEffectDataP13LogicItemDataiiibP14LogicArrayListIP12LogicVector2ES1_"), 'void', ['pointer', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'int', 'pointer', 'pointer', 'int', 'int', 'int', 'int', 'pointer', 'pointer']);
+        const _ZN20LogicCharacterServer16getMovementSpeedEv = new NativeFunction(Mod.getExportByName("_ZN20LogicCharacterServer16getMovementSpeedEv"), 'int', ['pointer']);
         Interceptor.replace(LogicProjectileServer_targetReached, new NativeCallback(function (self, type) {
             LogicProjectileServer_targetReached(self, type);
             _ZN21LogicProjectileServer13targetReachedEi(self, type);
@@ -241,7 +242,7 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
             var c = this.context.x19;
             var t = c.add(468).readInt();
             //deal damage when landing and only when landing
-            if ((t != 3 && t != 5 && t != 9 && t != 16) || c.add(36).readInt() == c.add(24).readPointer().add(168).readPointer().add(16).readInt()) {
+            if ((t != 3 && t != 9 && t != 16) || c.add(36).readInt() == c.add(24).readPointer().add(168).readPointer().add(16).readInt()) {
                 _ZN20LogicCharacterServer18updateChargeDamageEv(c);
             }
         });
@@ -280,8 +281,8 @@ const HomeScreenEnterAttach = Interceptor.attach(HomeScreen_enter, {
         // Interceptor.attach(base.add(0x8872C8), function () {
         //     BitStream_writeInt(this.context.x19, 1, 7);
         // });
-        Interceptor.attach(base.add(0x8AEA04), function () {
-            // this.context.x22 = ptr(1); //LogicGameObjectManager::objects.count = 1 for debugging BitStream
+        Interceptor.attach(base.add(0x8906CC), function () {
+            this.context.x0 = _ZN20LogicCharacterServer16getMovementSpeedEv(this.context.x19);
         });
         Interceptor.attach(LogicCharacterServer_attack, {
             onEnter: function (args) {

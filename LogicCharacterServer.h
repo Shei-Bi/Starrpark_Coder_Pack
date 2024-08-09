@@ -307,6 +307,7 @@ public:
 	void tickConductor();
 	LogicSkillData* getNextChesterUlti(LogicSkillData*, bool);
 	LogicCharacterServer* triggerTransformation(LogicCharacterData*);
+	int getDamageForCalculatingCardDamageAfterV52(void);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
@@ -395,13 +396,13 @@ public:
 	void getJumpZAtT(float, float, float, float, float);
 	void getMaxChargedShots(void);
 	int getMoveAngle();
-	void getMovementSpeed(int, int);
+	int getMovementSpeed(void);//
 	void getNextSkill(void);
 	void getNextSlipperyPosition(LogicVector2&);
 	void getParentCharacter(void);
 	int getPathLength();
 	void getPosAtTick(int, LogicVector2&, LogicVector2&);
-	void getPowerLevel(void);
+	int getPowerLevel(void);
 	void getPrevX(void);
 	void getPrevY(void);
 	int getRadius(void);
