@@ -76,5 +76,8 @@ public:
 	int getUltiChargeInitial() {
 		return ((int (*)(LogicCharacterData*))(base + 0x83948C))(this);
 	}
+	int getChargeUltiAutomatically() {
+		return ((int (*)(LogicCharacterData*))(base + 0x83A19C))(this);
+	}
 };
 #endif

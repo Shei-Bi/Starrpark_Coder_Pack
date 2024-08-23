@@ -91,6 +91,10 @@ public:
 		}
 		else writePositiveInt(1, 1);
 	}
+	void writePositiveVIntMax65535(int value)
+	{
+		writePositiveVInt(value, 4);
+	}
 	void writePositiveVIntMax65535OftenZero(int value)
 	{
 		if (value) {

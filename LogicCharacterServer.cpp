@@ -15,6 +15,7 @@
 #include "LogicGameModeUtil.h"
 #include "LogicGamePlayUtil.h"
 #include "LogicPoisonServer.h"
+#include "GlobalID.h"
 
 LogicSkillData* LogicCharacterServer::getUltiSkill() {
 	if (Skills.length >= 2) return Skills[1]->SkillData;
@@ -89,7 +90,16 @@ void LogicCharacterServer::executeKickBack() {
 	;
 }
 void LogicCharacterServer::tickAutoUltiCharge() {
-	;
+	if (State == 4) return;
+	int chargeUltiAutomatically = ((LogicCharacterData*)getData())->getChargeUltiAutomatically();
+	if (chargeUltiAutomatically > 0) {
+		if (--AutoUltiChargeTimer <= 0) {
+			if (getPlayer()) {
+				chargeUlti(chargeUltiAutomatically / 4, false, true, getPlayer(), this);
+			}
+			AutoUltiChargeTimer = 5;
+		}
+	}
 }
 void LogicCharacterServer::tickGameModeLogic() {
 	;
@@ -933,8 +943,13 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(Size > 0);
 	}
 	if (data->getSpawnedPet()) stream->writeBoolean(SpawningPet);
-	if (data->getUniqueProperty() == 9) stream->writeBoolean(SamHasWeapon);
+	if (data->getUniqueProperty() == 9) stream->writeBoolean(SamHasWeapon);//山姆
 	if (LogicGamePlayUtil::canUseFastTravel(this)) stream->writeBoolean(IsTeleporting);//GamePlayUtil::canUseFastTravel;
+	if (data->getUniqueProperty() == 22) {//凯特
+		if (stream->writeBoolean(KitAttachingCharacter)) {
+			stream->writePositiveVIntMax65535(GlobalID::getInstanceID(KitAttachingCharacter->getGlobalID()));
+		}
+	}
 	stream->writeBoolean(false);
 	if (data->getUniqueProperty() == 11 && isOwn) {
 		stream->writeIntMax255(ChesterNextUlti->getInstanceID());
