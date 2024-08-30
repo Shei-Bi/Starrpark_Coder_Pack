@@ -20,6 +20,9 @@ public:
 		if (x < 0 || Width <= x || y < 0 || Height <= y) return nullptr;
 		return Tiles[x + Width * y];
 	}
+	bool isPassablePathFinder(int sizeSubtilesForPathfinding, int pathFinderTileX, int pathFinderTileY, bool canWalkOverWater, bool canPassDestructibleAny) {
+		return ((bool (*)(LogicTileMap*, int, int, int, bool, bool))(base + 0x7FF6F8))(this, sizeSubtilesForPathfinding, pathFinderTileX, pathFinderTileY, canWalkOverWater, canPassDestructibleAny);
+	}
 
 };
 #endif

@@ -6,6 +6,7 @@
 #include "LogicMath.h"
 #include "LogicTileMap.h"
 #include "LogicVector2.h"
+#include "LogicGameObjectManagerServer.h"
 
 class LogicGamePlayUtil
 {
@@ -26,6 +27,9 @@ public:
 	}
 	static bool getClosestPathfinderCollision(int pathfindingSizeSubtiles, int startX, int startY, int endX, int endY, LogicPathFinder* pathFinder, LogicVector2* outVector, bool ignoreWaterTiles, bool ignoreIsDestructibleAnyTiles) {
 		return ((bool (*)(int, int, int, int, int, LogicPathFinder*, LogicVector2*, bool, bool))(base + 0x974A38))(pathfindingSizeSubtiles, startX, startY, endX, endY, pathFinder, outVector, ignoreWaterTiles, ignoreIsDestructibleAnyTiles);
+	}
+	static LogicCharacterServer* getCharacterFromPlayerIndex(int index, LogicGameObjectManagerServer* gameObjectManager) {
+		return ((LogicCharacterServer * (*)(int, LogicGameObjectManagerServer*))(base + 0x979288))(index, gameObjectManager);
 	}
 };
 #endif

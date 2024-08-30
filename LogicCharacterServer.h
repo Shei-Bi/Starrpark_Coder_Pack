@@ -202,7 +202,8 @@ public:
 	int MinionFollowOwnerTimer;//1208
 	bool MinionChargesUlti;//1212
 	bool ShowStarPowerIcon;//1213
-	char PathfindingVariablesUnused[1236 - 1213 - 1];
+	char PathfindingVariablesUnused[1232 - 1213 - 1];
+	int SummonedBoxOfSelfDestructBombsDamage;//1232
 	int BuffVisualStyleTicks;//1236
 	int BuffVisualStyle;//1240
 	int CarryableAimX;//1244
@@ -308,6 +309,7 @@ public:
 	LogicSkillData* getNextChesterUlti(LogicSkillData*, bool);
 	LogicCharacterServer* triggerTransformation(LogicCharacterData*);
 	int getDamageForCalculatingCardDamageAfterV52(void);
+	LogicGear* getGearBoost(int);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
@@ -542,7 +544,7 @@ public:
 	void spawnItem(LogicItemData*, int, int, int, int, int, int, int, int, LogicCharacterServer*, LogicBattleModeServer*, int);
 	void stopGrapple(void);
 	void stopMovement(void);
-	void summonMinion(LogicCharacterData*, int, int, int, int, int, int, int, LogicBattleModeServer*, int, int, int, bool, bool, int, bool, int);
+	static LogicCharacterServer* summonMinion(LogicCharacterData*, int, int, int, int, int, int, int, LogicBattleModeServer*, int, int, int, int, bool, bool, int, bool, int, bool, int, bool);//
 	void suppressHealing(int, int);
 	void swapSkillTo(int, LogicSkillData*);
 	void switchRapidFireWeaponCounter(void);

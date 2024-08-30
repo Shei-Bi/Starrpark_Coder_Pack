@@ -71,7 +71,7 @@ public:
 		return ((int (*)(LogicAccessoryData*))(base + 0x82AAD4))(this);
 	}
 	bool getConsumesAmmo() {
-		return ((bool (*)(LogicAccessoryData*))(base + 0x82A9E4))(this);
+		return *(int*)((char*)this + 364);
 	}
 };
 #endif

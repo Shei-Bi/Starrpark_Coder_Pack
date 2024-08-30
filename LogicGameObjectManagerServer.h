@@ -47,5 +47,8 @@ Well, we should try to avoid using getGameObjects() then?
    LogicArrayList<LogicItemServer*> getItems() {
       return Items;
    }
+   LogicGameObjectServer* getGameObjectByID(int globalID) {
+      return ((LogicGameObjectServer * (*)(LogicGameObjectManagerServer*, int))(base + 0x8ABDD4))(this, globalID);
+   }
 };
 #endif

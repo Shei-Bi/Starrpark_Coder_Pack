@@ -5,13 +5,17 @@
 class LogicGearData : public LogicData
 {
 public:
-	int getLogicType()
-	{
+	int getLogicType() {
 		return ((int (*)(LogicGearData*))(base + 0x853C20))(this);
 	}
-	int getModifierValue()
-	{
+	int getModifierValue() {
 		return ((int (*)(LogicGearData*))(base + 0x853C30))(this);
+	}
+	bool isBoostPercentage() {
+		return *(bool*)((char*)this + 112);
+	}
+	bool isBoostTicks() {
+		return *(bool*)((char*)this + 113);
 	}
 };
 #endif

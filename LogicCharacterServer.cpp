@@ -291,6 +291,7 @@ LogicProjectileServer* LogicCharacterServer::getControlledProjectile() {
 }
 void LogicCharacterServer::addAreaEffect(int damage, int dot, LogicAreaEffectData* d, int skillType, bool idk) {
 	if (!d) d = ((LogicCharacterData*)getData())->getAreaEffect();
+	if (!d) return;
 	LogicAreaEffectServer* a = (LogicAreaEffectServer*)LogicGameObjectFactoryServer::createGameObjectByData(d);
 	int damageFromData = d->getDamage();
 	if (damageFromData >= 1) {
@@ -431,6 +432,10 @@ void LogicCharacterServer::giveElectrocution(int damage, int damageConst, int bo
 	buff->WorldIndex = worldIndex;
 	Buffs.add(buff);
 }
+LogicGear* LogicCharacterServer::getGearBoost(int type) {
+	return	((LogicGear * (*)(LogicCharacterServer*, int))(base + 0x89C230))(this, type);
+
+}
 int LogicCharacterServer::getBuffBoost(int type) {
 	/*
 		New Function. Reason: Repeated Usage.
@@ -541,7 +546,7 @@ void LogicCharacterServer::triggerCharge(int x, int y, int damage, int damageCon
 	}
 	else if (type != 7) {
 		if (useSpecialPathfinding) {
-			if (type == 2 || type == 6) {
+			if (type == 2 || type == 6 || type == 9 || type == 11 || type == 16 || type == 18) {//可以理解为能原地跳起来的英雄，如黑鸦、佩佩...（普里莫则不是）
 				int deltaX = x - getX();
 				int deltaY = y - getY();
 				int distance = LogicMath::sqrt(deltaX * deltaX + deltaY * deltaY);
@@ -645,6 +650,9 @@ bool LogicCharacterServer::isPet() {
 	if (Index < 0) return false;
 	return !((LogicCharacterData*)getData())->isHero();
 }
+void LogicCharacterServer::kill() {//added
+	causeDamage(-1, Hitpoints, 0, nullptr, false, getX(), getY(), nullptr, false, false, true, true, false, false);
+}
 bool LogicCharacterServer::causeDamage(int sourceIndex, int damage, int damageConst, LogicCharacterServer* source, bool shouldShow, int sourceX, int sourceY, LogicData* sourceData, bool ignoreImmuneAndBulletsGoThrough, bool isUlti, bool forcedDamage, bool showEffect, bool isFromTencentBrawlLeaveBattle, bool idk) {
 	return ((bool (*)(LogicCharacterServer*, int, int, int, LogicCharacterServer*, bool, int, int, LogicData*, bool, bool, bool, bool, bool, bool))(base + 0x88C614))(this, sourceIndex, damage, damageConst, source, shouldShow, sourceX, sourceY, sourceData, ignoreImmuneAndBulletsGoThrough, isUlti, forcedDamage, showEffect, isFromTencentBrawlLeaveBattle, idk);
 }
@@ -653,6 +661,100 @@ bool LogicCharacterServer::isAlive() {
 }
 void LogicCharacterServer::chargeUlti(int value, bool isUlti, bool absoluteValue, LogicPlayer* targetPlayer, LogicCharacterServer* target) {
 	return ((void (*)(LogicCharacterServer*, int, bool, bool, LogicPlayer*, LogicCharacterServer*))(base + 0x89390C))(this, value, isUlti, absoluteValue, targetPlayer, target);
+}
+LogicCharacterServer* LogicCharacterServer::summonMinion(LogicCharacterData* characterData, int x, int y, int distance, int numSpawns, int maxSpawns, int extraDamage, int extraHitpoints, LogicBattleModeServer* battle, int index, int teamIndex, int worldIndex, int ownerGID, bool overrideExistingPets, bool chargesUlti, int summonedBoxOfSelfDestructBombsDamage, bool hasStarpower, int areaEffectDot, bool setHitpointToOwners, int size, bool overcharged) {
+	LogicCharacterServer* owner = LogicGamePlayUtil::getCharacterFromPlayerIndex(index, battle->GameObjectManager);
+	LogicPlayer* player = battle->getPlayer(index);
+	if (characterData->isDuplicate() && (!owner || !owner->isAlive())) return nullptr;//萝拉分身：那我缺的本体这块谁给我补啊
+	LogicArrayList<LogicCharacterServer*> characters;
+	battle->GameObjectManager->getCharacters(&characters);
+	int numSpawned = 0;
+	for (int i = 0;i < characters.length;i++) {
+		LogicCharacterServer* character = characters[i];
+		if (character->isAlive() &&
+			character->Index == index &&
+			(character->getData() == characterData || character->getData() == characterData->getSpawnedPet()) &&
+			!character->IsSpecialMinion &&
+			!character->DoesNotCountTowardsMaxSpawns) {
+			numSpawned++;
+		}
+	}
+	if (overrideExistingPets) {
+		for (int i = 0;i < characters.length && numSpawned >= maxSpawns;i++) {
+			LogicCharacterServer* character = characters[i];
+			if (character->isAlive() &&
+				character->Index == index &&
+				(character->getData() == characterData || character->getData() == characterData->getSpawnedPet()) &&
+				!character->IsSpecialMinion &&
+				!character->DoesNotCountTowardsMaxSpawns) {
+				character->kill();
+				numSpawned--;
+			}
+		}
+	}
+	else if (maxSpawns - numSpawned < numSpawns) numSpawns = maxSpawns - numSpawned;
+	if (numSpawns <= 0) return nullptr;//都到上限了我Spawn什么啊
+	if (owner && owner->getGearBoost(14)) {//训宠
+		LogicGearData* gear = owner->getGearBoost(14)->GearData;
+		if (gear->isBoostPercentage()) extraDamage += gear->getModifierValue() * (characterData->getAutoAttackDamage() + extraDamage) / 100;
+		else extraDamage += gear->getModifierValue();
+	}
+	LogicCharacterServer* pet;
+	for (int i = 0;i < numSpawns;i++) {
+		int posX = -1;
+		int posY = -1;
+		for (int tries = 0;tries < 20;tries++) {
+			int angle = battle->getRandomInt(360);
+			LogicTileMap* tileMap = battle->getTileMap();
+			posX = LogicMath::clamp(x + LogicMath::getRotatedX(distance, 0, angle), 101, tileMap->LogicWidth - 101);
+			posY = LogicMath::clamp(y + LogicMath::getRotatedY(distance, 0, angle), 101, tileMap->LogicHeight - 101);
+			if (tileMap->isPassablePathFinder(1, posX / 100, posY / 100, false, false))
+				break;
+		}
+		//摆烂，备用位置判定不写了
+		//todo: spawn pos fallback
+
+		if (posX == -1) posX = x;
+		if (posY == -1) posY = y;
+		pet = (LogicCharacterServer*)LogicGameObjectFactoryServer::createGameObjectByData(characterData);
+		battle->GameObjectManager->addLogicGameObject(pet);
+		pet->MinionInvasionSpawnPosition.X = posX;
+		pet->MinionInvasionSpawnPosition.Y = posY;
+		pet->setPosition(posX, posY, characterData->getFlyingHeight());
+		pet->Index = index;
+		pet->TeamIndex = teamIndex;
+		pet->WorldIndex = worldIndex;
+		pet->DoesNotCountTowardsMaxSpawns = maxSpawns < 1;
+		pet->Size = size;
+		pet->IsHyperchargeMinion = overcharged;
+		if (owner && ((LogicCharacterData*)owner->getData())->getUniqueProperty() == 13) pet->setUpgrades(player->getCurrentHeroSetup()->upgrades);//阿尔提的腿
+		if (characterData->isDuplicate()) pet->IgnoreDeployTime = true;
+		int newMaxHitpoints = pet->HitpointsMax + extraHitpoints;
+		pet->Hitpoints = newMaxHitpoints;
+		pet->HitpointsMax = newMaxHitpoints;
+		pet->HitpointsMaxOriginal = newMaxHitpoints;
+		LogicCharacterServer* ownerByGID = (LogicCharacterServer*)battle->GameObjectManager->getGameObjectByID(ownerGID);
+		if (ownerByGID) {
+			int angle = LogicMath::normalizeAngle360(LogicMath::getAngle(posX - ownerByGID->getX(), posY - ownerByGID->getY()));
+			pet->MoveAngle = angle;
+			pet->AttackAngle = angle;
+		}
+		else {
+			//todo: setStartAngle
+		}
+		pet->SpawnedTicks = battle->getTicksGone();
+		pet->ParentGID = ownerGID;
+		pet->UsingUlti = true;
+		pet->MinionChargesUlti = chargesUlti;
+		pet->SummonedBoxOfSelfDestructBombsDamage = summonedBoxOfSelfDestructBombsDamage;
+		pet->ShowStarPowerIcon = hasStarpower;
+		pet->addAreaEffect(extraDamage, areaEffectDot, nullptr, 0, false);
+		//if (pet->AreaEffect&&(pet->AreaEffect->getData()))
+		//todo: area effect tweaks
+
+		if (setHitpointToOwners && owner && owner->isAlive()) pet->Hitpoints = owner->Hitpoints;
+	}
+	return pet;
 }
 void LogicCharacterServer::triggerBlink(int x, int y, LogicAreaEffectData* areaEffectEnd, LogicAreaEffectData* areaEffectStart, int damage, int damageConst) {
 	IsTeleporting = true;
@@ -698,7 +800,7 @@ void LogicCharacterServer::triggerPullRope(LogicCharacterServer* target) {
 	}
 }
 void LogicCharacterServer::updateChargeDamage() {
-	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || (ChargeType == 5 && ChargeDamage) || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10) {
+	if (ChargeType == 1 || ChargeType == 3 || ChargeType == 4 || (ChargeType == 5 && ChargeDamage) || ChargeType == 7 || ChargeType == 8 || ChargeType == 9 || ChargeType == 10 || ChargeType == 16 || ChargeType == 17 || ChargeType == 18) {
 		LogicCharacterData* data = (LogicCharacterData*)getData();
 		int damageRadius = 400;
 		int ticksGone = getLogicBattleModeServer()->getTick();
@@ -937,11 +1039,13 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			break;
 		}
 		for (int i = 0;i < Gears.length;i++) Gears[i]->encode(stream);//libg invoke it with a3 = "isOwn" idk why
+
 	}
 	if (data->isTurret()) {
 		stream->writeBoolean(IsHyperchargeMinion);
 		stream->writeBoolean(Size > 0);
 	}
+	if (data->getPetAutoSpawnDelay() > 0) stream->writePositiveIntMax1023(LogicMath::clamp(TicksSinceLastMinionSpawn, 0, 1023));
 	if (data->getSpawnedPet()) stream->writeBoolean(SpawningPet);
 	if (data->getUniqueProperty() == 9) stream->writeBoolean(SamHasWeapon);//山姆
 	if (LogicGamePlayUtil::canUseFastTravel(this)) stream->writeBoolean(IsTeleporting);//GamePlayUtil::canUseFastTravel;

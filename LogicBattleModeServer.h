@@ -41,6 +41,9 @@ public:
 		}
 		return *(LogicPlayer**)(*(char**)((char*)this + 120) + 8 * index);
 	}
+	int getRandomInt(int max) {
+		return ((int (*)(LogicBattleModeServer*, int))(base + 0x9489E4))(this, max);
+	}
 	LogicCharacterServer* spawnHero(LogicCharacterData*, LogicHeroUpgrades*, int, int, int, bool);
 };
 LogicCharacterServer* LogicBattleModeServer::spawnHero(LogicCharacterData* character, LogicHeroUpgrades* upgrades, int index, int teamIndex, int worldIndex, bool isBot) {
@@ -48,7 +51,8 @@ LogicCharacterServer* LogicBattleModeServer::spawnHero(LogicCharacterData* chara
 	if (player) {
 		player->PetCharacterSkin = nullptr;
 		if (character->getUniqueProperty() == 2 || character->getUniqueProperty() == 7) {//梅格邦妮 Meg and Bonnie
-			player->PetCharacterSkin = player->getCurrentHeroSetup()->Skin->getPetSkin();
+			LogicSkinData* skinData = player->getCurrentHeroSetup()->Skin;
+			if (skinData) player->PetCharacterSkin = skinData->getPetSkin();//人机梅格可能没有皮肤数据
 		}
 	}
 	LogicCharacterServer* hero = (LogicCharacterServer*)LogicGameObjectFactoryServer::createGameObjectByData(character);
@@ -65,7 +69,7 @@ LogicCharacterServer* LogicBattleModeServer::spawnHero(LogicCharacterData* chara
 		hero->SpawnTick = INTRO_TICKS + getTicksGone();
 		hero->IsInvincible = hero->SpawnTick > 0;
 	}
-	if (player) {
+	if (player && character->getUltiChargeInitial() > 0) {
 		player->UltiCharge = player->UltiChargeMax * character->getUltiChargeInitial() / 100;
 	}
 	if (character->getUniqueProperty() == 11) {

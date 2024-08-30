@@ -56,6 +56,9 @@ public:
 	bool isTrainingDummy() {
 		return Type == 7;
 	}
+	bool isDuplicate() {
+		return Type == 18;
+	}
 	LogicAreaEffectData* getAreaEffect() {
 		return AreaEffect;
 	}
@@ -78,6 +81,15 @@ public:
 	}
 	int getChargeUltiAutomatically() {
 		return ((int (*)(LogicCharacterData*))(base + 0x83A19C))(this);
+	}
+	int getFlyingHeight() {
+		return ((int (*)(LogicCharacterData*))(base + 0x83A19C))(this);
+	}
+	int getAutoAttackDamage() {
+		return ((int (*)(LogicCharacterData*))(base + 0x839460))(this);
+	}
+	int getPetAutoSpawnDelay() {
+		return *(int*)((char*)this + 536);
 	}
 };
 #endif
