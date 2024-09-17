@@ -31,7 +31,9 @@ public:
 	int EarlyTicks;//428
 	char gap98493[4];
 	int SkillType;//436
-	char gap1413948390840[744 - 436 - 4];
+	char gap31043104[492 - 436 - 4];
+	int SteerAngle;//492
+	char gap1413948390840[744 - 492 - 4];
 	int BelleWeaponBounces;
 
 	void addIgnoredTarget(int, int);
@@ -171,6 +173,9 @@ int LogicProjectileServer::getNextSteeredPos(LogicVector2& outVector) {
 			}
 		}
 		break;
+		case 5://Nani
+			if (SteerAngle > -1) targetAngle = SteerAngle;
+			break;
 		case 10://贝尔 belle
 			if (HomingTarget) targetAngle = LogicMath::getAngle(HomingTarget->getX() - getX(), HomingTarget->getY() - getY());
 			break;

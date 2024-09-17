@@ -20,7 +20,13 @@ public://found names from json encode lol
    char gap1398483198493[76 - 64 - 4];
    int UltiCharge;//76
    int UltiChargeMax;//80
-   char gap2139881[104 - 80 - 4];
+   char gap1894393489[92 - 80 - 4];
+   int OverCharge;//92
+   int OverChargeMax;//96
+   bool OverCharging;//100
+   bool OverChargeStartedFlag;//101
+   bool OverChargeOnStart;//102
+   bool OverChargeOnEnd;//103
    int speedIncrease;//104
    char gap1[280 - 104 - 4];
    LogicAccessory* Accessory;//280
@@ -35,6 +41,10 @@ public://found names from json encode lol
    }
    LogicHeroEntry* getCurrentHeroSetup() { //refactor: potential inlined functoin in libg?
       return heroSetups[CurrentHeroIndex];
+   }
+   bool hasOverChargeData() {
+      LogicHeroUpgrades* upgrades = getCurrentHeroSetup()->upgrades;
+      return upgrades && upgrades->overcharge;
    }
 };
 #endif

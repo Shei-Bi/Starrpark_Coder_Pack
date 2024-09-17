@@ -361,7 +361,7 @@ bool LogicCharacterServer::isObject() {
 void LogicCharacterServer::setUpgrades(LogicHeroUpgrades* upgrades) {
 	if (upgrades) {
 		ShowStarPowerIcon = upgrades->starPower || upgrades->overcharge;
-		int level = upgrades->heroLevel;
+		int level = upgrades->heroLevel - 1;
 		LogicCharacterData* data = (LogicCharacterData*)getData();
 		int hitpoints = HitpointsMax + data->getHitpoints() / 10 * level;
 		Hitpoints = hitpoints;
@@ -420,6 +420,7 @@ int LogicCharacterServer::getDamageBuffTemporary() {
 	for (int i = 0;i < Buffs.length;i++) {
 		if (Buffs[i]->Type == LogicBuffServer::Damage || Buffs[i]->Type == LogicBuffServer::Damage2 || Buffs[i]->Type == LogicBuffServer::DamageAndSize) damageBuff += Buffs[i]->Modifier;
 	}
+	if (isOverCharging()) damageBuff += ((LogicCharacterData*)getData())->getOverchargeDamagePercent();
 	return damageBuff;
 }
 void LogicCharacterServer::giveElectrocution(int damage, int damageConst, int bounces, int maxBounces, int effectType, int index, int teamIndex, int worldIndex) {
@@ -658,6 +659,10 @@ bool LogicCharacterServer::causeDamage(int sourceIndex, int damage, int damageCo
 }
 bool LogicCharacterServer::isAlive() {
 	return Hitpoints > 0;
+}
+bool LogicCharacterServer::isOverCharging() {
+	LogicPlayer* player = getPlayer();
+	return player && player->OverCharging;
 }
 void LogicCharacterServer::chargeUlti(int value, bool isUlti, bool absoluteValue, LogicPlayer* targetPlayer, LogicCharacterServer* target) {
 	return ((void (*)(LogicCharacterServer*, int, bool, bool, LogicPlayer*, LogicCharacterServer*))(base + 0x89390C))(this, value, isUlti, absoluteValue, targetPlayer, target);
@@ -905,15 +910,21 @@ int LogicCharacterServer::getPowerLevel() {
 int LogicCharacterServer::getMovementSpeed() {
 	LogicCharacterData* data = ((LogicCharacterData*)getData());
 	int speed = data->getSpeed();
+	if (isOverCharging()) speed += speed * data->getOverchargeSpeedPercent() / 100;
+	speed += StaticSpeedBuff;
 	speed += getBuffBoost(LogicBuffServer::SpeedFaster);
 	speed += getBuffBoost(LogicBuffServer::SpeedSlower);
 	if (data->HasPowerLevels && getPowerLevel() > 0)
 		speed += 170;
 	return speed;
 }
+int LogicCharacterServer::getSpeedBuff() {
+	return getBuffBoost(LogicBuffServer::SpeedFaster) + getBuffBoost(LogicBuffServer::SpeedSlower);
+}
 void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter, int index, bool isOwnTeam) {
 	LogicGameObjectServer::encode(stream, fadeCounter);
 	LogicCharacterData* data = (LogicCharacterData*)getData();
+	LogicPlayer* player = getPlayer();
 	int mode = getLogicBattleModeServer()->GameModeVariation;
 	if (!IsObject) {
 		if (isOwn) {
@@ -928,7 +939,7 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 			stream->writePositiveIntMax511(MoveAngle);
 		}
 		stream->writePositiveIntMax7(State);
-		stream->writeBoolean(getDamageBuffTemporary() > 0);
+		stream->writeBoolean(getDamageBuffTemporary() > 0 && !isOverCharging());
 		stream->writeIntMax63(AttackAnimation);
 		stream->writeBoolean(Knockbacked);
 		if (stream->writeBoolean(Stunned)) stream->writeBoolean(WeaklyStunned);
@@ -994,6 +1005,12 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 		stream->writeBoolean(AimingUlti);
 		stream->writeBoolean(ShowUltiAnimation);
 		stream->writeBoolean(CcImmunityTicks > 0);
+		if (player && player->hasOverChargeData()) {
+			stream->writeBoolean(player->OverCharge == player->OverChargeMax);
+			stream->writeBoolean(player->OverCharging);
+			stream->writeBoolean(player->OverChargeOnStart);
+			stream->writeBoolean(player->OverChargeOnEnd);
+		}
 		if (isOwn) {
 			stream->writeBoolean(false);
 		}
@@ -1069,8 +1086,11 @@ void LogicCharacterServer::encode(BitStream* stream, bool isOwn, int fadeCounter
 	stream->writeBoolean(false);
 	stream->writeBoolean(false);
 	if (isOwn) {
-		stream->writeBoolean(false);
-		stream->writeBoolean(false);
+		int clientSpeed = getSpeedBuff();
+		if (stream->writeBoolean(clientSpeed != 0)) {
+			stream->writeIntMax1023(clientSpeed);
+		}
+		stream->writeBoolean(IsRevealed);
 	}
 	int damageNumberCount = 0;
 	for (int i = 0;i < DamageNumbers_Value.length;i++) {

@@ -18,7 +18,7 @@ public:
 	int X;//32
 	int Y;//36
 	bool OnActivate;//40
-	bool Boolean2;//41
+	bool OverCharging;//41
 	char gap1[6];
 	int Level;//48
 	int ChargesPerShoot;//52
@@ -34,7 +34,7 @@ public:
 		stream->writePositiveVIntMax255OftenZero(ActiveTime / 50);
 		stream->writePositiveVIntMax255OftenZero(MaxActiveTime / 50);
 		stream->writeBoolean(OnActivate);
-		stream->writeBoolean(Boolean2);
+		stream->writeBoolean(OverCharging);
 		stream->writePositiveVIntMax255OftenZero(CoolDown / 50);
 		if (SkillData->getMaxCharge() >= 1) {
 			if (SkillData->HoldToShoot) stream->writePositiveIntMax4095(Charges / 20);
@@ -58,7 +58,7 @@ LogicSkillServer::LogicSkillServer(LogicSkillData* data, bool isUltiSkill) {
 	X = 0;
 	Y = 0;
 	OnActivate = false;
-	Boolean2 = false;
+	OverCharging = false;
 	Level = 0;
 	ChargesPerShoot = 1;
 	Charges = LogicMath::max(1000, 1000 * data->getMaxCharge());

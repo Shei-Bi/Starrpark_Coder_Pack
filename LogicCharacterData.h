@@ -91,5 +91,11 @@ public:
 	int getPetAutoSpawnDelay() {
 		return *(int*)((char*)this + 536);
 	}
+	int getOverchargeDamagePercent() {
+		return ((int (*)(LogicCharacterData*))(base + 0x8394C8))(this);
+	}
+	int getOverchargeSpeedPercent() {
+		return ((int (*)(LogicCharacterData*))(base + 0x8394D4))(this);
+	}
 };
 #endif

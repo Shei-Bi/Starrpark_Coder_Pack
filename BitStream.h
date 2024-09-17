@@ -75,6 +75,9 @@ public:
 	void writeIntMax255(int value) {
 		return writeInt(value, 8);
 	}
+	void writeIntMax1023(int value) {
+		return writeInt(value, 10);
+	}
 	void writeIntMax32767(int value)
 	{
 		return writeInt(value, 15);

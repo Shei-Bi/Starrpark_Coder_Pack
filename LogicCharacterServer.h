@@ -310,6 +310,7 @@ public:
 	LogicCharacterServer* triggerTransformation(LogicCharacterData*);
 	int getDamageForCalculatingCardDamageAfterV52(void);
 	LogicGear* getGearBoost(int);
+	bool isOverCharging(void);
 
 	void AICanRaiseDead(void);
 	void AICanResurrect(void);
@@ -425,7 +426,7 @@ public:
 	void getSkill(int);
 	void getSkillHoldedTicks(void);
 	void getSlamZAtT(float);
-	void getSpeedBuff(void);
+	int getSpeedBuff(void);
 	void getStarsForAI(void);
 	void getState(void);
 	void getType(void);

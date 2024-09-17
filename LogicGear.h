@@ -4,6 +4,7 @@
 #include "LogicGearData.h"
 #include "BitStream.h"
 #include "LogicCharacterServer.h"
+#include "LogicCharacterData.h"
 
 //guessed names.
 class LogicGear
@@ -44,7 +45,8 @@ public:
 			Refactor. Reason: Supercell一直用 LogicTileMap::logicToPathFinderTile(logic) / 3 求LogicTile，但前者等价于 / 100 ，也许他这样有特殊的理由......
 			--Shei
 			*/
-			if (owner->getLogicBattleModeServer()->getTileMap()->getTile(owner->getX() / 300, owner->getY() / 300)->HidesHero) owner->giveSpeedFasterBuff(GearData->getModifierValue(), 2, false);
+			int speedBuff = ((LogicCharacterData*)owner->getData())->getSpeed() * GearData->getModifierValue() / 100;
+			if (owner->getLogicBattleModeServer()->getTileMap()->getTile(owner->getX() / 300, owner->getY() / 300)->HidesHero) owner->giveSpeedFasterBuff(speedBuff, 2, false);
 			break;
 		}
 	}
